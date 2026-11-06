@@ -3,404 +3,633 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Atlas SECU</title>
+  <title>Atlas-SECU — Pentest autorisé</title>
+  <meta name="description" content="Atlas-SECU — assistant de pentest autorisé. Téléchargement public, capacités RoE sous accréditation.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --page-bg:#f7f7f5;--page-fg:#161616;--page-muted:#5a5a5a;--page-line:#d8d8d4;
-      --paper:#ffffff;--ink:#1a1a1a;--dim:#6b6b6b;--hairline:#cfcfc9;
-      --teal:#2f6f73;--teal-soft:rgba(47,111,115,.1);
-      --accent:#8b1e1e;--accent-soft:rgba(139,30,30,.08);--ok:#2f5d3a;--ok-soft:rgba(47,93,58,.1);
-      --danger:#8b1e1e;--grid:rgba(22,22,22,.045);
-      --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;
+      --bg:#f4f8fa;--bg-soft:#eaf3f5;--paper:#ffffff;
+      --ink:#2a3d45;--ink-soft:#4a6069;--muted:#6b818a;--line:#c8d8de;
+      --teal:#2f8f8a;--teal-deep:#1f6f6b;
+      --teal-soft:rgba(47,143,138,.12);--teal-mid:rgba(47,143,138,.28);
+      --accent:#b23a3a;--accent-soft:rgba(178,58,58,.08);
+      --ok:#2d7a4f;--ok-soft:rgba(45,122,79,.12);
+      --display:'Outfit',system-ui,sans-serif;
+      --mono:'IBM Plex Mono',ui-monospace,monospace;
+      --radius:2px;--ease:cubic-bezier(.22,.9,.28,1);
+      --shadow:0 18px 50px rgba(42,61,69,.08);
     }
     *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     body{
-      margin:0;min-height:100vh;color:var(--page-fg);line-height:1.5;
-      font-family:var(--sans);
+      margin:0;min-height:100vh;color:var(--ink);line-height:1.55;
+      font-family:var(--display);
       background:
-        linear-gradient(180deg,rgba(255,255,255,.65),rgba(247,247,245,.92)),
-        repeating-linear-gradient(0deg,transparent 0 23px,var(--grid) 23px 24px),
-        repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px),
-        var(--page-bg);
+        radial-gradient(1100px 520px at 12% -8%,rgba(47,143,138,.16),transparent 60%),
+        radial-gradient(900px 480px at 92% 8%,rgba(120,170,190,.18),transparent 55%),
+        linear-gradient(180deg,#fbfefe 0%,var(--bg) 45%,var(--bg-soft) 100%);
+      overflow-x:hidden;
     }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.32;
+      background-image:
+        linear-gradient(rgba(47,143,138,.045) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(47,143,138,.045) 1px,transparent 1px);
+      background-size:48px 48px;
+      mask-image:radial-gradient(ellipse at 50% 28%,#000 18%,transparent 72%);
+    }
+    a{color:var(--teal-deep)}
+    [hidden]{display:none!important}
 
-    /* Concept-2 lockup boot */
+    /* —— Logo mark (inline SVG styles) —— */
+    .mark-svg{display:block;width:100%;height:100%;overflow:visible}
+    .mark-svg .frame{stroke:#2a3d45;stroke-width:7;fill:none;stroke-linejoin:round}
+    .mark-svg .inner{stroke:#2a3d45;stroke-width:6;fill:none;stroke-linejoin:round}
+    .mark-svg .orbit{stroke:var(--teal);stroke-width:2.2;fill:none;opacity:.9;
+      transform-origin:60px 62px;animation:orbit-spin 9s linear infinite}
+    .mark-svg .orbit.alt{animation-duration:13s;animation-direction:reverse;opacity:.65}
+    .mark-svg .link{stroke:var(--teal);stroke-width:2;fill:none;opacity:.85}
+    .mark-svg .node{fill:var(--teal);transform-box:fill-box;transform-origin:center;
+      animation:node-pulse 2.4s ease-in-out infinite}
+    .mark-svg .node.n2{animation-delay:.4s}
+    .mark-svg .node.n3{animation-delay:.8s}
+    @keyframes orbit-spin{to{transform:rotate(360deg)}}
+    @keyframes node-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.28);opacity:.75}}
+
+    /* —— Boot —— */
     .boot-lockup{
-      position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;
-      background:var(--page-bg);pointer-events:none;
-      transition:opacity .45s ease,visibility .45s ease;
+      position:fixed;inset:0;z-index:4000;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(180deg,#fbfefe,#eef6f7);pointer-events:none;
+      transition:opacity .55s var(--ease),visibility .55s var(--ease);
     }
     .boot-lockup.is-done{opacity:0;visibility:hidden}
-    .boot-lockup-inner{display:flex;align-items:center;gap:18px}
-    .boot-globe{
-      width:72px;height:72px;flex-shrink:0;
-      opacity:0;transform:translateX(-36px) scale(.92);
-    }
+    .boot-inner{display:flex;align-items:center;gap:16px}
+    .boot-mark{width:72px;height:72px;opacity:0;transform:scale(.88) translateY(8px)}
     .boot-word{
-      font-family:var(--sans);font-weight:700;font-size:clamp(1.35rem,4.2vw,2.1rem);letter-spacing:.18em;
-      color:var(--ink);text-transform:uppercase;line-height:1;padding-right:.12em;
-      opacity:0;transform:translateX(36px);white-space:nowrap;
+      font-weight:800;font-size:clamp(1.5rem,4vw,2.3rem);letter-spacing:.2em;
+      text-transform:uppercase;opacity:0;transform:translateX(24px);
     }
-    body.is-booting .boot-globe{animation:boot-globe-in .7s cubic-bezier(.22,.9,.28,1) .08s forwards}
-    body.is-booting .boot-word{animation:boot-word-in .7s cubic-bezier(.22,.9,.28,1) .18s forwards}
-    @keyframes boot-globe-in{to{opacity:1;transform:translateX(0) scale(1)}}
-    @keyframes boot-word-in{to{opacity:1;transform:translateX(0)}}
-    .wrap{
-      max-width:720px;margin:0 auto;padding:8vh 20px 48px;
-      opacity:0;transform:translateY(10px);
-    }
-    body.is-ready .wrap{animation:page-in .55s cubic-bezier(.22,.9,.28,1) forwards}
-    @keyframes page-in{to{opacity:1;transform:translateY(0)}}
+    .boot-word span{color:var(--teal)}
+    body.is-booting .boot-mark{animation:boot-in .75s var(--ease) .05s forwards}
+    body.is-booting .boot-word{animation:boot-in .7s var(--ease) .22s forwards}
+    @keyframes boot-in{to{opacity:1;transform:none}}
 
-    h1{
-      margin:0 0 8px;font-family:var(--mono);font-size:1.65rem;font-weight:700;
-      letter-spacing:.18em;text-transform:uppercase;
-    }
-    .lede{margin:0 0 18px;color:var(--page-muted)}
-    a.btn,button.btn{
-      display:inline-block;margin-top:8px;margin-right:8px;padding:12px 18px;
-      background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:0;
-      text-decoration:none;font:inherit;cursor:pointer;letter-spacing:.02em;
-      transition:transform .18s ease,background .18s ease,border-color .18s ease;
-    }
-    a.btn.secondary,button.btn.secondary{background:#fff;color:var(--ink)}
-    a.btn.secondary:hover,button.btn.secondary:hover{background:#f3f3f0;border-color:var(--teal)}
-    a.btn:hover,button.btn:hover{transform:translateY(-1px)}
-    .scope{margin-top:32px;padding-top:22px;border-top:1px solid var(--page-line)}
-    .scope h2{margin:0 0 8px;font-family:var(--mono);font-size:.95rem;letter-spacing:.08em;text-transform:uppercase}
-    .scope code{font-family:var(--mono);font-size:.9em}
-    .muted{color:var(--page-muted);font-size:.95rem}
-    .actions{margin-top:12px}
-    .auth-bar{margin-top:16px;font-size:.95rem}
-    .auth-bar a,.auth-bar button.linkish,.hint-login{
-      color:var(--ink);background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;
-    }
-    .auth-bar .sep{margin:0 8px;color:#999}
-    #roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden],
-    #admin-session-badge[hidden],#pw-panel[hidden]{display:none!important}
+    .site{position:relative;z-index:1}
+    body.is-booting .site{opacity:0}
+    body.is-ready .site{animation:site-in .65s var(--ease) forwards}
+    @keyframes site-in{from{opacity:0}to{opacity:1}}
 
-    .admin-badge{
-      display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-      margin:22px 0 0;padding:12px 14px;
-      background:var(--paper);border:1px solid var(--ink);
-      box-shadow:3px 3px 0 rgba(17,17,17,.08);
+    /* —— Marketing shell (folds away) —— */
+    #view-marketing{
+      transform-origin:50% 0%;
+      transition:transform .9s var(--ease),opacity .7s var(--ease),filter .7s var(--ease);
     }
-    .admin-badge .stamp{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:5px 10px;border:2px solid var(--accent);color:var(--accent);
-      font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-      background:var(--accent-soft);
+    body.is-folding #view-marketing,
+    body.is-auth #view-marketing,
+    body.is-dash #view-marketing{
+      transform:perspective(1200px) rotateX(12deg) scaleY(.04) translateY(-8vh);
+      opacity:0;pointer-events:none;filter:blur(2px);
     }
-    .admin-badge .stamp::before{
-      content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);
-      box-shadow:0 0 0 3px rgba(139,30,30,.18);
+
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      max-width:1120px;margin:0 auto;padding:22px 24px 0;
     }
-    .admin-badge .who{
-      font-family:var(--mono);font-size:.85rem;letter-spacing:.04em;color:var(--ink);font-weight:600;
+    .brand-lockup{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+    .brand-lockup .mark{width:40px;height:40px;flex-shrink:0}
+    .brand-lockup .name{
+      font-weight:700;letter-spacing:.16em;font-size:.78rem;text-transform:uppercase;
     }
-    .admin-badge .meta{
-      margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
-      text-transform:uppercase;color:var(--dim);
+    .brand-lockup .name b{color:var(--teal);font-weight:800}
+    .nav-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .linkish{
+      background:none;border:0;padding:8px 10px;font:inherit;cursor:pointer;
+      color:var(--ink-soft);letter-spacing:.04em;
     }
+    .linkish:hover{color:var(--teal-deep)}
+
+    .btn,a.btn,button.btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:13px 20px;border-radius:var(--radius);border:1.5px solid var(--teal-deep);
+      background:var(--teal);color:#fff;text-decoration:none;font:inherit;font-weight:600;
+      letter-spacing:.03em;cursor:pointer;
+      transition:transform .2s var(--ease),background .2s,box-shadow .2s;
+      box-shadow:0 8px 24px rgba(47,143,138,.22);
+    }
+    .btn:hover{background:var(--teal-deep);transform:translateY(-2px)}
+    .btn.secondary{background:var(--paper);color:var(--teal-deep);box-shadow:0 6px 18px rgba(42,61,69,.06)}
+    .btn.secondary:hover{background:#f3faf9}
+    .btn.ghost{background:transparent;color:var(--ink-soft);border-color:var(--line);box-shadow:none}
+    .btn.ghost:hover{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-soft)}
+
+    .hero{
+      max-width:1120px;margin:0 auto;padding:clamp(48px,10vh,96px) 24px 64px;
+      display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;
+      min-height:min(82vh,780px);
+    }
+    @media (max-width:860px){
+      .hero{grid-template-columns:1fr;gap:32px;min-height:auto}
+      .hero-visual{order:-1;justify-self:center}
+    }
+    .hero-brand{
+      margin:0 0 14px;font-weight:800;font-size:clamp(2.6rem,7vw,4.6rem);
+      letter-spacing:.08em;line-height:.95;text-transform:uppercase;
+    }
+    .hero-brand .secu{color:var(--teal)}
+    .hero h1{
+      margin:0 0 14px;font-size:clamp(1.25rem,2.4vw,1.7rem);font-weight:600;
+      color:var(--ink-soft);max-width:22ch;line-height:1.25;
+    }
+    .hero .lede{margin:0 0 28px;max-width:42ch;color:var(--muted);font-size:1.05rem}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:12px}
+    .hero-visual{position:relative;width:min(400px,100%);aspect-ratio:1;display:grid;place-items:center}
+    .hero-orb{
+      position:absolute;inset:8%;border-radius:50%;
+      background:
+        radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),transparent 55%),
+        radial-gradient(circle at 70% 70%,rgba(47,143,138,.18),transparent 60%);
+      border:1px solid rgba(47,143,138,.18);
+      animation:orb-breathe 6.5s ease-in-out infinite;
+    }
+    .hero-orb::after{
+      content:"";position:absolute;inset:-16%;border-radius:50%;
+      border:1px dashed rgba(47,143,138,.22);animation:orb-spin 28s linear infinite;
+    }
+    @keyframes orb-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+    @keyframes orb-spin{to{transform:rotate(360deg)}}
+    .hero-visual .mark{width:70%;height:70%;position:relative;z-index:1}
+
+    .section{max-width:1120px;margin:0 auto;padding:64px 24px}
+    .section + .section{border-top:1px solid rgba(200,216,222,.7)}
+    .section-kicker{
+      margin:0 0 10px;font-family:var(--mono);font-size:.68rem;font-weight:600;
+      letter-spacing:.2em;text-transform:uppercase;color:var(--teal);
+    }
+    .section h2{
+      margin:0 0 12px;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;
+      letter-spacing:-.02em;max-width:18ch;
+    }
+    .section .support{margin:0 0 32px;color:var(--muted);max-width:52ch}
+    .section-line{
+      height:2px;width:0;background:linear-gradient(90deg,var(--teal),transparent);
+      margin:0 0 24px;transition:width 1s var(--ease);
+    }
+    .section.is-in .section-line{width:min(180px,40%)}
+    .feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+    @media (max-width:800px){.feature-row{grid-template-columns:1fr}}
+    .feature{padding-top:8px;border-top:2px solid var(--teal-mid)}
+    .feature h3{margin:14px 0 8px;font-size:1.05rem}
+    .feature p{margin:0;color:var(--muted)}
+    .trust-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    @media (max-width:800px){.trust-strip{grid-template-columns:1fr 1fr}}
+    .trust-item{padding:16px;background:rgba(255,255,255,.72);border:1px solid rgba(200,216,222,.9)}
+    .trust-item .label{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+    .trust-item .value{font-weight:700;font-size:.98rem}
+    .scope code{font-family:var(--mono);font-size:.86em;background:var(--teal-soft);padding:2px 6px;color:var(--teal-deep)}
+    .cta-band{max-width:1120px;margin:0 auto;padding:24px 24px 72px}
+    .cta-band-inner{
+      padding:40px 32px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(234,243,245,.92));
+      border:1px solid rgba(47,143,138,.22);box-shadow:var(--shadow);
+      display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+    }
+    .cta-band h2{margin:0 0 8px;font-size:1.45rem}
+    .cta-band p{margin:0;color:var(--muted);max-width:42ch}
+    .footer{
+      max-width:1120px;margin:0 auto;padding:0 24px 40px;
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;
+    }
+
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
+    .reveal.is-in{opacity:1;transform:none}
+    .reveal-delay-1{transition-delay:.08s}
+    .reveal-delay-2{transition-delay:.16s}
+    .reveal-delay-3{transition-delay:.24s}
+    .hero-enter .hero-brand,.hero-enter .hero h1,.hero-enter .lede,.hero-enter .hero-cta,.hero-enter .hero-visual{
+      opacity:0;transform:translateY(20px);
+    }
+    body.is-ready .hero-enter .hero-brand{animation:hero-rise .7s var(--ease) .05s forwards}
+    body.is-ready .hero-enter .hero h1{animation:hero-rise .7s var(--ease) .16s forwards}
+    body.is-ready .hero-enter .lede{animation:hero-rise .7s var(--ease) .26s forwards}
+    body.is-ready .hero-enter .hero-cta{animation:hero-rise .7s var(--ease) .36s forwards}
+    body.is-ready .hero-enter .hero-visual{animation:hero-rise .85s var(--ease) .18s forwards}
+    @keyframes hero-rise{to{opacity:1;transform:none}}
+
+    /* —— Full-page scan / fold transition —— */
+    #scan-stage{
+      position:fixed;inset:0;z-index:2500;display:none;align-items:center;justify-content:center;
+      background:
+        radial-gradient(800px 400px at 50% 40%,rgba(47,143,138,.12),transparent 60%),
+        linear-gradient(180deg,#f7fbfc,#e8f2f4);
+      flex-direction:column;gap:22px;padding:24px;
+    }
+    body.is-folding #scan-stage,
+    body.is-auth #scan-stage{display:flex}
+    body.is-dash #scan-stage{display:none}
+    .scan-panel{
+      width:min(560px,100%);background:rgba(255,255,255,.88);border:1px solid rgba(47,143,138,.28);
+      box-shadow:var(--shadow);padding:28px 26px 22px;position:relative;overflow:hidden;
+    }
+    .scan-panel::before{
+      content:"";position:absolute;left:0;right:0;height:28%;top:-30%;
+      background:linear-gradient(180deg,transparent,rgba(47,143,138,.1),transparent);
+      animation:scan-beam 1.8s ease-in-out infinite;
+    }
+    @keyframes scan-beam{0%{top:-35%}100%{top:110%}}
+    .scan-head{
+      display:flex;align-items:center;gap:12px;margin-bottom:18px;
+      font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--teal-deep);
+    }
+    .scan-head .mark{width:36px;height:36px}
+    .scan-log{
+      font-family:var(--mono);font-size:.78rem;line-height:1.7;color:var(--ink-soft);
+      min-height:7.5em;white-space:pre-wrap;
+    }
+    .scan-log .ok{color:var(--ok)}
+    .scan-bar{
+      margin-top:16px;height:4px;background:rgba(47,143,138,.12);overflow:hidden;
+    }
+    .scan-bar > i{
+      display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--teal-deep));
+      transition:width .35s linear;
+    }
+    body.is-folding .scan-auth{display:none}
+    body.is-auth .scan-progress{display:none}
+    body.is-auth .scan-auth{display:block;animation:auth-in .55s var(--ease)}
+    @keyframes auth-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    .scan-auth label{
+      display:block;margin-top:12px;font-family:var(--mono);font-size:.68rem;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    }
+    .scan-auth input{
+      width:100%;margin-top:6px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);
+      background:#fbfefe;color:var(--ink);font-family:var(--mono);font-size:.9rem;outline:none;
+    }
+    .scan-auth input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+    .scan-auth .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .scan-auth .actions .btn{flex:1;min-width:120px}
+    .scan-err{margin-top:12px;font-family:var(--mono);font-size:.75rem;color:var(--accent);min-height:1.2em}
+    .scan-stamp{
+      display:inline-block;margin-bottom:10px;padding:4px 8px;border:1px solid var(--accent);
+      color:var(--accent);background:var(--accent-soft);font-family:var(--mono);font-size:.62rem;
+      letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+    }
+
+    /* —— Dashboard (post-login) —— */
+    #view-dash{
+      position:fixed;inset:0;z-index:2000;display:none;overflow:auto;
+      background:
+        radial-gradient(900px 480px at 50% -10%,rgba(47,143,138,.14),transparent 55%),
+        linear-gradient(180deg,#fbfefe,var(--bg-soft));
+    }
+    body.is-dash #view-dash{display:block;animation:dash-in .7s var(--ease)}
+    @keyframes dash-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    .dash-wrap{max-width:960px;margin:0 auto;padding:36px 24px 64px}
+    .dash-top{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      margin-bottom:36px;
+    }
+    .dash-brand{display:flex;align-items:flex-start;gap:14px}
+    .dash-brand .mark{width:56px;height:56px;flex-shrink:0}
+    .dash-brand .stack{display:flex;flex-direction:column;gap:4px}
+    .dash-brand .title{
+      font-weight:800;font-size:1.35rem;letter-spacing:.14em;text-transform:uppercase;line-height:1.1;
+    }
+    .dash-brand .title b{color:var(--teal)}
+    .dash-brand .sub{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+    /* Polished session chip (replaces ugly admin stamp) */
+    .session-chip{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:8px 12px 8px 8px;background:rgba(255,255,255,.9);
+      border:1px solid rgba(47,143,138,.22);border-radius:999px;
+      box-shadow:0 8px 24px rgba(42,61,69,.06);
+    }
+    .session-chip .dot{
+      width:8px;height:8px;border-radius:50%;background:var(--ok);
+      box-shadow:0 0 0 4px var(--ok-soft);flex-shrink:0;margin-left:4px;
+    }
+    .session-chip .who{font-weight:600;font-size:.9rem;color:var(--ink)}
+    .session-chip .role{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);padding:3px 8px;background:var(--teal-soft);border-radius:999px;
+    }
+    .dash-actions-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+    .dash-intro{margin:0 0 28px;color:var(--muted);max-width:48ch}
+    .cap-grid{
+      display:grid;grid-template-columns:repeat(2,1fr);gap:22px;
+    }
+    @media (max-width:640px){.cap-grid{grid-template-columns:1fr}}
+
+    /* Essence-style ambient around buttons */
+    .cap-slot{position:relative;isolation:isolate}
+    .cap-aura{
+      position:absolute;inset:-14px;border-radius:18px;pointer-events:none;z-index:0;
+      background:
+        radial-gradient(circle at 30% 40%,rgba(47,143,138,.16),transparent 55%),
+        radial-gradient(circle at 70% 70%,rgba(120,170,190,.14),transparent 50%);
+      filter:blur(2px);
+      animation:aura-drift 5.5s ease-in-out infinite;
+    }
+    .cap-slot:nth-child(2) .cap-aura{animation-duration:6.2s;animation-delay:-1.2s}
+    .cap-slot:nth-child(3) .cap-aura{animation-duration:7s;animation-delay:-2.1s}
+    .cap-slot:nth-child(4) .cap-aura{animation-duration:5.8s;animation-delay:-.6s}
+    .cap-ring{
+      position:absolute;inset:-8px;border-radius:14px;pointer-events:none;z-index:0;
+      border:1px solid rgba(47,143,138,.18);
+      animation:ring-pulse 3.6s ease-in-out infinite;
+    }
+    .cap-slot:nth-child(2) .cap-ring{animation-delay:.4s}
+    .cap-slot:nth-child(3) .cap-ring{animation-delay:.8s}
+    .cap-slot:nth-child(4) .cap-ring{animation-delay:1.2s}
+    .cap-orbit{
+      position:absolute;inset:-18px;border-radius:50%;pointer-events:none;z-index:0;
+      border:1px dashed rgba(47,143,138,.2);
+      animation:orb-spin 18s linear infinite;
+      mask-image:radial-gradient(circle,transparent 58%,#000 62%);
+    }
+    .cap-slot:nth-child(even) .cap-orbit{animation-direction:reverse;animation-duration:22s}
+    @keyframes aura-drift{
+      0%,100%{transform:scale(1) translate(0,0);opacity:.85}
+      50%{transform:scale(1.06) translate(2%,-2%);opacity:1}
+    }
+    @keyframes ring-pulse{
+      0%,100%{transform:scale(1);opacity:.55}
+      50%{transform:scale(1.03);opacity:1}
+    }
+    .cap-btn{
+      position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+      width:100%;min-height:118px;padding:22px 20px;text-align:left;text-decoration:none;
+      background:rgba(255,255,255,.92);border:1.5px solid rgba(47,143,138,.28);border-radius:4px;
+      color:var(--ink);box-shadow:0 12px 32px rgba(42,61,69,.07);
+      transition:transform .22s var(--ease),border-color .22s,box-shadow .22s;
+    }
+    .cap-btn:hover{
+      transform:translateY(-3px);border-color:var(--teal);
+      box-shadow:0 16px 40px rgba(47,143,138,.16);
+    }
+    .cap-btn .code{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);
+    }
+    .cap-btn .label{font-weight:700;font-size:1.15rem;letter-spacing:.01em}
+    .cap-btn .hint{font-size:.88rem;color:var(--muted)}
 
     .pw-panel{
-      margin-top:16px;padding:16px 16px 14px;background:var(--paper);
-      border:1px solid var(--hairline);
+      margin-top:28px;padding:18px;background:var(--paper);border:1px solid var(--line);
+      max-width:420px;box-shadow:var(--shadow);
     }
     .pw-panel h3{
       margin:0 0 10px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
-      text-transform:uppercase;color:var(--dim);font-weight:600;
+      text-transform:uppercase;color:var(--muted);
     }
     .pw-panel label{
       display:block;margin-top:10px;font-family:var(--mono);font-size:.62rem;
-      letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+      letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
     }
     .pw-panel input{
-      width:100%;max-width:320px;margin-top:5px;padding:10px 12px;border-radius:0;
-      border:1px solid var(--hairline);background:#fafaf8;color:var(--ink);
-      font-family:var(--mono);font-size:.85rem;outline:none;
+      width:100%;max-width:320px;margin-top:5px;padding:10px 12px;border:1px solid var(--line);
+      background:#fbfefe;font-family:var(--mono);font-size:.85rem;outline:none;
     }
     .pw-panel input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
-    .pw-panel .pw-actions{margin-top:12px}
-    .pw-msg{margin-top:10px;font-family:var(--mono);font-size:.72rem;min-height:1.2em}
+    .pw-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .pw-msg{margin-top:10px;font-family:var(--mono);font-size:.72rem}
     .pw-msg.ok{color:var(--ok)}
-    .pw-msg.err{color:var(--danger)}
+    .pw-msg.err{color:var(--accent)}
 
-    .roe-overlay{
-      position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;
-      background:rgba(247,247,245,.82);padding:20px;
-      backdrop-filter:blur(2px);
-    }
-    .roe-overlay.open{display:flex}
-    .roe-modal{
-      position:relative;width:min(460px,100%);overflow:hidden;border-radius:0;
-      background:var(--paper);color:var(--ink);
-      border:1px solid var(--ink);
-      box-shadow:0 0 0 1px #fff,6px 6px 0 rgba(17,17,17,.08),0 30px 80px rgba(17,17,17,.12);
-      font-family:var(--sans);
-    }
-    .roe-viz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.55}
-    .roe-scan{
-      position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5;
-      background:
-        repeating-linear-gradient(0deg,transparent 0 23px,rgba(22,22,22,.035) 23px 24px),
-        repeating-linear-gradient(90deg,transparent 0 23px,rgba(22,22,22,.035) 23px 24px);
-    }
-    .roe-sweep{
-      position:absolute;left:0;right:0;height:22%;pointer-events:none;z-index:0;
-      background:linear-gradient(180deg,transparent,rgba(47,111,115,.06),transparent);
-      animation:roe-sweep 3.6s ease-in-out infinite;
-    }
-    .roe-body{position:relative;z-index:1;padding:26px 26px 22px}
-    .roe-brand{
-      display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;
-      border-bottom:1px solid var(--hairline);
-    }
-    .roe-logo{
-      width:56px;height:56px;flex-shrink:0;overflow:hidden;
-      border:1px solid var(--ink);background:#fff;
-      display:flex;align-items:center;justify-content:center;
-    }
-    .roe-logo img{width:100%;height:100%;object-fit:cover;display:block}
-    .roe-brand h2{
-      margin:0;font-family:var(--mono);font-size:.68rem;letter-spacing:.28em;
-      text-transform:uppercase;color:var(--dim);font-weight:500;
-    }
-    .roe-brand .sub{
-      margin:5px 0 0;font-family:var(--mono);font-size:.95rem;letter-spacing:.1em;
-      text-transform:uppercase;color:var(--ink);font-weight:700;
-    }
-    .roe-stamp{
-      display:inline-block;margin-bottom:12px;padding:4px 8px;
-      border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:600;
-    }
-    .roe-panel{display:none}
-    .roe-panel.active{display:block}
-    .roe-lede{
-      margin:0 0 8px;font-family:var(--mono);font-size:.72rem;line-height:1.65;
-      letter-spacing:.03em;color:var(--dim);
-    }
-    .roe-panel label{
-      display:block;margin-top:12px;font-family:var(--mono);font-size:.68rem;
-      letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
-    }
-    .roe-panel input{
-      width:100%;margin-top:6px;padding:11px 12px;border-radius:0;
-      border:1px solid var(--hairline);background:#fafaf8;color:var(--ink);
-      font-family:var(--mono);font-size:.85rem;outline:none;
-      transition:border-color .2s,box-shadow .2s;
-    }
-    .roe-panel input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
-    .roe-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-    .roe-actions button{
-      flex:1;min-width:120px;padding:11px 14px;border-radius:0;border:1px solid var(--ink);
-      font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;
-    }
-    .roe-submit{background:var(--ink);color:#fff}
-    .roe-submit:hover{background:#2a2a2a}
-    .roe-cancel,.roe-close-x{background:#fff;color:var(--dim)}
-    .roe-cancel:hover{background:#f3f3f0;color:var(--ink)}
-    .roe-close-x{
-      position:absolute;top:10px;right:10px;z-index:2;width:34px;height:34px;
-      border:1px solid var(--hairline);cursor:pointer;font-size:1.05rem;line-height:1;
-    }
-    .roe-err{margin-top:12px;color:var(--danger);font-family:var(--mono);font-size:.75rem;min-height:1.2em}
-    .roe-welcome{text-align:center;padding:8px 0 2px}
-    .roe-welcome .check{
-      width:52px;height:52px;margin:0 auto 14px;border:1px solid var(--ok);
-      background:var(--ok-soft);color:var(--ok);
-      display:flex;align-items:center;justify-content:center;
-      font-family:var(--mono);font-size:1.05rem;font-weight:700;
-      animation:roe-pop .45s cubic-bezier(.2,1.4,.4,1);
-    }
-    .roe-welcome h3{
-      margin:0 0 8px;font-family:var(--mono);font-size:.95rem;letter-spacing:.06em;
-      text-transform:uppercase;color:var(--ink);
-    }
-    .roe-welcome p{margin:0;font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--dim)}
-    .roe-overlay.open .roe-modal{animation:roe-modal-in .38s cubic-bezier(.22,.9,.28,1)}
-    .roe-overlay.open .roe-brand,
-    .roe-overlay.open .roe-stamp,
-    .roe-overlay.open .roe-lede,
-    .roe-overlay.open #roe-panel-login.active label,
-    .roe-overlay.open #roe-panel-login.active input,
-    .roe-overlay.open #roe-panel-login.active .roe-actions{
-      opacity:0;animation:roe-field-in .42s cubic-bezier(.22,.9,.28,1) forwards;
-    }
-    .roe-overlay.open .roe-brand{animation-delay:.05s}
-    .roe-overlay.open .roe-stamp{animation-delay:.12s}
-    .roe-overlay.open .roe-lede{animation-delay:.18s}
-    .roe-overlay.open #roe-panel-login.active label:nth-of-type(1){animation-delay:.24s}
-    .roe-overlay.open #roe-panel-login.active input:nth-of-type(1){animation-delay:.28s}
-    .roe-overlay.open #roe-panel-login.active label:nth-of-type(2){animation-delay:.34s}
-    .roe-overlay.open #roe-panel-login.active input:nth-of-type(2){animation-delay:.38s}
-    .roe-overlay.open #roe-panel-login.active .roe-actions{animation-delay:.46s}
-    #roe-panel-welcome.active .roe-welcome{animation:roe-welcome-in .45s cubic-bezier(.22,.9,.28,1)}
-    @keyframes roe-modal-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
-    @keyframes roe-field-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    @keyframes roe-welcome-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    @keyframes roe-sweep{0%,100%{transform:translateY(-120%)}50%{transform:translateY(420%)}}
-    @keyframes roe-pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
     @media (prefers-reduced-motion:reduce){
-      .roe-sweep,.roe-welcome .check,
-      body.is-booting .boot-globe,body.is-booting .boot-word,
-      body.is-ready .wrap,
-      .roe-overlay.open .roe-modal,
-      .roe-overlay.open .roe-brand,
-      .roe-overlay.open .roe-stamp,
-      .roe-overlay.open .roe-lede,
-      .roe-overlay.open #roe-panel-login.active label,
-      .roe-overlay.open #roe-panel-login.active input,
-      .roe-overlay.open #roe-panel-login.active .roe-actions,
-      #roe-panel-welcome.active .roe-welcome{animation:none!important}
-      .boot-globe,.boot-word,.wrap{opacity:1;transform:none}
-      .boot-lockup.is-done,.boot-lockup{opacity:0;visibility:hidden}
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation:none!important;transition:none!important}
+      .reveal,.boot-mark,.boot-word,.hero-enter .hero-brand,.hero-enter .hero h1,
+      .hero-enter .lede,.hero-enter .hero-cta,.hero-enter .hero-visual,.site{opacity:1;transform:none}
+      .boot-lockup,.boot-lockup.is-done{opacity:0;visibility:hidden}
+      .section-line{width:min(180px,40%)}
+      body.is-folding #view-marketing,body.is-auth #view-marketing,body.is-dash #view-marketing{
+        transform:none;opacity:0;filter:none;
+      }
     }
   </style>
 </head>
 <body class="is-booting">
   <div id="boot-lockup" class="boot-lockup" aria-hidden="true">
-    <div class="boot-lockup-inner" role="img" aria-label="Atlas SECU">
-      <svg class="boot-globe" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="36" cy="36" r="28" stroke="#2f6f73" stroke-width="1.6"/>
-        <ellipse cx="36" cy="36" rx="14" ry="28" stroke="#2f6f73" stroke-width="1.35"/>
-        <ellipse cx="36" cy="36" rx="28" ry="10" stroke="#2f6f73" stroke-width="1.35"/>
-        <path d="M10 28c8 4 18 6 26 6s18-2 26-6" stroke="#2f6f73" stroke-width="1.2" opacity=".85"/>
-        <path d="M10 44c8-4 18-6 26-6s18 2 26 6" stroke="#2f6f73" stroke-width="1.2" opacity=".85"/>
-        <circle cx="62" cy="36" r="3.2" fill="#1a1a1a"/>
-      </svg>
-      <span class="boot-word">ATLAS SECU</span>
+    <div class="boot-inner" role="img" aria-label="Atlas-SECU">
+      <div class="boot-mark" id="boot-mark"></div>
+      <span class="boot-word">ATLAS-<span>SECU</span></span>
     </div>
   </div>
 
-  <div class="wrap">
-    <h1>Atlas SECU</h1>
-    <p class="lede">Assistant de pentest autorisé · atlas-secu.com</p>
-    <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
+  <!-- Marketing (anonymous) -->
+  <div id="view-marketing" class="site">
+    <header class="nav reveal">
+      <a class="brand-lockup" href="/" aria-label="Atlas-SECU">
+        <span class="mark" data-mark></span>
+        <span class="name">Atlas-<b>SECU</b></span>
+      </a>
+      <div class="nav-actions">
+        <button type="button" class="linkish js-connect">Connexion</button>
+        <a class="btn secondary" href="/Atlas-Setup.exe">Télécharger</a>
+      </div>
+    </header>
 
-    <div class="auth-bar">
-      <span id="auth-anon">
-        <button type="button" class="linkish" id="open-login">Connexion</button>
-      </span>
-      <span id="auth-logged" hidden>
-        <span id="auth-user-label"></span>
-        <span class="sep">·</span>
-        <button type="button" class="linkish" id="open-pw">Mot de passe</button>
-        <span class="sep">·</span>
-        <button type="button" class="linkish" id="logout-btn">Déconnexion</button>
-      </span>
-    </div>
-
-    <div id="admin-session-badge" class="admin-badge" hidden role="status" aria-live="polite">
-      <span class="stamp">Session administrateur</span>
-      <span class="who" id="admin-session-name"></span>
-      <span class="meta">SECU · RoE A</span>
-    </div>
-
-    <div id="pw-panel" class="pw-panel" hidden>
-      <h3>Changer le mot de passe</h3>
-      <form id="pw-form" autocomplete="off">
-        <label for="pw-current">Mot de passe actuel</label>
-        <input id="pw-current" type="password" required autocomplete="current-password">
-        <label for="pw-new">Nouveau mot de passe</label>
-        <input id="pw-new" type="password" required autocomplete="new-password">
-        <label for="pw-confirm">Confirmer</label>
-        <input id="pw-confirm" type="password" required autocomplete="new-password">
-        <div class="pw-actions">
-          <button type="submit" class="btn">Enregistrer</button>
-          <button type="button" class="btn secondary" id="pw-cancel">Fermer</button>
+    <section class="hero hero-enter">
+      <div>
+        <p class="hero-brand">Atlas-<span class="secu">SECU</span></p>
+        <h1>Pentest autorisé, périmètre verrouillé.</h1>
+        <p class="lede">
+          Assistant de pentest pour équipes accréditées. Téléchargement public —
+          capacités RoE uniquement après connexion.
+        </p>
+        <div class="hero-cta">
+          <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
+          <button type="button" class="btn ghost js-connect">Se connecter</button>
         </div>
-        <p id="pw-msg" class="pw-msg" hidden></p>
-      </form>
-    </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-orb"></div>
+        <div class="mark" data-mark></div>
+      </div>
+    </section>
 
-    <section class="scope" aria-labelledby="roe-title">
-      <h2 id="roe-title">Périmètre RoE (Gab)</h2>
-      <p class="muted">
+    <section class="section" data-reveal>
+      <div class="section-line"></div>
+      <p class="section-kicker reveal">Capacités</p>
+      <h2 class="reveal reveal-delay-1">Conçu pour l’autorisation, pas l’exploration libre.</h2>
+      <p class="support reveal reveal-delay-2">Une seule intention : exécuter ce qui est signé dans le RoE, rien d’autre.</p>
+      <div class="feature-row">
+        <article class="feature reveal reveal-delay-1"><h3>RoE first</h3><p>Cibles limitées aux domaines autorisés. Hors liste = hors scope.</p></article>
+        <article class="feature reveal reveal-delay-2"><h3>Deep-links Scanner</h3><p>Recon, scan, vulnérabilités, audit — préremplis pour pragma-serve.com.</p></article>
+        <article class="feature reveal reveal-delay-3"><h3>Session accréditée</h3><p>Capacités réservées aux comptes Atlas-SECU après analyse d’accès.</p></article>
+      </div>
+    </section>
+
+    <section class="section" data-reveal>
+      <div class="section-line"></div>
+      <p class="section-kicker reveal">Confiance</p>
+      <h2 class="reveal reveal-delay-1">Garanties visibles avant même de se connecter.</h2>
+      <p class="support reveal reveal-delay-2">Le téléchargement est public. Les capacités restent derrière l’accréditation.</p>
+      <div class="trust-strip">
+        <div class="trust-item reveal reveal-delay-1"><div class="label">Download</div><div class="value">Atlas-Setup.exe · anonyme</div></div>
+        <div class="trust-item reveal reveal-delay-2"><div class="label">Gate</div><div class="value">Dashboard après login</div></div>
+        <div class="trust-item reveal reveal-delay-3"><div class="label">Scope</div><div class="value">*.pragma-serve / cloud / .mc</div></div>
+        <div class="trust-item reveal reveal-delay-4"><div class="label">Brand</div><div class="value">Atlas-SECU</div></div>
+      </div>
+    </section>
+
+    <section class="section scope" data-reveal>
+      <div class="section-line"></div>
+      <p class="section-kicker reveal">Rules of Engagement</p>
+      <h2 class="reveal reveal-delay-1">Périmètre RoE</h2>
+      <p class="support reveal reveal-delay-2">
         Capacités autorisées uniquement sur
         <code>*.pragma-serve.com</code>,
         <code>*.pragma-cloud.com</code>,
         <code>*.pragma.mc</code>
         — hors liste = hors scope.
       </p>
-    </section>
-
-    <p id="roe-gated-hint" class="muted" style="margin-top:20px">
-      Les capacités RoE sont réservées aux comptes autorisés.
-      <button type="button" class="hint-login" id="open-login-hint">Se connecter</button>
-      pour les afficher.
-    </p>
-
-    <section id="roe-caps-section" class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px" hidden>
-      <h2 id="caps-title">Lancer une capacité autorisée</h2>
-      <p class="muted">
-        Après installation et démarrage d’Atlas Local, ouvre le Scanner
-        prérempli (cible défaut <code>pragma-serve.com</code>) via les
-        deep-links authorizedLaunch (<code>?action=</code> + <code>host=</code>).
+      <p class="support" style="margin-bottom:0">
+        Les capacités sont réservées aux comptes autorisés.
+        <button type="button" class="linkish js-connect" style="padding:0;text-decoration:underline">Se connecter</button>
+        pour ouvrir le tableau de bord.
       </p>
-      <div class="actions" id="roe-actions">
-        <a class="btn secondary" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">Reconnaissance</a>
-        <a class="btn secondary" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">Scan</a>
-        <a class="btn secondary" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">Éval. vulnérabilités</a>
-        <a class="btn secondary" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">OSINT</a>
-      </div>
     </section>
+
+    <div class="cta-band" data-reveal>
+      <div class="cta-band-inner reveal">
+        <div>
+          <h2>Prêt à déployer Atlas Local</h2>
+          <p>Installez le setup, connectez-vous, lancez uniquement ce que le RoE autorise.</p>
+        </div>
+        <div class="hero-cta">
+          <a class="btn" href="/Atlas-Setup.exe">Télécharger</a>
+          <button type="button" class="btn ghost js-connect">Connexion</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <span>Atlas-SECU · atlas-secu.com</span>
+      <span>Pentest autorisé</span>
+    </footer>
   </div>
 
-  <div id="roe-login-overlay" class="roe-overlay" role="dialog" aria-modal="true" aria-labelledby="roe-login-title" hidden>
-    <div class="roe-modal">
-      <canvas id="roe-net-viz" class="roe-viz" aria-hidden="true"></canvas>
-      <div class="roe-scan" aria-hidden="true"></div>
-      <div class="roe-sweep" aria-hidden="true"></div>
-      <button type="button" class="roe-close-x" id="roe-close" aria-label="Fermer">×</button>
-      <div class="roe-body">
-        <div class="roe-brand">
-          <div class="roe-logo" aria-hidden="true">
-            <img
-              id="roe-logo-img"
-              src="/assets/atlas-logo-final-animated.gif"
-              alt=""
-              width="56"
-              height="56"
-              onerror="this.onerror=null;this.src='/assets/atlas-logo-final-static.jpg'"
-            >
+  <!-- Full-page scan transition + auth -->
+  <div id="scan-stage" aria-live="polite">
+    <div class="scan-panel">
+      <div class="scan-head">
+        <span class="mark" data-mark></span>
+        <span>Atlas-SECU · analyse d’accès</span>
+      </div>
+      <div class="scan-progress">
+        <div class="scan-log" id="scan-log"></div>
+        <div class="scan-bar"><i id="scan-bar"></i></div>
+      </div>
+      <div class="scan-auth" hidden id="scan-auth">
+        <span class="scan-stamp">Classification · Restricted</span>
+        <p style="margin:0 0 4px;font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em">
+          Accréditation requise. Session journalisée.
+        </p>
+        <form id="login-form" autocomplete="on">
+          <label for="login-email">Email</label>
+          <input id="login-email" name="email" type="email" required autocomplete="username" placeholder="vous@atlas-secu.com">
+          <label for="login-password">Mot de passe</label>
+          <input id="login-password" name="password" type="password" required autocomplete="current-password">
+          <div class="actions">
+            <button type="submit" class="btn">Se connecter</button>
+            <button type="button" class="btn ghost" id="login-cancel">Annuler</button>
           </div>
-          <div>
-            <h2 id="roe-login-title">Atlas SECU</h2>
-            <p class="sub">Accès capacité RoE</p>
-          </div>
-        </div>
+          <p id="login-error" class="scan-err" hidden></p>
+        </form>
+      </div>
+    </div>
+  </div>
 
-        <div id="roe-panel-login" class="roe-panel active">
-          <span class="roe-stamp">Item # · Restricted</span>
-          <p class="roe-lede">Document Atlas SECU. Connexion journalisée. Accréditation requise pour les capacités autorisées.</p>
-          <form id="roe-login-form" autocomplete="on">
-            <label for="roe-email">Email</label>
-            <input id="roe-email" name="email" type="email" required autocomplete="username" placeholder="vous@atlas-secu.com">
-            <label for="roe-password">Mot de passe</label>
-            <input id="roe-password" name="password" type="password" required autocomplete="current-password">
-            <div class="roe-actions">
-              <button type="submit" class="roe-submit">Se connecter</button>
-              <button type="button" class="roe-cancel" id="roe-cancel">Annuler</button>
-            </div>
-            <p id="roe-error" class="roe-err" hidden></p>
-          </form>
-        </div>
-
-        <div id="roe-panel-welcome" class="roe-panel">
-          <div class="roe-welcome">
-            <div class="check" aria-hidden="true">OK</div>
-            <h3 id="roe-welcome-title">Accès autorisé, bienvenue</h3>
-            <p id="roe-welcome-sub">Session administrateur · capacités RoE déverrouillées.</p>
-            <div class="roe-actions" style="justify-content:center">
-              <button type="button" class="roe-submit" id="roe-continue">Continuer</button>
-            </div>
+  <!-- Dashboard -->
+  <div id="view-dash">
+    <div class="dash-wrap">
+      <div class="dash-top">
+        <div class="dash-brand">
+          <span class="mark" data-mark></span>
+          <div class="stack">
+            <div class="title">Atlas-<b>SECU</b></div>
+            <div class="sub">Tableau de bord · capacités autorisées</div>
           </div>
         </div>
+        <div class="dash-actions-bar">
+          <div class="session-chip" role="status" aria-live="polite">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="who" id="dash-who">—</span>
+            <span class="role">Administrateur</span>
+          </div>
+          <button type="button" class="linkish" id="open-pw">Mot de passe</button>
+          <button type="button" class="btn ghost" id="logout-btn">Déconnexion</button>
+        </div>
+      </div>
+
+      <p class="dash-intro">
+        Session active. Lancez une capacité RoE — deep-link Scanner prérempli
+        (<code style="font-family:var(--mono);font-size:.9em">pragma-serve.com</code>.
+      </p>
+
+      <div class="cap-grid">
+        <div class="cap-slot">
+          <div class="cap-aura" aria-hidden="true"></div>
+          <div class="cap-ring" aria-hidden="true"></div>
+          <div class="cap-orbit" aria-hidden="true"></div>
+          <a class="cap-btn" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">
+            <span class="code">01 · recon</span>
+            <span class="label">Reconnaissance</span>
+            <span class="hint">Cartographie passive du périmètre</span>
+          </a>
+        </div>
+        <div class="cap-slot">
+          <div class="cap-aura" aria-hidden="true"></div>
+          <div class="cap-ring" aria-hidden="true"></div>
+          <div class="cap-orbit" aria-hidden="true"></div>
+          <a class="cap-btn" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">
+            <span class="code">02 · scan</span>
+            <span class="label">Scan</span>
+            <span class="hint">Balayage autorisé des surfaces</span>
+          </a>
+        </div>
+        <div class="cap-slot">
+          <div class="cap-aura" aria-hidden="true"></div>
+          <div class="cap-ring" aria-hidden="true"></div>
+          <div class="cap-orbit" aria-hidden="true"></div>
+          <a class="cap-btn" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">
+            <span class="code">03 · vuln</span>
+            <span class="label">État vulnérabilité</span>
+            <span class="hint">Évaluation des faiblesses signées</span>
+          </a>
+        </div>
+        <div class="cap-slot">
+          <div class="cap-aura" aria-hidden="true"></div>
+          <div class="cap-ring" aria-hidden="true"></div>
+          <div class="cap-orbit" aria-hidden="true"></div>
+          <a class="cap-btn" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">
+            <span class="code">04 · audit</span>
+            <span class="label">Audit</span>
+            <span class="hint">Collecte OSINT dans le RoE</span>
+          </a>
+        </div>
+      </div>
+
+      <div id="pw-panel" class="pw-panel" hidden>
+        <h3>Changer le mot de passe</h3>
+        <form id="pw-form" autocomplete="off">
+          <label for="pw-current">Mot de passe actuel</label>
+          <input id="pw-current" type="password" required autocomplete="current-password">
+          <label for="pw-new">Nouveau mot de passe</label>
+          <input id="pw-new" type="password" required autocomplete="new-password">
+          <label for="pw-confirm">Confirmer</label>
+          <input id="pw-confirm" type="password" required autocomplete="new-password">
+          <div class="pw-actions">
+            <button type="submit" class="btn">Enregistrer</button>
+            <button type="button" class="btn secondary" id="pw-cancel">Fermer</button>
+          </div>
+          <p id="pw-msg" class="pw-msg" hidden></p>
+        </form>
       </div>
     </div>
   </div>
@@ -408,203 +637,193 @@
   <script src="/auth.js"></script>
   <script>
     (function () {
-      var boot = document.getElementById('boot-lockup');
+      var MARK_SVG =
+        '<svg class="mark-svg" viewBox="0 0 120 120" aria-hidden="true">' +
+        '<path class="frame" d="M60 14 L102 98 H18 Z"/>' +
+        '<path class="inner" d="M60 48 L84 90 H36 Z"/>' +
+        '<ellipse class="orbit" cx="60" cy="62" rx="34" ry="22"/>' +
+        '<ellipse class="orbit alt" cx="60" cy="62" rx="22" ry="34"/>' +
+        '<path class="link" d="M42 58 L78 58 L60 88 Z"/>' +
+        '<circle class="node n1" cx="42" cy="58" r="4.2"/>' +
+        '<circle class="node n2" cx="78" cy="58" r="4.2"/>' +
+        '<circle class="node n3" cx="60" cy="88" r="4.2"/>' +
+        '</svg>';
+
+      function injectMarks() {
+        document.querySelectorAll('[data-mark]').forEach(function (el) {
+          el.innerHTML = MARK_SVG;
+        });
+        var boot = document.getElementById('boot-mark');
+        if (boot) boot.innerHTML = MARK_SVG;
+      }
+      injectMarks();
+
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var bootEl = document.getElementById('boot-lockup');
       function finishBoot() {
         document.body.classList.remove('is-booting');
         document.body.classList.add('is-ready');
-        if (boot) boot.classList.add('is-done');
+        if (bootEl) bootEl.classList.add('is-done');
       }
       if (reduceMotion) finishBoot();
       else setTimeout(finishBoot, 1400);
 
-      var overlay = document.getElementById('roe-login-overlay');
-      var panelLogin = document.getElementById('roe-panel-login');
-      var panelWelcome = document.getElementById('roe-panel-welcome');
-      var form = document.getElementById('roe-login-form');
-      var err = document.getElementById('roe-error');
-      var welcomeTitle = document.getElementById('roe-welcome-title');
-      var capsSection = document.getElementById('roe-caps-section');
-      var gatedHint = document.getElementById('roe-gated-hint');
-      var authAnon = document.getElementById('auth-anon');
-      var authLogged = document.getElementById('auth-logged');
-      var authUserLabel = document.getElementById('auth-user-label');
-      var adminBadge = document.getElementById('admin-session-badge');
-      var adminName = document.getElementById('admin-session-name');
+      /* Scroll reveals */
+      (function initReveals() {
+        var nodes = document.querySelectorAll('.reveal, [data-reveal]');
+        if (reduceMotion || !('IntersectionObserver' in window)) {
+          nodes.forEach(function (el) { el.classList.add('is-in'); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            entry.target.querySelectorAll('.reveal').forEach(function (k) { k.classList.add('is-in'); });
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
+        nodes.forEach(function (el) { io.observe(el); });
+      })();
+
+      var scanLog = document.getElementById('scan-log');
+      var scanBar = document.getElementById('scan-bar');
+      var scanAuth = document.getElementById('scan-auth');
+      var loginForm = document.getElementById('login-form');
+      var loginErr = document.getElementById('login-error');
+      var dashWho = document.getElementById('dash-who');
       var pwPanel = document.getElementById('pw-panel');
       var pwForm = document.getElementById('pw-form');
       var pwMsg = document.getElementById('pw-msg');
-      var vizRaf = null;
+      var foldTimer = null;
 
-      function showPanel(which) {
-        panelLogin.classList.toggle('active', which === 'login');
-        panelWelcome.classList.toggle('active', which === 'welcome');
+      var SCAN_LINES = [
+        { t: 0, text: '> init session gateway…' },
+        { t: 280, text: '> load policy RoE · pragma-serve / cloud / .mc' },
+        { t: 560, text: '> probe accreditation channel…' },
+        { t: 900, text: '> fingerprint client · ok', ok: true },
+        { t: 1200, text: '> collapse public shell…' },
+        { t: 1500, text: '> await credentials', ok: true }
+      ];
+
+      function clearBodyModes() {
+        document.body.classList.remove('is-folding', 'is-auth', 'is-dash');
       }
 
-      function applyAuthUI() {
+      function showDash(session) {
+        clearBodyModes();
+        document.body.classList.add('is-dash');
+        dashWho.textContent = session.firstName || 'Utilisateur';
+        scanAuth.hidden = true;
+        if (scanLog) scanLog.textContent = '';
+        if (scanBar) scanBar.style.width = '0%';
+      }
+
+      function showMarketing() {
+        clearBodyModes();
+        scanAuth.hidden = true;
+        if (scanLog) scanLog.textContent = '';
+        if (scanBar) scanBar.style.width = '0%';
+        loginErr.hidden = true;
+        loginForm.reset();
+        pwPanel.hidden = true;
+      }
+
+      function runFoldToAuth() {
+        if (foldTimer) { clearTimeout(foldTimer); foldTimer = null; }
         var session = AtlasAuth.getSession();
         if (session) {
-          capsSection.hidden = false;
-          gatedHint.hidden = true;
-          authAnon.hidden = true;
-          authLogged.hidden = false;
-          authUserLabel.textContent = (session.firstName || 'Utilisateur') + ' · connecté';
-          adminBadge.hidden = false;
-          adminName.textContent = session.firstName || 'Utilisateur';
-        } else {
-          capsSection.hidden = true;
-          gatedHint.hidden = false;
-          authAnon.hidden = false;
-          authLogged.hidden = true;
-          authUserLabel.textContent = '';
-          adminBadge.hidden = true;
-          adminName.textContent = '';
-          pwPanel.hidden = true;
-        }
-      }
-
-      function closeOverlay() {
-        overlay.classList.remove('open');
-        overlay.hidden = true;
-        stopViz();
-        err.hidden = true;
-        err.textContent = '';
-        form.reset();
-        showPanel('login');
-        applyAuthUI();
-      }
-
-      function openOverlay() {
-        err.hidden = true;
-        overlay.hidden = false;
-        overlay.classList.add('open');
-        startViz();
-        var session = AtlasAuth.getSession();
-        if (session) {
-          showWelcome(session.firstName || '');
+          /* Short fold then dashboard */
+          clearBodyModes();
+          document.body.classList.add('is-folding');
+          if (scanLog) {
+            scanLog.innerHTML = '<span class="ok">> session active · ' +
+              (session.firstName || '') + '</span>\n> restoring dashboard…';
+          }
+          if (scanBar) scanBar.style.width = '100%';
+          foldTimer = setTimeout(function () { showDash(session); }, reduceMotion ? 0 : 900);
           return;
         }
-        showPanel('login');
+
+        clearBodyModes();
+        document.body.classList.add('is-folding');
+        scanAuth.hidden = true;
+        if (scanLog) scanLog.textContent = '';
+        if (scanBar) scanBar.style.width = '0%';
+
+        if (reduceMotion) {
+          document.body.classList.remove('is-folding');
+          document.body.classList.add('is-auth');
+          scanAuth.hidden = false;
+          setTimeout(function () {
+            var em = document.getElementById('login-email');
+            if (em) em.focus();
+          }, 40);
+          return;
+        }
+
+        var lines = [];
+        SCAN_LINES.forEach(function (step, idx) {
+          setTimeout(function () {
+            if (!document.body.classList.contains('is-folding')) return;
+            lines.push(step.ok
+              ? '<span class="ok">' + step.text + '</span>'
+              : step.text);
+            scanLog.innerHTML = lines.join('\n');
+            scanBar.style.width = Math.round(((idx + 1) / SCAN_LINES.length) * 100) + '%';
+          }, step.t);
+        });
+
+        foldTimer = setTimeout(function () {
+          document.body.classList.remove('is-folding');
+          document.body.classList.add('is-auth');
+          scanAuth.hidden = false;
+          setTimeout(function () {
+            var em = document.getElementById('login-email');
+            if (em) em.focus();
+          }, 40);
+        }, 1900);
+      }
+
+      document.querySelectorAll('.js-connect').forEach(function (btn) {
+        btn.addEventListener('click', runFoldToAuth);
+      });
+
+      document.getElementById('login-cancel').addEventListener('click', showMarketing);
+
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        loginErr.hidden = true;
+        var result = AtlasAuth.login(
+          document.getElementById('login-email').value,
+          document.getElementById('login-password').value
+        );
+        if (!result.ok) {
+          if (result.reason === 'unauthorized_email') loginErr.textContent = 'Email non autorisé.';
+          else if (result.reason === 'bad_password') loginErr.textContent = 'Mot de passe incorrect.';
+          else loginErr.textContent = 'Connexion impossible (stockage navigateur).';
+          loginErr.hidden = false;
+          return;
+        }
+        /* Brief confirm line then dashboard */
+        if (scanLog) {
+          scanLog.innerHTML = '<span class="ok">> accès autorisé · bienvenue ' +
+            (result.session.firstName || '') + '</span>\n> mounting dashboard…';
+        }
+        if (scanBar) scanBar.style.width = '100%';
+        document.body.classList.remove('is-auth');
+        document.body.classList.add('is-folding');
+        scanAuth.hidden = true;
         setTimeout(function () {
-          var email = document.getElementById('roe-email');
-          if (email) email.focus();
-        }, 40);
-      }
+          showDash(result.session);
+        }, reduceMotion ? 0 : 700);
+      });
 
-      function showWelcome(firstName) {
-        welcomeTitle.textContent = 'Accès autorisé, bienvenue' + (firstName ? ' ' + firstName : '');
-        showPanel('welcome');
-        applyAuthUI();
-      }
-
-      function startViz() {
-        var canvas = document.getElementById('roe-net-viz');
-        if (!canvas || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        var ctx = canvas.getContext('2d');
-        var nodes = [];
-        var packets = [];
-
-        function resize() {
-          var modal = canvas.parentElement;
-          var w = modal.clientWidth;
-          var h = modal.clientHeight;
-          var dpr = Math.min(window.devicePixelRatio || 1, 2);
-          canvas.width = Math.floor(w * dpr);
-          canvas.height = Math.floor(h * dpr);
-          canvas.style.width = w + 'px';
-          canvas.style.height = h + 'px';
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          seed(w, h);
-        }
-
-        function seed(w, h) {
-          nodes = [];
-          packets = [];
-          for (var i = 0; i < 20; i++) {
-            nodes.push({
-              x: Math.random() * w,
-              y: Math.random() * h,
-              vx: (Math.random() - 0.5) * 0.28,
-              vy: (Math.random() - 0.5) * 0.28,
-              r: 1.2 + Math.random() * 1.6
-            });
-          }
-        }
-
-        function tick() {
-          var w = canvas.clientWidth;
-          var h = canvas.clientHeight;
-          ctx.clearRect(0, 0, w, h);
-          var i, j, a, b, dx, dy, dist;
-          for (i = 0; i < nodes.length; i++) {
-            a = nodes[i];
-            a.x += a.vx; a.y += a.vy;
-            if (a.x < 0 || a.x > w) a.vx *= -1;
-            if (a.y < 0 || a.y > h) a.vy *= -1;
-          }
-          for (i = 0; i < nodes.length; i++) {
-            for (j = i + 1; j < nodes.length; j++) {
-              a = nodes[i]; b = nodes[j];
-              dx = a.x - b.x; dy = a.y - b.y;
-              dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < 120) {
-                ctx.strokeStyle = 'rgba(17,17,17,' + (0.16 * (1 - dist / 120)) + ')';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(a.x, a.y);
-                ctx.lineTo(b.x, b.y);
-                ctx.stroke();
-                if (Math.random() < 0.0025 && packets.length < 12) {
-                  packets.push({ a: i, b: j, t: 0, speed: 0.012 + Math.random() * 0.02 });
-                }
-              }
-            }
-          }
-          for (i = packets.length - 1; i >= 0; i--) {
-            var p = packets[i];
-            p.t += p.speed;
-            if (p.t >= 1) { packets.splice(i, 1); continue; }
-            a = nodes[p.a]; b = nodes[p.b];
-            ctx.fillStyle = 'rgba(47,111,115,0.9)';
-            ctx.beginPath();
-            ctx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 2, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          for (i = 0; i < nodes.length; i++) {
-            a = nodes[i];
-            ctx.fillStyle = i % 5 === 0 ? 'rgba(47,111,115,0.85)' : 'rgba(17,17,17,0.72)';
-            ctx.beginPath();
-            ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          vizRaf = requestAnimationFrame(tick);
-        }
-
-        resize();
-        if (vizRaf) cancelAnimationFrame(vizRaf);
-        vizRaf = requestAnimationFrame(tick);
-        window.addEventListener('resize', resize);
-        canvas._roeResize = resize;
-      }
-
-      function stopViz() {
-        if (vizRaf) { cancelAnimationFrame(vizRaf); vizRaf = null; }
-        var canvas = document.getElementById('roe-net-viz');
-        if (canvas && canvas._roeResize) {
-          window.removeEventListener('resize', canvas._roeResize);
-          canvas._roeResize = null;
-        }
-      }
-
-      document.getElementById('open-login').addEventListener('click', openOverlay);
-      document.getElementById('open-login-hint').addEventListener('click', openOverlay);
-      document.getElementById('roe-close').addEventListener('click', closeOverlay);
-      document.getElementById('roe-cancel').addEventListener('click', closeOverlay);
-      document.getElementById('roe-continue').addEventListener('click', closeOverlay);
       document.getElementById('logout-btn').addEventListener('click', function () {
         AtlasAuth.logout();
-        applyAuthUI();
+        showMarketing();
       });
+
       document.getElementById('open-pw').addEventListener('click', function () {
         pwMsg.hidden = true;
         pwForm.reset();
@@ -647,31 +866,9 @@
         pwForm.reset();
       });
 
-      overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) closeOverlay();
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay.classList.contains('open')) closeOverlay();
-      });
-
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        err.hidden = true;
-        var result = AtlasAuth.login(
-          document.getElementById('roe-email').value,
-          document.getElementById('roe-password').value
-        );
-        if (!result.ok) {
-          if (result.reason === 'unauthorized_email') err.textContent = 'Email non autorisé.';
-          else if (result.reason === 'bad_password') err.textContent = 'Mot de passe incorrect.';
-          else err.textContent = 'Connexion impossible (stockage navigateur).';
-          err.hidden = false;
-          return;
-        }
-        showWelcome(result.session.firstName || result.user.firstName);
-      });
-
-      applyAuthUI();
+      /* Restore session → dashboard */
+      var existing = AtlasAuth.getSession();
+      if (existing) showDash(existing);
     })();
   </script>
 </body>
