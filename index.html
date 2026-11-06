@@ -6,167 +6,235 @@
   <title>Atlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --page-fg:#111;--page-muted:#444;--page-line:#ddd;
-      --scip-bg:#0a0c12;--scip-panel:#0d0d12;--scip-text:#d6dae6;--scip-dim:rgba(214,218,230,.55);
-      --scip-accent:#525ceb;--scip-accent-soft:rgba(82,92,235,.15);--scip-ok:#7fa088;--scip-danger:#c45050;
-      --scip-mono:'JetBrains Mono',ui-monospace,monospace;--scip-sans:'Poppins',system-ui,sans-serif;
+      --page-bg:#f7f7f5;--page-fg:#161616;--page-muted:#5a5a5a;--page-line:#d8d8d4;
+      --paper:#ffffff;--ink:#111111;--dim:#6b6b6b;--hairline:#cfcfc9;
+      --accent:#8b1e1e;--accent-soft:rgba(139,30,30,.08);--ok:#2f5d3a;--ok-soft:rgba(47,93,58,.1);
+      --danger:#8b1e1e;--grid:rgba(22,22,22,.045);
+      --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;
     }
-    body{font-family:system-ui,sans-serif;max-width:720px;margin:10vh auto;padding:0 20px;color:var(--page-fg);line-height:1.45}
-    a.btn,button.btn{display:inline-block;margin-top:8px;margin-right:8px;padding:12px 20px;background:#111;color:#fff;border-radius:8px;text-decoration:none;border:0;font:inherit;cursor:pointer}
-    a.btn.secondary,button.btn.secondary{background:#fff;color:#111;border:1px solid #111}
-    .scope{margin-top:32px;padding-top:24px;border-top:1px solid var(--page-line)}
-    .scope code{font-size:0.95em}
-    .muted{color:var(--page-muted);font-size:0.95rem}
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;color:var(--page-fg);line-height:1.5;
+      font-family:var(--sans);
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.65),rgba(247,247,245,.92)),
+        repeating-linear-gradient(0deg,transparent 0 23px,var(--grid) 23px 24px),
+        repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px),
+        var(--page-bg);
+    }
+    .wrap{max-width:720px;margin:0 auto;padding:8vh 20px 48px}
+    h1{
+      margin:0 0 8px;font-family:var(--mono);font-size:1.65rem;font-weight:700;
+      letter-spacing:.18em;text-transform:uppercase;
+    }
+    .lede{margin:0 0 18px;color:var(--page-muted)}
+    a.btn,button.btn{
+      display:inline-block;margin-top:8px;margin-right:8px;padding:12px 18px;
+      background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:0;
+      text-decoration:none;font:inherit;cursor:pointer;letter-spacing:.02em;
+    }
+    a.btn.secondary,button.btn.secondary{background:#fff;color:var(--ink)}
+    a.btn.secondary:hover,button.btn.secondary:hover{background:#f3f3f0}
+    .scope{margin-top:32px;padding-top:22px;border-top:1px solid var(--page-line)}
+    .scope h2{margin:0 0 8px;font-family:var(--mono);font-size:.95rem;letter-spacing:.08em;text-transform:uppercase}
+    .scope code{font-family:var(--mono);font-size:.9em}
+    .muted{color:var(--page-muted);font-size:.95rem}
     .actions{margin-top:12px}
-    .auth-bar{margin-top:16px;font-size:0.95rem}
-    .auth-bar a,.auth-bar button.linkish{color:#111;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline}
+    .auth-bar{margin-top:16px;font-size:.95rem}
+    .auth-bar a,.auth-bar button.linkish,.hint-login{
+      color:var(--ink);background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;
+    }
     .auth-bar .sep{margin:0 8px;color:#999}
-    #roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden]{display:none!important}
+    #roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden],#admin-session-badge[hidden]{display:none!important}
 
-    /* —— RoE login popup: falstency.com/wiki + atlas-depot aesthetic —— */
+    /* Session administrateur badge */
+    .admin-badge{
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+      margin:22px 0 0;padding:12px 14px;
+      background:var(--paper);border:1px solid var(--ink);
+      box-shadow:3px 3px 0 rgba(17,17,17,.08);
+    }
+    .admin-badge .stamp{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:5px 10px;border:2px solid var(--accent);color:var(--accent);
+      font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+      background:var(--accent-soft);
+    }
+    .admin-badge .stamp::before{
+      content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);
+      box-shadow:0 0 0 3px rgba(139,30,30,.18);
+    }
+    .admin-badge .who{
+      font-family:var(--mono);font-size:.85rem;letter-spacing:.04em;color:var(--ink);font-weight:600;
+    }
+    .admin-badge .meta{
+      margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--dim);
+    }
+
+    /* —— RoE login popup: white sterile SCP / clinical document —— */
     .roe-overlay{
       position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;
-      background:rgba(5,7,12,.82);padding:20px;
+      background:rgba(247,247,245,.82);padding:20px;
+      backdrop-filter:blur(2px);
     }
     .roe-overlay.open{display:flex}
     .roe-modal{
-      position:relative;width:min(440px,100%);overflow:hidden;border-radius:2px;
-      background:var(--scip-bg);color:var(--scip-text);
-      border:1px solid rgba(82,92,235,.35);
-      box-shadow:0 0 0 1px rgba(255,255,255,.03),0 28px 80px rgba(0,0,0,.75);
-      font-family:var(--scip-sans);
+      position:relative;width:min(460px,100%);overflow:hidden;border-radius:0;
+      background:var(--paper);color:var(--ink);
+      border:1px solid var(--ink);
+      box-shadow:0 0 0 1px #fff,6px 6px 0 rgba(17,17,17,.08),0 30px 80px rgba(17,17,17,.12);
+      font-family:var(--sans);
     }
-    .roe-viz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.4}
+    .roe-viz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.55}
     .roe-scan{
-      position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.35;
-      background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 3px);
-      animation:roe-scan-move 8s linear infinite;
+      position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5;
+      background:
+        repeating-linear-gradient(0deg,transparent 0 23px,rgba(22,22,22,.035) 23px 24px),
+        repeating-linear-gradient(90deg,transparent 0 23px,rgba(22,22,22,.035) 23px 24px);
     }
     .roe-sweep{
-      position:absolute;left:0;right:0;height:28%;pointer-events:none;z-index:0;
-      background:linear-gradient(180deg,transparent,rgba(82,92,235,.08),transparent);
-      animation:roe-sweep 3.2s ease-in-out infinite;
+      position:absolute;left:0;right:0;height:22%;pointer-events:none;z-index:0;
+      background:linear-gradient(180deg,transparent,rgba(139,30,30,.05),transparent);
+      animation:roe-sweep 3.6s ease-in-out infinite;
     }
     .roe-body{position:relative;z-index:1;padding:26px 26px 22px}
-    .roe-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .roe-brand{
+      display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:14px;
+      border-bottom:1px solid var(--hairline);
+    }
     .roe-logo{
-      width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-      border:1px solid rgba(82,92,235,.5);background:var(--scip-accent-soft);
-      font-family:var(--scip-mono);font-size:.85rem;font-weight:700;letter-spacing:.12em;color:var(--scip-accent);
-      animation:roe-pulse 2.6s ease-in-out infinite;
+      width:56px;height:56px;flex-shrink:0;overflow:hidden;
+      border:1px solid var(--ink);background:#fff;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .roe-logo img,.roe-logo video{
+      width:100%;height:100%;object-fit:cover;display:block;
     }
     .roe-brand h2{
-      margin:0;font-family:var(--scip-mono);font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--scip-dim);font-weight:500;
+      margin:0;font-family:var(--mono);font-size:.68rem;letter-spacing:.28em;
+      text-transform:uppercase;color:var(--dim);font-weight:500;
     }
     .roe-brand .sub{
-      margin:4px 0 0;font-family:var(--scip-mono);font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;font-weight:600;
+      margin:5px 0 0;font-family:var(--mono);font-size:.95rem;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--ink);font-weight:700;
     }
     .roe-stamp{
       display:inline-block;margin-bottom:12px;padding:4px 8px;
-      border:1px solid rgba(82,92,235,.45);color:var(--scip-accent);
-      font-family:var(--scip-mono);font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;
+      border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;font-weight:600;
     }
     .roe-panel{display:none}
     .roe-panel.active{display:block}
-    .roe-lede{margin:0 0 8px;font-family:var(--scip-mono);font-size:.72rem;line-height:1.6;letter-spacing:.04em;color:var(--scip-dim)}
+    .roe-lede{
+      margin:0 0 8px;font-family:var(--mono);font-size:.72rem;line-height:1.65;
+      letter-spacing:.03em;color:var(--dim);
+    }
     .roe-panel label{
-      display:block;margin-top:12px;font-family:var(--scip-mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--scip-dim);
+      display:block;margin-top:12px;font-family:var(--mono);font-size:.68rem;
+      letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
     }
     .roe-panel input{
-      width:100%;box-sizing:border-box;margin-top:6px;padding:11px 12px;border-radius:2px;
-      border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);color:#fff;
-      font-family:var(--scip-mono);font-size:.85rem;outline:none;
+      width:100%;margin-top:6px;padding:11px 12px;border-radius:0;
+      border:1px solid var(--hairline);background:#fafaf8;color:var(--ink);
+      font-family:var(--mono);font-size:.85rem;outline:none;
       transition:border-color .2s,box-shadow .2s;
     }
-    .roe-panel input:focus{border-color:var(--scip-accent);box-shadow:0 0 0 3px rgba(82,92,235,.2)}
+    .roe-panel input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,17,.06)}
     .roe-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
     .roe-actions button{
-      flex:1;min-width:120px;padding:11px 14px;border-radius:2px;border:0;
-      font-family:var(--scip-mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
+      flex:1;min-width:120px;padding:11px 14px;border-radius:0;border:1px solid var(--ink);
+      font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;
     }
-    .roe-submit{background:rgba(82,92,235,.2);color:var(--scip-accent);border:1px solid var(--scip-accent)!important}
-    .roe-submit:hover{background:rgba(82,92,235,.32)}
-    .roe-cancel,.roe-close-x{
-      background:transparent;color:var(--scip-dim);border:1px solid rgba(255,255,255,.14)!important;
-    }
+    .roe-submit{background:var(--ink);color:#fff}
+    .roe-submit:hover{background:#2a2a2a}
+    .roe-cancel,.roe-close-x{background:#fff;color:var(--dim)}
+    .roe-cancel:hover{background:#f3f3f0;color:var(--ink)}
     .roe-close-x{
-      position:absolute;top:10px;right:10px;z-index:2;width:34px;height:34px;border-radius:2px;
-      border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.35);color:var(--scip-dim);cursor:pointer;font-size:1.05rem;
+      position:absolute;top:10px;right:10px;z-index:2;width:34px;height:34px;
+      border:1px solid var(--hairline);cursor:pointer;font-size:1.05rem;line-height:1;
     }
-    .roe-err{margin-top:12px;color:var(--scip-danger);font-family:var(--scip-mono);font-size:.75rem;min-height:1.2em}
+    .roe-err{margin-top:12px;color:var(--danger);font-family:var(--mono);font-size:.75rem;min-height:1.2em}
     .roe-welcome{text-align:center;padding:8px 0 2px}
     .roe-welcome .check{
-      width:52px;height:52px;margin:0 auto 14px;border:1px solid rgba(127,160,136,.55);
-      background:rgba(127,160,136,.12);color:var(--scip-ok);
+      width:52px;height:52px;margin:0 auto 14px;border:1px solid var(--ok);
+      background:var(--ok-soft);color:var(--ok);
       display:flex;align-items:center;justify-content:center;
-      font-family:var(--scip-mono);font-size:1.2rem;font-weight:700;
+      font-family:var(--mono);font-size:1.05rem;font-weight:700;
       animation:roe-pop .45s cubic-bezier(.2,1.4,.4,1);
     }
     .roe-welcome h3{
-      margin:0 0 8px;font-family:var(--scip-mono);font-size:1rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;
+      margin:0 0 8px;font-family:var(--mono);font-size:.95rem;letter-spacing:.06em;
+      text-transform:uppercase;color:var(--ink);
     }
-    .roe-welcome p{margin:0;font-family:var(--scip-mono);font-size:.72rem;letter-spacing:.04em;color:var(--scip-dim)}
-    @keyframes roe-pulse{0%,100%{box-shadow:0 0 0 rgba(82,92,235,0)}50%{box-shadow:0 0 22px rgba(82,92,235,.35)}}
-    @keyframes roe-scan-move{to{transform:translateY(20px)}}
-    @keyframes roe-sweep{0%,100%{transform:translateY(-120%)}50%{transform:translateY(380%)}}
+    .roe-welcome p{margin:0;font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--dim)}
+    @keyframes roe-sweep{0%,100%{transform:translateY(-120%)}50%{transform:translateY(420%)}}
     @keyframes roe-pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
     @media (prefers-reduced-motion:reduce){
-      .roe-logo,.roe-scan,.roe-sweep,.roe-welcome .check{animation:none}
+      .roe-sweep,.roe-welcome .check{animation:none}
     }
   </style>
 </head>
 <body>
-  <h1>Atlas</h1>
-  <p>Assistant de pentest autorisé.</p>
-  <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
+  <div class="wrap">
+    <h1>Atlas</h1>
+    <p class="lede">Assistant de pentest autorisé.</p>
+    <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
 
-  <div class="auth-bar">
-    <span id="auth-anon">
-      <button type="button" class="linkish" id="open-login">Connexion</button>
-      <span class="sep">·</span>
-      <a href="/login/">Page login</a>
-    </span>
-    <span id="auth-logged" hidden>
-      <span id="auth-user-label"></span>
-      <span class="sep">·</span>
-      <button type="button" class="linkish" id="logout-btn">Déconnexion</button>
-    </span>
-  </div>
-
-  <section class="scope" aria-labelledby="roe-title">
-    <h2 id="roe-title">Périmètre RoE (Gab)</h2>
-    <p class="muted">
-      Capacités autorisées uniquement sur
-      <code>*.pragma-serve.com</code>,
-      <code>*.pragma-cloud.com</code>,
-      <code>*.pragma.mc</code>
-      — hors liste = hors scope.
-    </p>
-  </section>
-
-  <p id="roe-gated-hint" class="muted" style="margin-top:20px">
-    Les capacités RoE sont réservées aux comptes autorisés.
-    <button type="button" class="linkish" id="open-login-hint" style="color:#111;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline">Se connecter</button>
-    pour les afficher.
-  </p>
-
-  <section id="roe-caps-section" class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px" hidden>
-    <h2 id="caps-title">Lancer une capacité autorisée</h2>
-    <p class="muted">
-      Après installation et démarrage d’Atlas Local, ouvre le Scanner
-      prérempli (cible défaut <code>pragma-serve.com</code>) via les
-      deep-links authorizedLaunch (<code>?action=</code> + <code>host=</code>).
-    </p>
-    <div class="actions" id="roe-actions">
-      <a class="btn secondary" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">Reconnaissance</a>
-      <a class="btn secondary" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">Scan</a>
-      <a class="btn secondary" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">Éval. vulnérabilités</a>
-      <a class="btn secondary" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">OSINT</a>
+    <div class="auth-bar">
+      <span id="auth-anon">
+        <button type="button" class="linkish" id="open-login">Connexion</button>
+        <span class="sep">·</span>
+        <a href="/login/">Page login</a>
+      </span>
+      <span id="auth-logged" hidden>
+        <span id="auth-user-label"></span>
+        <span class="sep">·</span>
+        <button type="button" class="linkish" id="logout-btn">Déconnexion</button>
+      </span>
     </div>
-  </section>
+
+    <div id="admin-session-badge" class="admin-badge" hidden role="status" aria-live="polite">
+      <span class="stamp">Session administrateur</span>
+      <span class="who" id="admin-session-name"></span>
+      <span class="meta">RoE · niveau A</span>
+    </div>
+
+    <section class="scope" aria-labelledby="roe-title">
+      <h2 id="roe-title">Périmètre RoE (Gab)</h2>
+      <p class="muted">
+        Capacités autorisées uniquement sur
+        <code>*.pragma-serve.com</code>,
+        <code>*.pragma-cloud.com</code>,
+        <code>*.pragma.mc</code>
+        — hors liste = hors scope.
+      </p>
+    </section>
+
+    <p id="roe-gated-hint" class="muted" style="margin-top:20px">
+      Les capacités RoE sont réservées aux comptes autorisés.
+      <button type="button" class="hint-login" id="open-login-hint">Se connecter</button>
+      pour les afficher.
+    </p>
+
+    <section id="roe-caps-section" class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px" hidden>
+      <h2 id="caps-title">Lancer une capacité autorisée</h2>
+      <p class="muted">
+        Après installation et démarrage d’Atlas Local, ouvre le Scanner
+        prérempli (cible défaut <code>pragma-serve.com</code>) via les
+        deep-links authorizedLaunch (<code>?action=</code> + <code>host=</code>).
+      </p>
+      <div class="actions" id="roe-actions">
+        <a class="btn secondary" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">Reconnaissance</a>
+        <a class="btn secondary" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">Scan</a>
+        <a class="btn secondary" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">Éval. vulnérabilités</a>
+        <a class="btn secondary" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">OSINT</a>
+      </div>
+    </section>
+  </div>
 
   <div id="roe-login-overlay" class="roe-overlay" role="dialog" aria-modal="true" aria-labelledby="roe-login-title" hidden>
     <div class="roe-modal">
@@ -176,7 +244,16 @@
       <button type="button" class="roe-close-x" id="roe-close" aria-label="Fermer">×</button>
       <div class="roe-body">
         <div class="roe-brand">
-          <div class="roe-logo" aria-hidden="true">AT</div>
+          <div class="roe-logo" aria-hidden="true">
+            <img
+              id="roe-logo-img"
+              src="/assets/atlas-logo-final-animated.gif"
+              alt=""
+              width="56"
+              height="56"
+              onerror="this.onerror=null;this.src='/assets/atlas-logo-final-static.jpg'"
+            >
+          </div>
           <div>
             <h2 id="roe-login-title">Atlas Network</h2>
             <p class="sub">Accès capacité RoE</p>
@@ -184,8 +261,8 @@
         </div>
 
         <div id="roe-panel-login" class="roe-panel active">
-          <span class="roe-stamp">Classification : restricted</span>
-          <p class="roe-lede">Terminal Atlas. Connexion journalisée. Accréditation requise pour les capacités autorisées.</p>
+          <span class="roe-stamp">Item # · Restricted</span>
+          <p class="roe-lede">Document Atlas. Connexion journalisée. Accréditation requise pour les capacités autorisées.</p>
           <form id="roe-login-form" autocomplete="on">
             <label for="roe-email">Email</label>
             <input id="roe-email" name="email" type="email" required autocomplete="username" placeholder="vous@atlas-secu.com">
@@ -227,6 +304,8 @@
       var authAnon = document.getElementById('auth-anon');
       var authLogged = document.getElementById('auth-logged');
       var authUserLabel = document.getElementById('auth-user-label');
+      var adminBadge = document.getElementById('admin-session-badge');
+      var adminName = document.getElementById('admin-session-name');
       var vizRaf = null;
 
       function showPanel(which) {
@@ -242,12 +321,16 @@
           authAnon.hidden = true;
           authLogged.hidden = false;
           authUserLabel.textContent = (session.firstName || 'Utilisateur') + ' · connecté';
+          adminBadge.hidden = false;
+          adminName.textContent = session.firstName || 'Utilisateur';
         } else {
           capsSection.hidden = true;
           gatedHint.hidden = false;
           authAnon.hidden = false;
           authLogged.hidden = true;
           authUserLabel.textContent = '';
+          adminBadge.hidden = true;
+          adminName.textContent = '';
         }
       }
 
@@ -314,7 +397,7 @@
               y: Math.random() * h,
               vx: (Math.random() - 0.5) * 0.28,
               vy: (Math.random() - 0.5) * 0.28,
-              r: 1.4 + Math.random() * 1.8
+              r: 1.2 + Math.random() * 1.6
             });
           }
         }
@@ -336,7 +419,7 @@
               dx = a.x - b.x; dy = a.y - b.y;
               dist = Math.sqrt(dx * dx + dy * dy);
               if (dist < 120) {
-                ctx.strokeStyle = 'rgba(82,92,235,' + (0.28 * (1 - dist / 120)) + ')';
+                ctx.strokeStyle = 'rgba(17,17,17,' + (0.16 * (1 - dist / 120)) + ')';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
@@ -353,14 +436,14 @@
             p.t += p.speed;
             if (p.t >= 1) { packets.splice(i, 1); continue; }
             a = nodes[p.a]; b = nodes[p.b];
-            ctx.fillStyle = 'rgba(170,180,255,0.95)';
+            ctx.fillStyle = 'rgba(139,30,30,0.85)';
             ctx.beginPath();
-            ctx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 2.1, 0, Math.PI * 2);
+            ctx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 2, 0, Math.PI * 2);
             ctx.fill();
           }
           for (i = 0; i < nodes.length; i++) {
             a = nodes[i];
-            ctx.fillStyle = 'rgba(120,130,255,0.9)';
+            ctx.fillStyle = 'rgba(17,17,17,0.72)';
             ctx.beginPath();
             ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
             ctx.fill();
