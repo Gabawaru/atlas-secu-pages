@@ -4,28 +4,58 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Atlas SECU — lancement autorisé</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body{font-family:system-ui,sans-serif;max-width:640px;margin:10vh auto;padding:0 20px;color:#111;line-height:1.45}
-    code{font-size:0.95em}
-    .muted{color:#444}
+    :root{
+      --page-bg:#ffffff;--ink:#2a2f33;--dim:#6a7278;--teal:#2f6f73;--hairline:#e4e7e5;
+      --grid:rgba(47,111,115,.035);
+      --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;
+    }
+    body{
+      margin:0;min-height:100vh;color:var(--ink);line-height:1.55;
+      font-family:var(--sans);
+      background:
+        linear-gradient(180deg,#ffffff 0%,#fbfcfc 48%,#f7faf9 100%),
+        repeating-linear-gradient(0deg,transparent 0 27px,var(--grid) 27px 28px),
+        repeating-linear-gradient(90deg,transparent 0 27px,var(--grid) 27px 28px),
+        var(--page-bg);
+    }
+    .wrap{max-width:640px;margin:0 auto;padding:10vh 24px 48px}
+    h1{margin:0 0 12px;font-family:var(--mono);font-size:1.35rem;letter-spacing:.12em;text-transform:uppercase}
+    .muted{color:var(--dim)}
+    code{font-family:var(--mono);font-size:.95em}
+    .links{margin-top:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .links a{
+      color:var(--teal);text-underline-offset:3px;
+    }
+    .links a:hover{color:#3d8185}
+    .sep{color:var(--hairline)}
   </style>
 </head>
 <body>
-  <h1>Atlas Local</h1>
-  <p class="muted">
-    Deep-link authorizedLaunch reçu. Installez Atlas puis démarrez le client
-    pour exécuter la capacité RoE (cible <code>pragma-serve.com</code> / ALLOW).
-  </p>
-  <p><a href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a> · <a href="/">Retour</a></p>
+  <div class="wrap">
+    <h1>Atlas Local</h1>
+    <p class="muted">
+      Deep-link authorizedLaunch reçu. Installez Atlas puis démarrez le client
+      pour exécuter la capacité RoE (cible <code>pragma-serve.com</code> / ALLOW).
+    </p>
+    <p id="action-line" class="muted"></p>
+    <p class="links">
+      <a href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a>
+      <span class="sep">·</span>
+      <a href="/">Retour</a>
+    </p>
+  </div>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
       var action = params.get('action') || '';
       var host = params.get('host') || 'pragma-serve.com';
-      var el = document.createElement('p');
+      var el = document.getElementById('action-line');
       el.innerHTML = 'Action : <code>' + action.replace(/[<>&]/g,'') +
         '</code> — hôte : <code>' + host.replace(/[<>&]/g,'') + '</code>';
-      document.body.appendChild(el);
     })();
   </script>
 </body>
