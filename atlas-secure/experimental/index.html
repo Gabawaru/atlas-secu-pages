@@ -177,20 +177,23 @@
       display:inline-block;transition:transform .7s var(--ease),opacity .5s var(--ease);
     }
     .globe{
-      width:56px;height:56px;flex:0 0 auto;
+      width:64px;height:64px;flex:0 0 auto;
       position:relative;
     }
     .globe svg{display:block;width:100%;height:100%;overflow:visible}
-    .globe .arc,.globe .meridian,.globe .core{
-      transition:transform .85s var(--ease),opacity .5s var(--ease);
+    .globe .vault-piece{
       transform-box:fill-box;transform-origin:center;
+      transition:transform .7s var(--ease),opacity .5s var(--ease);
     }
-    .globe .stroke{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
-    .globe .teal{stroke:var(--teal)}
-    .globe .core-dot{fill:var(--teal)}
-    .globe .core-dot{animation:core-breathe 2.8s ease-in-out infinite}
+    .globe .meridian,.globe .latitude,.globe .spoke{
+      fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+    }
+    .globe .latitude{stroke:var(--teal);stroke-width:2.2;opacity:.9}
+    .globe .spoke{stroke:var(--teal);stroke-width:2.4}
+    .globe .node{fill:var(--teal)}
+    .globe .core{fill:var(--teal);animation:core-breathe 2.8s ease-in-out infinite}
     @keyframes core-breathe{0%,100%{opacity:1}50%{opacity:.55}}
-    .lockup.is-open .core-dot{animation:none}
+    .lockup.is-open .core{animation:none}
 
     .lockup-stage{
       display:flex;align-items:center;justify-content:center;
@@ -224,15 +227,15 @@
     }
 
     .lockup.is-ghost{opacity:.22;filter:blur(.2px);transition:opacity .5s var(--ease)}
-    .lockup.is-open .arc-l{transform:translate(-18px,-6px) rotate(-12deg)}
-    .lockup.is-open .arc-r{transform:translate(18px,-6px) rotate(12deg)}
-    .lockup.is-open .meridian{transform:translateY(-10px);opacity:.35}
-    .lockup.is-open .core{transform:scale(1.35);opacity:.4}
-    .lockup.is-open .word span:nth-child(1){transform:translateX(-28px)}
-    .lockup.is-open .word span:nth-child(2){transform:translateX(-14px)}
-    .lockup.is-open .word span:nth-child(3){transform:translateX(0) scaleY(1.05);opacity:.55}
-    .lockup.is-open .word span:nth-child(4){transform:translateX(14px)}
-    .lockup.is-open .word span:nth-child(5){transform:translateX(28px)}
+    /* Match production vault open offsets (sibling bc vault motion) */
+    .lockup.is-open .vault-arc-l{transform:translate(-28px,-10px) rotate(-18deg)}
+    .lockup.is-open .vault-arc-r{transform:translate(28px,-10px) rotate(18deg)}
+    .lockup.is-open .vault-core{transform:scale(1.35);opacity:.35}
+    .lockup.is-open .word span:nth-child(1){transform:translate(-42px,-18px) rotate(-8deg)}
+    .lockup.is-open .word span:nth-child(2){transform:translate(-18px,22px) rotate(6deg)}
+    .lockup.is-open .word span:nth-child(3){transform:translate(0,-26px);opacity:.55}
+    .lockup.is-open .word span:nth-child(4){transform:translate(18px,20px) rotate(-5deg)}
+    .lockup.is-open .word span:nth-child(5){transform:translate(44px,-14px) rotate(9deg)}
 
     .session-reveal{
       position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -466,7 +469,7 @@
               <dd>2–3 pièces (arcs + noyau teal) + lettres qui s’écartent — voir onglets login / logout.</dd>
             </dl>
           </div>
-          <p class="logo-static-note">Pas de triangle, pas d’œil, pas de cercle clic-like. Palette mist / charcoal / teal.</p>
+          <p class="logo-static-note">Aligné sur le MARK_SVG producte (globe ouvert v3). Pas de triangle, pas d’œil, pas de cercle clic-like.</p>
         </div>
       </div>
     </section>
@@ -507,14 +510,28 @@
 
   <script>
   (function () {
-    const GLOBE_SVG = `
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <path class="stroke arc arc-l" d="M18 14 C8 28 8 44 22 54" />
-        <path class="stroke teal arc arc-r" d="M46 12 C58 26 56 46 40 56" />
-        <path class="stroke meridian" d="M32 10 C22 22 22 42 32 54 C42 42 42 22 32 10" opacity=".85"/>
-        <path class="stroke teal meridian" d="M14 32 H50" opacity=".7"/>
-        <circle class="core core-dot" cx="32" cy="32" r="3.2"/>
-      </svg>`;
+    /* Same open-globe pieces as production MARK_SVG (main index) */
+    const GLOBE_SVG =
+      '<svg class="mark-svg" viewBox="0 0 120 120" aria-hidden="true">' +
+      '<g class="vault-piece vault-arc-l">' +
+      '<path class="meridian" d="M58 16 C30 30 26 88 58 104"/>' +
+      '<path class="latitude" d="M34 46 C42 40 52 38 58 38"/>' +
+      '<path class="latitude" d="M30 70 C40 64 50 62 58 62"/>' +
+      '<circle class="node n1" cx="34" cy="46" r="3.2"/>' +
+      '</g>' +
+      '<g class="vault-piece vault-arc-r">' +
+      '<path class="meridian" d="M62 16 C90 30 94 88 62 104"/>' +
+      '<path class="latitude" d="M62 38 C70 38 80 40 88 46"/>' +
+      '<path class="latitude" d="M62 62 C72 62 82 64 92 70"/>' +
+      '<circle class="node n2" cx="88" cy="46" r="3.2"/>' +
+      '</g>' +
+      '<g class="vault-piece vault-core">' +
+      '<path class="spoke" d="M60 44 L60 76"/>' +
+      '<path class="spoke" d="M46 60 L74 60"/>' +
+      '<circle class="core" cx="60" cy="60" r="5"/>' +
+      '<circle class="node n3" cx="60" cy="92" r="3"/>' +
+      '</g>' +
+      '</svg>';
 
     function fillWord(el) {
       el.innerHTML = '';
