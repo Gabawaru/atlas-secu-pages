@@ -121,6 +121,16 @@
     return s;
   }
 
+  /**
+   * Product links PragmaServe / PragmaCloud / PragmaUC:
+   * only Benjamin, Romain, Gabriel Atlas sessions — never anonymous marketing.
+   */
+  function canSeePragmaProductLinks(session) {
+    var s = session || getSession();
+    if (!s || !s.email) return false;
+    return !!findUser(s.email);
+  }
+
   /** Persist password override for this browser (localStorage). */
   function setPassword(email, newPassword) {
     var user = findUser(email);
@@ -161,6 +171,7 @@
     logout: logout,
     getSession: getSession,
     requireSession: requireSession,
+    canSeePragmaProductLinks: canSeePragmaProductLinks,
     setPassword: setPassword,
     changePassword: changePassword,
     normalizeEmail: normalizeEmail,

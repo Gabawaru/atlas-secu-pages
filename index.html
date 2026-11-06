@@ -186,8 +186,19 @@
     @media (max-width:800px){.trust-strip{grid-template-columns:1fr 1fr}}
     .trust-item{padding:16px;background:rgba(255,255,255,.72);border:1px solid rgba(200,216,222,.9)}
     .trust-item .label{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
-    .trust-item .value{font-weight:700;font-size:.98rem}
+    .trust-item .value{font-weight:700;font-size:.98rem;margin-bottom:6px}
+    .trust-item .explain{margin:0;font-size:.88rem;font-weight:400;color:var(--muted);line-height:1.45}
     .scope code{font-family:var(--mono);font-size:.86em;background:var(--teal-soft);padding:2px 6px;color:var(--teal-deep)}
+    .pragma-links{
+      display:none;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 24px;
+    }
+    body.is-dash .pragma-links.is-visible{display:flex}
+    .pragma-links a{
+      font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--teal-deep);text-decoration:none;padding:8px 12px;
+      border:1px solid rgba(47,143,138,.28);background:rgba(255,255,255,.9);
+    }
+    .pragma-links a:hover{border-color:var(--teal);background:var(--teal-soft)}
     .cta-band{max-width:1120px;margin:0 auto;padding:24px 24px 72px}
     .cta-band-inner{
       padding:40px 32px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(234,243,245,.92));
@@ -458,8 +469,8 @@
       <h2 class="reveal reveal-delay-1">Conçu pour l’autorisation, pas l’exploration libre.</h2>
       <p class="support reveal reveal-delay-2">Une seule intention : exécuter ce qui est signé dans le RoE, rien d’autre.</p>
       <div class="feature-row">
-        <article class="feature reveal reveal-delay-1"><h3>RoE first</h3><p>Cibles limitées aux domaines autorisés. Hors liste = hors scope.</p></article>
-        <article class="feature reveal reveal-delay-2"><h3>Deep-links Scanner</h3><p>Recon, scan, vulnérabilités, audit — préremplis pour pragma-serve.com.</p></article>
+        <article class="feature reveal reveal-delay-1"><h3>RoE first</h3><p>Vous ne lancez que ce qui est autorisé. Hors autorisation = hors jeu.</p></article>
+        <article class="feature reveal reveal-delay-2"><h3>Deep-links Scanner</h3><p>Recon, scan, vulnérabilités, audit — ouverts sur l’URL que vous visez.</p></article>
         <article class="feature reveal reveal-delay-3"><h3>Session accréditée</h3><p>Capacités réservées aux comptes Atlas après analyse d’accès.</p></article>
       </div>
     </section>
@@ -470,26 +481,40 @@
       <h2 class="reveal reveal-delay-1">Garanties visibles avant même de se connecter.</h2>
       <p class="support reveal reveal-delay-2">Le téléchargement est public. Les capacités restent derrière l’accréditation.</p>
       <div class="trust-strip">
-        <div class="trust-item reveal reveal-delay-1"><div class="label">Download</div><div class="value">Atlas-Setup.exe · anonyme</div></div>
-        <div class="trust-item reveal reveal-delay-2"><div class="label">Gate</div><div class="value">Dashboard après login</div></div>
-        <div class="trust-item reveal reveal-delay-3"><div class="label">Scope</div><div class="value">*.pragma-serve / cloud / .mc</div></div>
-        <div class="trust-item reveal reveal-delay-4"><div class="label">Brand</div><div class="value">Atlas</div></div>
+        <div class="trust-item reveal reveal-delay-1">
+          <div class="label">Download</div>
+          <div class="value">Téléchargement public</div>
+          <p class="explain">Tout le monde peut télécharger <code style="font-family:var(--mono);font-size:.9em">Atlas-Setup.exe</code> sans compte ni connexion.</p>
+        </div>
+        <div class="trust-item reveal reveal-delay-2">
+          <div class="label">Gate</div>
+          <div class="value">Accès après connexion</div>
+          <p class="explain">Le tableau de bord et les capacités RoE n’apparaissent qu’après une session Atlas accréditée.</p>
+        </div>
+        <div class="trust-item reveal reveal-delay-3">
+          <div class="label">URL</div>
+          <div class="value">N’importe quelle URL</div>
+          <p class="explain">Atlas vise l’URL que vous indiquez — site, API ou service — uniquement dans le cadre d’une autorisation claire.</p>
+        </div>
+        <div class="trust-item reveal reveal-delay-4">
+          <div class="label">Brand</div>
+          <div class="value">Atlas</div>
+          <p class="explain">Le produit s’appelle Atlas : assistant de pentest autorisé, pas un scanner anonyme « free-for-all ».</p>
+        </div>
       </div>
     </section>
 
     <section class="section scope" data-reveal>
       <div class="section-line"></div>
       <p class="section-kicker reveal">Rules of Engagement</p>
-      <h2 class="reveal reveal-delay-1">Périmètre RoE</h2>
+      <h2 class="reveal reveal-delay-1">URL visée</h2>
       <p class="support reveal reveal-delay-2">
-        Capacités autorisées uniquement sur
-        <code>*.pragma-serve.com</code>,
-        <code>*.pragma-cloud.com</code>,
-        <code>*.pragma.mc</code>
-        — hors liste = hors scope.
+        En pratique, Atlas travaille sur <strong>n’importe quelle URL</strong> que vous choisissez
+        (page web, API, hôte). Ce n’est pas un « scope » magique : c’est la cible que vous
+        autorisez explicitement. Sans autorisation, pas de lancement.
       </p>
       <p class="support" style="margin-bottom:0">
-        Les capacités sont réservées aux comptes autorisés.
+        Les capacités restent réservées aux comptes autorisés.
         <button type="button" class="linkish js-connect" style="padding:0;text-decoration:underline">Se connecter</button>
         pour ouvrir le tableau de bord.
       </p>
@@ -571,6 +596,9 @@
         Session active. Lancez une capacité RoE — deep-link Scanner prérempli
         (<code style="font-family:var(--mono);font-size:.9em">pragma-serve.com</code>.
       </p>
+
+      <!-- Filled only after AtlasAuth session (Benjamin / Romain / Gabriel). Empty for anonymous HTML. -->
+      <nav id="pragma-product-links" class="pragma-links" hidden aria-label="Produits Pragma"></nav>
 
       <div class="cap-grid">
         <div class="cap-slot">
@@ -710,10 +738,38 @@
         document.body.classList.remove('is-folding', 'is-auth', 'is-dash');
       }
 
+      function syncPragmaProductLinks(session) {
+        var nav = document.getElementById('pragma-product-links');
+        if (!nav) return;
+        var allow = AtlasAuth.canSeePragmaProductLinks(session);
+        nav.innerHTML = '';
+        if (!allow) {
+          nav.hidden = true;
+          nav.classList.remove('is-visible');
+          return;
+        }
+        var items = [
+          { href: 'https://pragma-serve.com', label: 'PragmaServe' },
+          { href: 'https://pragma-cloud.com', label: 'PragmaCloud' },
+          { href: 'https://pragma.mc', label: 'PragmaUC' }
+        ];
+        items.forEach(function (item) {
+          var a = document.createElement('a');
+          a.href = item.href;
+          a.rel = 'noopener noreferrer';
+          a.target = '_blank';
+          a.textContent = item.label;
+          nav.appendChild(a);
+        });
+        nav.hidden = false;
+        nav.classList.add('is-visible');
+      }
+
       function showDash(session) {
         clearBodyModes();
         document.body.classList.add('is-dash');
         dashWho.textContent = session.firstName || 'Utilisateur';
+        syncPragmaProductLinks(session);
         scanAuth.hidden = true;
         if (scanLog) scanLog.textContent = '';
         if (scanBar) scanBar.style.width = '0%';
@@ -721,6 +777,7 @@
 
       function showMarketing() {
         clearBodyModes();
+        syncPragmaProductLinks(null);
         scanAuth.hidden = true;
         if (scanLog) scanLog.textContent = '';
         if (scanBar) scanBar.style.width = '0%';
