@@ -48,7 +48,7 @@
       color:var(--ink);background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;
     }
     .auth-bar .sep{margin:0 8px;color:#999}
-    #roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden],#admin-session-badge[hidden]{display:none!important}
+    #roe-scope-section[hidden],#roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden],#admin-session-badge[hidden]{display:none!important}
 
     /* Session administrateur badge */
     .admin-badge{
@@ -203,7 +203,13 @@
       <span class="meta">RoE · niveau A</span>
     </div>
 
-    <section class="scope" aria-labelledby="roe-title">
+    <p id="roe-gated-hint" class="muted" style="margin-top:28px">
+      Le périmètre et les capacités RoE sont réservés aux comptes autorisés.
+      <button type="button" class="hint-login" id="open-login-hint">Se connecter</button>
+      pour les afficher.
+    </p>
+
+    <section id="roe-scope-section" class="scope" aria-labelledby="roe-title" hidden>
       <h2 id="roe-title">Périmètre RoE (Gab)</h2>
       <p class="muted">
         Capacités autorisées uniquement sur
@@ -213,12 +219,6 @@
         — hors liste = hors scope.
       </p>
     </section>
-
-    <p id="roe-gated-hint" class="muted" style="margin-top:20px">
-      Les capacités RoE sont réservées aux comptes autorisés.
-      <button type="button" class="hint-login" id="open-login-hint">Se connecter</button>
-      pour les afficher.
-    </p>
 
     <section id="roe-caps-section" class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px" hidden>
       <h2 id="caps-title">Lancer une capacité autorisée</h2>
@@ -299,6 +299,7 @@
       var form = document.getElementById('roe-login-form');
       var err = document.getElementById('roe-error');
       var welcomeTitle = document.getElementById('roe-welcome-title');
+      var scopeSection = document.getElementById('roe-scope-section');
       var capsSection = document.getElementById('roe-caps-section');
       var gatedHint = document.getElementById('roe-gated-hint');
       var authAnon = document.getElementById('auth-anon');
@@ -316,6 +317,7 @@
       function applyAuthUI() {
         var session = AtlasAuth.getSession();
         if (session) {
+          scopeSection.hidden = false;
           capsSection.hidden = false;
           gatedHint.hidden = true;
           authAnon.hidden = true;
@@ -324,6 +326,7 @@
           adminBadge.hidden = false;
           adminName.textContent = session.firstName || 'Utilisateur';
         } else {
+          scopeSection.hidden = true;
           capsSection.hidden = true;
           gatedHint.hidden = false;
           authAnon.hidden = false;
