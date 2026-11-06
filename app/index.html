@@ -68,7 +68,7 @@
   <script src="/auth.js"></script>
   <script>
     (function () {
-      var session = AtlasAuth.requireSession('/login/');
+      var session = AtlasAuth.requireSession('/');
       if (!session) return;
       document.getElementById('admin-session-badge').hidden = false;
       document.getElementById('admin-session-name').textContent = session.firstName || 'Utilisateur';
@@ -77,7 +77,7 @@
       document.getElementById('logout').addEventListener('click', function (e) {
         e.preventDefault();
         AtlasAuth.logout();
-        location.replace('/login/');
+        location.replace('/');
       });
     })();
   </script>

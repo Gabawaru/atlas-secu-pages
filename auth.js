@@ -12,7 +12,7 @@
 
   /**
    * Active password is `password`. Optional `passwordAliases` are accepted
-   * during transition (e.g. Gabriel legacy `/login/` → `/app/` password).
+   * during transition (e.g. Gabriel legacy password aliases).
    * Remove aliases once everyone uses the new default.
    */
   var AUTHORIZED_USERS = [
@@ -100,7 +100,7 @@
   function requireSession(redirectTo) {
     var s = getSession();
     if (!s) {
-      location.replace(redirectTo || '/login/');
+      location.replace(redirectTo || '/');
       return null;
     }
     return s;
