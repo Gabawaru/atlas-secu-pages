@@ -7,7 +7,8 @@
 
 1. **Login vault** — fade → recenter lockup → credential ghost → vault open  
 2. **Logout vault** — pieces rejoin → snappy close → session clear  
-3. **Logo v3** — wordmark **ATLAS** + open wireframe globe (no click-ring)  
+3. **Logo (pré-v3)** — wordmark **ATLAS** + restored abstract triangle mark  
+ 
 4. **Landing replay** — return to scroll top replays first-visit intro
 
 ## Isolation

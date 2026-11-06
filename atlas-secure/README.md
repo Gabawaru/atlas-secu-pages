@@ -5,6 +5,6 @@
 
 | Path | Purpose |
 |------|---------|
-| [`experimental/`](./experimental/) | Visual motion + logo v3 showcase |
+| [`experimental/`](./experimental/) | Visual motion + restored (pré-v3) logo showcase |
 
 Do **not** treat anything under this folder as product behaviour. Main site (`/`, `/app/`, `/launch/`) stays authoritative.

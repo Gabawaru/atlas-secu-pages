@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Atlas · session expérimentale</title>
   <meta name="robots" content="noindex,nofollow">
-  <meta name="description" content="Démo visuelle Atlas — coffre login/logout, logo v3, replay landing. Non productif.">
+  <meta name="description" content="Démo visuelle Atlas — coffre login/logout, logo pré-v3 restauré, replay landing. Non productif.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -163,7 +163,7 @@
     .panel{display:none}
     .panel.active{display:block}
 
-    /* —— V3 lockup (open globe + wordmark) —— */
+    /* —— Lockup (restored triangle mark + wordmark) —— */
     .lockup{
       display:inline-flex;align-items:center;gap:14px;
       user-select:none;pointer-events:none;
@@ -185,15 +185,16 @@
       transform-box:fill-box;transform-origin:center;
       transition:transform .7s var(--ease),opacity .5s var(--ease);
     }
-    .globe .meridian,.globe .latitude,.globe .spoke{
-      fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
-    }
-    .globe .latitude{stroke:var(--teal);stroke-width:2.2;opacity:.9}
-    .globe .spoke{stroke:var(--teal);stroke-width:2.4}
-    .globe .node{fill:var(--teal)}
-    .globe .core{fill:var(--teal);animation:core-breathe 2.8s ease-in-out infinite}
+    .globe .frame{stroke:var(--ink);stroke-width:7;fill:none;stroke-linejoin:round}
+    .globe .inner{stroke:var(--ink);stroke-width:6;fill:none;stroke-linejoin:round}
+    .globe .orbit{stroke:var(--teal);stroke-width:2.2;fill:none;opacity:.9;
+      transform-origin:60px 62px;animation:orbit-spin 9s linear infinite}
+    .globe .orbit.alt{animation-duration:13s;animation-direction:reverse;opacity:.65}
+    .globe .link{stroke:var(--teal);stroke-width:2;fill:none;opacity:.85}
+    .globe .node{fill:var(--teal);animation:core-breathe 2.8s ease-in-out infinite}
+    @keyframes orbit-spin{to{transform:rotate(360deg)}}
     @keyframes core-breathe{0%,100%{opacity:1}50%{opacity:.55}}
-    .lockup.is-open .core{animation:none}
+    .lockup.is-open .orbit{animation:none}
 
     .lockup-stage{
       display:flex;align-items:center;justify-content:center;
@@ -348,7 +349,7 @@
   <div class="wrap gate" id="gate">
     <p class="gate-kicker">Canal expérimental · non productif</p>
     <div class="chat" role="log" aria-live="polite">
-      <div class="bubble d1">On a quatre concepts motion / marque prêts à voir — coffre login, fermeture logout, wordmark v3, et le replay d’arrivée en haut de landing.</div>
+      <div class="bubble d1">On a quatre concepts motion / marque prêts à voir — coffre login, fermeture logout, mark triangle restauré, et le replay d’arrivée en haut de landing.</div>
       <div class="bubble me d2">Montre-moi sans toucher à la prod.</div>
       <div class="bubble d3">D’accord. Démo visuelle uniquement — pas d’auth réelle, pas de RoE, pas d’AuthorizedLaunch.</div>
     </div>
@@ -372,7 +373,7 @@
     <ul class="tabs" role="tablist" aria-label="Concepts">
       <li><button type="button" role="tab" aria-selected="true" data-tab="login">1 · Login vault</button></li>
       <li><button type="button" role="tab" aria-selected="false" data-tab="logout">2 · Logout vault</button></li>
-      <li><button type="button" role="tab" aria-selected="false" data-tab="logo">3 · Logo v3</button></li>
+      <li><button type="button" role="tab" aria-selected="false" data-tab="logo">3 · Logo (pré-v3)</button></li>
       <li><button type="button" role="tab" aria-selected="false" data-tab="replay">4 · Replay top</button></li>
     </ul>
 
@@ -450,10 +451,10 @@
     <section class="panel" id="panel-logo" role="tabpanel" hidden>
       <div class="stage">
         <div class="stage-inner">
-          <p class="stage-label">Marque v3 · wordmark ATLAS + globe filaire ouvert · anti-bouton</p>
+          <p class="stage-label">Marque restaurée · wordmark ATLAS + triangle abstrait pré-v3 · anti-bouton</p>
           <div class="logo-grid">
             <div class="lockup-stage" style="min-height:220px">
-              <div class="lockup" id="static-lockup" aria-label="Atlas logo v3">
+              <div class="lockup" id="static-lockup" aria-label="Atlas logo pré-v3">
                 <div class="globe" id="static-globe"></div>
                 <div class="word" id="static-word"></div>
               </div>
@@ -462,14 +463,14 @@
               <dt>Wordmark</dt>
               <dd>ATLAS capitales charcoal, tracking large — lu comme texte, pas comme contrôle.</dd>
               <dt>Mark</dt>
-              <dd>Globe filaire ouvert (hémisphère / méridiens incomplets) à gauche — zéro anneau plein.</dd>
+              <dd>Triangle abstrait pré-v3 (cadre + orbite teal + nœuds) — le mark producte restauré.</dd>
               <dt>Anti-bouton</dt>
               <dd>Pas de ring, pas de pill, pas de scale « press ». Hover = teinte seulement (ici : démo non interactive).</dd>
               <dt>Coffre</dt>
-              <dd>2–3 pièces (arcs + noyau teal) + lettres qui s’écartent — voir onglets login / logout.</dd>
+              <dd>3 pièces (cadre / orbites / noyau) + lettres qui s’écartent — voir onglets login / logout.</dd>
             </dl>
           </div>
-          <p class="logo-static-note">Aligné sur le MARK_SVG producte (globe ouvert v3). Pas de triangle, pas d’œil, pas de cercle clic-like.</p>
+          <p class="logo-static-note">Aligné sur le MARK_SVG producte restauré (triangle abstrait pré-v3). Showcase expérimental conservé.</p>
         </div>
       </div>
     </section>
@@ -510,26 +511,22 @@
 
   <script>
   (function () {
-    /* Same open-globe pieces as production MARK_SVG (main index) */
+    /* Same pre-v3 triangle pieces as production MARK_SVG (main index) */
     const GLOBE_SVG =
       '<svg class="mark-svg" viewBox="0 0 120 120" aria-hidden="true">' +
       '<g class="vault-piece vault-arc-l">' +
-      '<path class="meridian" d="M58 16 C30 30 26 88 58 104"/>' +
-      '<path class="latitude" d="M34 46 C42 40 52 38 58 38"/>' +
-      '<path class="latitude" d="M30 70 C40 64 50 62 58 62"/>' +
-      '<circle class="node n1" cx="34" cy="46" r="3.2"/>' +
+      '<path class="frame" d="M60 14 L102 98 H18 Z"/>' +
       '</g>' +
       '<g class="vault-piece vault-arc-r">' +
-      '<path class="meridian" d="M62 16 C90 30 94 88 62 104"/>' +
-      '<path class="latitude" d="M62 38 C70 38 80 40 88 46"/>' +
-      '<path class="latitude" d="M62 62 C72 62 82 64 92 70"/>' +
-      '<circle class="node n2" cx="88" cy="46" r="3.2"/>' +
+      '<ellipse class="orbit" cx="60" cy="62" rx="34" ry="22"/>' +
+      '<ellipse class="orbit alt" cx="60" cy="62" rx="22" ry="34"/>' +
       '</g>' +
       '<g class="vault-piece vault-core">' +
-      '<path class="spoke" d="M60 44 L60 76"/>' +
-      '<path class="spoke" d="M46 60 L74 60"/>' +
-      '<circle class="core" cx="60" cy="60" r="5"/>' +
-      '<circle class="node n3" cx="60" cy="92" r="3"/>' +
+      '<path class="inner" d="M60 48 L84 90 H36 Z"/>' +
+      '<path class="link" d="M42 58 L78 58 L60 88 Z"/>' +
+      '<circle class="node n1" cx="42" cy="58" r="4.2"/>' +
+      '<circle class="node n2" cx="78" cy="58" r="4.2"/>' +
+      '<circle class="node n3" cx="60" cy="88" r="4.2"/>' +
       '</g>' +
       '</svg>';
 
