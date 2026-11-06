@@ -115,6 +115,101 @@
     return o + '/?' + q.toString() + '#scanner';
   }
 
+  /** Pages fallback when loopback Atlas is down — still runs the live probe UI. */
+  function pagesLaunchHref(action, host) {
+    var q = new URLSearchParams({
+      action: action,
+      host: host || DEFAULT_AUTHORIZED_HOST
+    });
+    return '/launch/?' + q.toString() + '#scanner';
+  }
+
+  /** Atlas.exe shell deep-link (same query + #scanner). */
+  function shellLaunchHref(action, host) {
+    return (
+      ATLAS_LOCAL_ORIGIN +
+      '/?' +
+      new URLSearchParams({
+        action: action,
+        host: host || DEFAULT_AUTHORIZED_HOST
+      }).toString() +
+      '#scanner'
+    );
+  }
+
+  /**
+   * Pick the best local href from a findAtlasLocalBridge() result.
+   * Prefers Vite :3002, then Atlas.exe :17865. Null when neither is up.
+   */
+  function pickBridgeHref(intent, bridge) {
+    if (!intent || !bridge) return null;
+    if (bridge.clientOrigin) {
+      return authorizedLaunchHref(intent.action, intent.host, bridge.clientOrigin);
+    }
+    if (bridge.shellOrigin) {
+      return shellLaunchHref(intent.action, intent.host);
+    }
+    return null;
+  }
+
+  /**
+   * Active local connection from Pages (dashboard caps or /launch/).
+   * Probes loopback, opens Vite/shell when ready, else falls back to /launch/.
+   */
+  function connectAuthorizedCapability(action, host, options) {
+    var opts = options || {};
+    var timeoutMs = opts.timeoutMs || 1400;
+    var navigate = opts.navigate !== false;
+    var fallbackToLaunch = opts.fallbackToLaunch !== false;
+    var parsed = parseAuthorizedLaunch(
+      'action=' +
+        encodeURIComponent(action || '') +
+        '&host=' +
+        encodeURIComponent(host || DEFAULT_AUTHORIZED_HOST)
+    );
+    if (!parsed.ok) {
+      return Promise.resolve({
+        ok: false,
+        reason: parsed.reason,
+        href: null,
+        via: null,
+        bridge: null
+      });
+    }
+    var intent = parsed.intent;
+    var launchHref = pagesLaunchHref(intent.action, intent.host);
+    return findAtlasLocalBridge(timeoutMs).then(function (bridge) {
+      var localHref = pickBridgeHref(intent, bridge);
+      if (localHref) {
+        if (navigate) location.assign(localHref);
+        return {
+          ok: true,
+          intent: intent,
+          href: localHref,
+          via: bridge.clientOrigin ? 'client' : 'shell',
+          bridge: bridge
+        };
+      }
+      if (fallbackToLaunch) {
+        if (navigate) location.assign(launchHref);
+        return {
+          ok: true,
+          intent: intent,
+          href: launchHref,
+          via: 'launch',
+          bridge: bridge
+        };
+      }
+      return {
+        ok: true,
+        intent: intent,
+        href: null,
+        via: 'none',
+        bridge: bridge
+      };
+    });
+  }
+
   /**
    * Probe a same-machine Atlas origin. Uses no-cors so https://atlas-secu.com
    * can detect loopback without CORS headers on the local server.
@@ -189,6 +284,10 @@
     isAuthorizedAction: isAuthorizedAction,
     parseAuthorizedLaunch: parseAuthorizedLaunch,
     authorizedLaunchHref: authorizedLaunchHref,
+    pagesLaunchHref: pagesLaunchHref,
+    shellLaunchHref: shellLaunchHref,
+    pickBridgeHref: pickBridgeHref,
+    connectAuthorizedCapability: connectAuthorizedCapability,
     probeLocalOrigin: probeLocalOrigin,
     findAtlasLocalBridge: findAtlasLocalBridge,
     ensureScannerHash: ensureScannerHash

@@ -155,34 +155,26 @@
         intent.host,
         AuthorizedLaunch.CLIENT_ORIGIN_IPV4
       );
-      // Atlas.exe shell: same query + #scanner for local prefill.
-      var shellHref =
-        AuthorizedLaunch.ATLAS_LOCAL_ORIGIN +
-        '/?' +
-        new URLSearchParams({
-          action: intent.action,
-          host: intent.host
-        }).toString() +
-        '#scanner';
+      var shellHref = AuthorizedLaunch.shellLaunchHref(
+        intent.action,
+        intent.host
+      );
 
       function renderFallback(bridge) {
         actions.innerHTML = '';
-        if (bridge && bridge.clientOrigin) {
-          var href =
-            bridge.clientOrigin.indexOf('127.0.0.1') !== -1
-              ? clientHrefIpv4
-              : clientHref;
+        var localHref = AuthorizedLaunch.pickBridgeHref(intent, bridge);
+        if (bridge && bridge.clientOrigin && localHref) {
           bridgeStatus.className = 'banner ok';
           bridgeStatus.textContent =
             'Client Atlas détecté sur ' +
             bridge.clientOrigin +
             ' — ouverture Scanner.';
-          addLink('Ouvrir le Scanner', href, true);
+          addLink('Ouvrir le Scanner', localHref, true);
           addLink('Atlas.exe (:17865)', shellHref, false);
           addButton('Réessayer', function () {
             location.reload();
           });
-          go(href);
+          go(localHref);
           return;
         }
         if (bridge && bridge.shellOrigin) {
