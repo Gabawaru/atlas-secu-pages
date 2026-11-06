@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas — Connexion</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:420px;margin:10vh auto;padding:0 20px;color:#111;line-height:1.45}
+    label{display:block;margin-top:14px;font-size:0.95rem}
+    input{width:100%;box-sizing:border-box;margin-top:6px;padding:10px 12px;border:1px solid #ccc;border-radius:8px;font:inherit}
+    button{margin-top:18px;padding:12px 20px;background:#111;color:#fff;border:0;border-radius:8px;font:inherit;cursor:pointer}
+    .err{margin-top:14px;color:#a00;font-size:0.95rem}
+    .nav{margin-top:24px;font-size:0.95rem}
+    .nav a{color:#111}
+  </style>
+</head>
+<body>
+  <h1>Connexion</h1>
+  <p>Accès réservé aux emails autorisés.</p>
+  <form id="login-form" autocomplete="on">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autocomplete="username" placeholder="vous@atlas-secu.com">
+    <label for="password">Mot de passe</label>
+    <input id="password" name="password" type="password" required autocomplete="current-password">
+    <button type="submit">Se connecter</button>
+    <p id="error" class="err" hidden></p>
+  </form>
+  <p class="nav"><a href="/">← Retour</a></p>
+  <script src="/auth.js"></script>
+  <script>
+    (function () {
+      if (AtlasAuth.getSession()) {
+        location.replace('/app/');
+        return;
+      }
+      var form = document.getElementById('login-form');
+      var err = document.getElementById('error');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        err.hidden = true;
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+        var result = AtlasAuth.login(email, password);
+        if (!result.ok) {
+          if (result.reason === 'unauthorized_email') {
+            err.textContent = 'Email non autorisé.';
+          } else if (result.reason === 'bad_password') {
+            err.textContent = 'Mot de passe incorrect.';
+          } else {
+            err.textContent = 'Connexion impossible (stockage navigateur).';
+          }
+          err.hidden = false;
+          return;
+        }
+        location.replace('/app/');
+      });
+    })();
+  </script>
+</body>
+</html>
