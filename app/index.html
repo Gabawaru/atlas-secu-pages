@@ -62,6 +62,7 @@
     <div id="content" hidden>1 2 3 4</div>
     <p class="nav" id="nav" hidden>
       <a href="/">Accueil</a>
+      <span id="pragma-product-links" hidden></span>
       <a href="#" id="logout">Déconnexion</a>
     </p>
   </div>
@@ -74,6 +75,23 @@
       document.getElementById('admin-session-name').textContent = session.firstName || 'Utilisateur';
       document.getElementById('content').hidden = false;
       document.getElementById('nav').hidden = false;
+      var pragmaLinks = document.getElementById('pragma-product-links');
+      if (pragmaLinks && AtlasAuth.canSeePragmaProductLinks(session)) {
+        [
+          { href: 'https://pragma-serve.com', label: 'PragmaServe' },
+          { href: 'https://pragma-cloud.com', label: 'PragmaCloud' },
+          { href: 'https://pragma.mc', label: 'PragmaUC' }
+        ].forEach(function (item) {
+          var a = document.createElement('a');
+          a.href = item.href;
+          a.rel = 'noopener noreferrer';
+          a.target = '_blank';
+          a.textContent = item.label;
+          a.style.marginRight = '12px';
+          pragmaLinks.appendChild(a);
+        });
+        pragmaLinks.hidden = false;
+      }
       document.getElementById('logout').addEventListener('click', function (e) {
         e.preventDefault();
         AtlasAuth.logout();
