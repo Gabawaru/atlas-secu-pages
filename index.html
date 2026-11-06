@@ -4,84 +4,117 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body{font-family:system-ui,sans-serif;max-width:720px;margin:10vh auto;padding:0 20px;color:#111;line-height:1.45}
+    :root{
+      --page-fg:#111;--page-muted:#444;--page-line:#ddd;
+      --scip-bg:#0a0c12;--scip-panel:#0d0d12;--scip-text:#d6dae6;--scip-dim:rgba(214,218,230,.55);
+      --scip-accent:#525ceb;--scip-accent-soft:rgba(82,92,235,.15);--scip-ok:#7fa088;--scip-danger:#c45050;
+      --scip-mono:'JetBrains Mono',ui-monospace,monospace;--scip-sans:'Poppins',system-ui,sans-serif;
+    }
+    body{font-family:system-ui,sans-serif;max-width:720px;margin:10vh auto;padding:0 20px;color:var(--page-fg);line-height:1.45}
     a.btn,button.btn{display:inline-block;margin-top:8px;margin-right:8px;padding:12px 20px;background:#111;color:#fff;border-radius:8px;text-decoration:none;border:0;font:inherit;cursor:pointer}
     a.btn.secondary,button.btn.secondary{background:#fff;color:#111;border:1px solid #111}
-    .scope{margin-top:32px;padding-top:24px;border-top:1px solid #ddd}
+    .scope{margin-top:32px;padding-top:24px;border-top:1px solid var(--page-line)}
     .scope code{font-size:0.95em}
-    .muted{color:#444;font-size:0.95rem}
+    .muted{color:var(--page-muted);font-size:0.95rem}
     .actions{margin-top:12px}
+    .auth-bar{margin-top:16px;font-size:0.95rem}
+    .auth-bar a,.auth-bar button.linkish{color:#111;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline}
+    .auth-bar .sep{margin:0 8px;color:#999}
+    #roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden]{display:none!important}
 
-    /* —— RoE login popup (Falsnetsy-inspired: logo + network viz + motion) —— */
+    /* —— RoE login popup: falstency.com/wiki + atlas-depot aesthetic —— */
     .roe-overlay{
       position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;
-      background:rgba(4,10,18,.72);backdrop-filter:blur(6px);padding:20px;
+      background:rgba(5,7,12,.82);padding:20px;
     }
     .roe-overlay.open{display:flex}
     .roe-modal{
-      position:relative;width:min(420px,100%);overflow:hidden;border-radius:16px;
-      background:#07111c;color:#e8f4ff;box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 0 1px rgba(80,200,255,.18);
-      font-family:"Segoe UI",system-ui,sans-serif;
+      position:relative;width:min(440px,100%);overflow:hidden;border-radius:2px;
+      background:var(--scip-bg);color:var(--scip-text);
+      border:1px solid rgba(82,92,235,.35);
+      box-shadow:0 0 0 1px rgba(255,255,255,.03),0 28px 80px rgba(0,0,0,.75);
+      font-family:var(--scip-sans);
     }
-    .roe-viz{
-      position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.55;
+    .roe-viz{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.4}
+    .roe-scan{
+      position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.35;
+      background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 3px);
+      animation:roe-scan-move 8s linear infinite;
     }
-    .roe-body{position:relative;z-index:1;padding:28px 28px 24px}
-    .roe-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .roe-sweep{
+      position:absolute;left:0;right:0;height:28%;pointer-events:none;z-index:0;
+      background:linear-gradient(180deg,transparent,rgba(82,92,235,.08),transparent);
+      animation:roe-sweep 3.2s ease-in-out infinite;
+    }
+    .roe-body{position:relative;z-index:1;padding:26px 26px 22px}
+    .roe-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)}
     .roe-logo{
-      width:44px;height:44px;border-radius:12px;flex-shrink:0;
-      background:radial-gradient(circle at 30% 30%,#7ef0ff,#1a6cff 55%,#0a1f3a);
-      box-shadow:0 0 24px rgba(64,200,255,.45);position:relative;
-      animation:roe-pulse 2.4s ease-in-out infinite;
+      width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      border:1px solid rgba(82,92,235,.5);background:var(--scip-accent-soft);
+      font-family:var(--scip-mono);font-size:.85rem;font-weight:700;letter-spacing:.12em;color:var(--scip-accent);
+      animation:roe-pulse 2.6s ease-in-out infinite;
     }
-    .roe-logo::after{
-      content:"";position:absolute;inset:10px;border:2px solid rgba(255,255,255,.85);border-radius:50%;
-      border-top-color:transparent;animation:roe-spin 3.2s linear infinite;
+    .roe-brand h2{
+      margin:0;font-family:var(--scip-mono);font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--scip-dim);font-weight:500;
     }
-    .roe-brand h2{margin:0;font-size:1.25rem;letter-spacing:.04em;font-weight:650}
-    .roe-brand p{margin:2px 0 0;font-size:.8rem;color:#8eb6d4}
+    .roe-brand .sub{
+      margin:4px 0 0;font-family:var(--scip-mono);font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;font-weight:600;
+    }
+    .roe-stamp{
+      display:inline-block;margin-bottom:12px;padding:4px 8px;
+      border:1px solid rgba(82,92,235,.45);color:var(--scip-accent);
+      font-family:var(--scip-mono);font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;
+    }
     .roe-panel{display:none}
     .roe-panel.active{display:block}
-    .roe-panel label{display:block;margin-top:12px;font-size:.85rem;color:#9ec6e0}
+    .roe-lede{margin:0 0 8px;font-family:var(--scip-mono);font-size:.72rem;line-height:1.6;letter-spacing:.04em;color:var(--scip-dim)}
+    .roe-panel label{
+      display:block;margin-top:12px;font-family:var(--scip-mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--scip-dim);
+    }
     .roe-panel input{
-      width:100%;box-sizing:border-box;margin-top:6px;padding:11px 12px;border-radius:10px;
-      border:1px solid rgba(120,200,255,.28);background:rgba(4,16,28,.75);color:#e8f4ff;font:inherit;
-      outline:none;transition:border-color .2s,box-shadow .2s;
+      width:100%;box-sizing:border-box;margin-top:6px;padding:11px 12px;border-radius:2px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);color:#fff;
+      font-family:var(--scip-mono);font-size:.85rem;outline:none;
+      transition:border-color .2s,box-shadow .2s;
     }
-    .roe-panel input:focus{
-      border-color:#5ad0ff;box-shadow:0 0 0 3px rgba(64,200,255,.2);
-    }
+    .roe-panel input:focus{border-color:var(--scip-accent);box-shadow:0 0 0 3px rgba(82,92,235,.2)}
     .roe-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
     .roe-actions button{
-      flex:1;min-width:120px;padding:11px 14px;border-radius:10px;border:0;font:inherit;cursor:pointer;
+      flex:1;min-width:120px;padding:11px 14px;border-radius:2px;border:0;
+      font-family:var(--scip-mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
     }
-    .roe-submit{
-      background:linear-gradient(135deg,#1ec8ff,#2a6dff);color:#041018;font-weight:600;
-      box-shadow:0 8px 24px rgba(40,160,255,.35);
-    }
+    .roe-submit{background:rgba(82,92,235,.2);color:var(--scip-accent);border:1px solid var(--scip-accent)!important}
+    .roe-submit:hover{background:rgba(82,92,235,.32)}
     .roe-cancel,.roe-close-x{
-      background:transparent;color:#9ec6e0;border:1px solid rgba(120,200,255,.28)!important;
+      background:transparent;color:var(--scip-dim);border:1px solid rgba(255,255,255,.14)!important;
     }
     .roe-close-x{
-      position:absolute;top:12px;right:12px;z-index:2;width:36px;height:36px;border-radius:8px;
-      border:1px solid rgba(120,200,255,.28);background:rgba(4,16,28,.5);color:#9ec6e0;cursor:pointer;font-size:1.1rem;
+      position:absolute;top:10px;right:10px;z-index:2;width:34px;height:34px;border-radius:2px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.35);color:var(--scip-dim);cursor:pointer;font-size:1.05rem;
     }
-    .roe-err{margin-top:12px;color:#ff8a8a;font-size:.9rem;min-height:1.2em}
-    .roe-welcome{text-align:center;padding:12px 0 4px}
+    .roe-err{margin-top:12px;color:var(--scip-danger);font-family:var(--scip-mono);font-size:.75rem;min-height:1.2em}
+    .roe-welcome{text-align:center;padding:8px 0 2px}
     .roe-welcome .check{
-      width:56px;height:56px;margin:0 auto 14px;border-radius:50%;
-      background:radial-gradient(circle at 35% 30%,#9dffce,#1ec88a);
-      box-shadow:0 0 28px rgba(40,220,150,.4);
+      width:52px;height:52px;margin:0 auto 14px;border:1px solid rgba(127,160,136,.55);
+      background:rgba(127,160,136,.12);color:var(--scip-ok);
+      display:flex;align-items:center;justify-content:center;
+      font-family:var(--scip-mono);font-size:1.2rem;font-weight:700;
       animation:roe-pop .45s cubic-bezier(.2,1.4,.4,1);
     }
-    .roe-welcome h3{margin:0 0 6px;font-size:1.2rem}
-    .roe-welcome p{margin:0;color:#9ec6e0;font-size:.95rem}
-    @keyframes roe-pulse{0%,100%{box-shadow:0 0 18px rgba(64,200,255,.35)}50%{box-shadow:0 0 32px rgba(64,200,255,.7)}}
-    @keyframes roe-spin{to{transform:rotate(360deg)}}
-    @keyframes roe-pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+    .roe-welcome h3{
+      margin:0 0 8px;font-family:var(--scip-mono);font-size:1rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;
+    }
+    .roe-welcome p{margin:0;font-family:var(--scip-mono);font-size:.72rem;letter-spacing:.04em;color:var(--scip-dim)}
+    @keyframes roe-pulse{0%,100%{box-shadow:0 0 0 rgba(82,92,235,0)}50%{box-shadow:0 0 22px rgba(82,92,235,.35)}}
+    @keyframes roe-scan-move{to{transform:translateY(20px)}}
+    @keyframes roe-sweep{0%,100%{transform:translateY(-120%)}50%{transform:translateY(380%)}}
+    @keyframes roe-pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
     @media (prefers-reduced-motion:reduce){
-      .roe-logo,.roe-logo::after,.roe-welcome .check{animation:none}
+      .roe-logo,.roe-scan,.roe-sweep,.roe-welcome .check{animation:none}
     }
   </style>
 </head>
@@ -89,7 +122,19 @@
   <h1>Atlas</h1>
   <p>Assistant de pentest autorisé.</p>
   <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
-  <p style="margin-top:16px"><a href="/login/" style="color:#111">Connexion</a></p>
+
+  <div class="auth-bar">
+    <span id="auth-anon">
+      <button type="button" class="linkish" id="open-login">Connexion</button>
+      <span class="sep">·</span>
+      <a href="/login/">Page login</a>
+    </span>
+    <span id="auth-logged" hidden>
+      <span id="auth-user-label"></span>
+      <span class="sep">·</span>
+      <button type="button" class="linkish" id="logout-btn">Déconnexion</button>
+    </span>
+  </div>
 
   <section class="scope" aria-labelledby="roe-title">
     <h2 id="roe-title">Périmètre RoE (Gab)</h2>
@@ -102,35 +147,45 @@
     </p>
   </section>
 
-  <section class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px">
+  <p id="roe-gated-hint" class="muted" style="margin-top:20px">
+    Les capacités RoE sont réservées aux comptes autorisés.
+    <button type="button" class="linkish" id="open-login-hint" style="color:#111;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline">Se connecter</button>
+    pour les afficher.
+  </p>
+
+  <section id="roe-caps-section" class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px" hidden>
     <h2 id="caps-title">Lancer une capacité autorisée</h2>
     <p class="muted">
       Après installation et démarrage d’Atlas Local, ouvre le Scanner
       prérempli (cible défaut <code>pragma-serve.com</code>) via les
       deep-links authorizedLaunch (<code>?action=</code> + <code>host=</code>).
     </p>
-    <div class="actions">
-      <button type="button" class="btn secondary roe-launch" data-action="recon">Reconnaissance</button>
-      <button type="button" class="btn secondary roe-launch" data-action="scan">Scan</button>
-      <button type="button" class="btn secondary roe-launch" data-action="vuln">Éval. vulnérabilités</button>
-      <button type="button" class="btn secondary roe-launch" data-action="osint">OSINT</button>
+    <div class="actions" id="roe-actions">
+      <a class="btn secondary" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">Reconnaissance</a>
+      <a class="btn secondary" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">Scan</a>
+      <a class="btn secondary" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">Éval. vulnérabilités</a>
+      <a class="btn secondary" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">OSINT</a>
     </div>
   </section>
 
   <div id="roe-login-overlay" class="roe-overlay" role="dialog" aria-modal="true" aria-labelledby="roe-login-title" hidden>
     <div class="roe-modal">
       <canvas id="roe-net-viz" class="roe-viz" aria-hidden="true"></canvas>
+      <div class="roe-scan" aria-hidden="true"></div>
+      <div class="roe-sweep" aria-hidden="true"></div>
       <button type="button" class="roe-close-x" id="roe-close" aria-label="Fermer">×</button>
       <div class="roe-body">
         <div class="roe-brand">
-          <div class="roe-logo" aria-hidden="true"></div>
+          <div class="roe-logo" aria-hidden="true">AT</div>
           <div>
-            <h2 id="roe-login-title">Atlas</h2>
-            <p>Accès capacité autorisée</p>
+            <h2 id="roe-login-title">Atlas Network</h2>
+            <p class="sub">Accès capacité RoE</p>
           </div>
         </div>
 
         <div id="roe-panel-login" class="roe-panel active">
+          <span class="roe-stamp">Classification : restricted</span>
+          <p class="roe-lede">Terminal Atlas. Connexion journalisée. Accréditation requise pour les capacités autorisées.</p>
           <form id="roe-login-form" autocomplete="on">
             <label for="roe-email">Email</label>
             <input id="roe-email" name="email" type="email" required autocomplete="username" placeholder="vous@atlas-secu.com">
@@ -146,9 +201,9 @@
 
         <div id="roe-panel-welcome" class="roe-panel">
           <div class="roe-welcome">
-            <div class="check" aria-hidden="true"></div>
+            <div class="check" aria-hidden="true">OK</div>
             <h3 id="roe-welcome-title">Accès autorisé, bienvenue</h3>
-            <p id="roe-welcome-sub">Redirection vers la capacité…</p>
+            <p id="roe-welcome-sub">Capacités RoE déverrouillées (recon · scan · vuln · OSINT).</p>
             <div class="roe-actions" style="justify-content:center">
               <button type="button" class="roe-submit" id="roe-continue">Continuer</button>
             </div>
@@ -161,82 +216,81 @@
   <script src="/auth.js"></script>
   <script>
     (function () {
-      var HOST = 'pragma-serve.com';
       var overlay = document.getElementById('roe-login-overlay');
       var panelLogin = document.getElementById('roe-panel-login');
       var panelWelcome = document.getElementById('roe-panel-welcome');
       var form = document.getElementById('roe-login-form');
       var err = document.getElementById('roe-error');
       var welcomeTitle = document.getElementById('roe-welcome-title');
-      var pendingAction = null;
-      var pendingHref = null;
-      var redirectTimer = null;
+      var capsSection = document.getElementById('roe-caps-section');
+      var gatedHint = document.getElementById('roe-gated-hint');
+      var authAnon = document.getElementById('auth-anon');
+      var authLogged = document.getElementById('auth-logged');
+      var authUserLabel = document.getElementById('auth-user-label');
       var vizRaf = null;
-
-      function launchHref(action) {
-        return '/launch/?action=' + encodeURIComponent(action) + '&host=' + encodeURIComponent(HOST) + '#scanner';
-      }
 
       function showPanel(which) {
         panelLogin.classList.toggle('active', which === 'login');
         panelWelcome.classList.toggle('active', which === 'welcome');
       }
 
+      function applyAuthUI() {
+        var session = AtlasAuth.getSession();
+        if (session) {
+          capsSection.hidden = false;
+          gatedHint.hidden = true;
+          authAnon.hidden = true;
+          authLogged.hidden = false;
+          authUserLabel.textContent = (session.firstName || 'Utilisateur') + ' · connecté';
+        } else {
+          capsSection.hidden = true;
+          gatedHint.hidden = false;
+          authAnon.hidden = false;
+          authLogged.hidden = true;
+          authUserLabel.textContent = '';
+        }
+      }
+
       function closeOverlay() {
         overlay.classList.remove('open');
         overlay.hidden = true;
-        pendingAction = null;
-        pendingHref = null;
-        if (redirectTimer) { clearTimeout(redirectTimer); redirectTimer = null; }
         stopViz();
         err.hidden = true;
         err.textContent = '';
         form.reset();
         showPanel('login');
+        applyAuthUI();
       }
 
-      function openOverlay(action) {
-        pendingAction = action;
-        pendingHref = launchHref(action);
+      function openOverlay() {
         err.hidden = true;
         overlay.hidden = false;
         overlay.classList.add('open');
         startViz();
-
         var session = AtlasAuth.getSession();
         if (session) {
-          showWelcome(session.firstName || (AtlasAuth.findUser(session.email) || {}).firstName || '');
+          showWelcome(session.firstName || '');
           return;
         }
         showPanel('login');
         setTimeout(function () {
           var email = document.getElementById('roe-email');
           if (email) email.focus();
-        }, 50);
+        }, 40);
       }
 
       function showWelcome(firstName) {
         welcomeTitle.textContent = 'Accès autorisé, bienvenue' + (firstName ? ' ' + firstName : '');
         showPanel('welcome');
-        if (redirectTimer) clearTimeout(redirectTimer);
-        redirectTimer = setTimeout(function () {
-          if (pendingHref) location.href = pendingHref;
-        }, 1800);
+        applyAuthUI();
       }
 
-      function goContinue() {
-        if (redirectTimer) { clearTimeout(redirectTimer); redirectTimer = null; }
-        if (pendingHref) location.href = pendingHref;
-      }
-
-      /* Network visualization (nodes + links + traveling packets) */
       function startViz() {
         var canvas = document.getElementById('roe-net-viz');
         if (!canvas || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var ctx = canvas.getContext('2d');
         var nodes = [];
         var packets = [];
-        var reduce = false;
 
         function resize() {
           var modal = canvas.parentElement;
@@ -254,14 +308,13 @@
         function seed(w, h) {
           nodes = [];
           packets = [];
-          var n = 18;
-          for (var i = 0; i < n; i++) {
+          for (var i = 0; i < 20; i++) {
             nodes.push({
               x: Math.random() * w,
               y: Math.random() * h,
-              vx: (Math.random() - 0.5) * 0.35,
-              vy: (Math.random() - 0.5) * 0.35,
-              r: 1.5 + Math.random() * 2
+              vx: (Math.random() - 0.5) * 0.28,
+              vy: (Math.random() - 0.5) * 0.28,
+              r: 1.4 + Math.random() * 1.8
             });
           }
         }
@@ -270,7 +323,6 @@
           var w = canvas.clientWidth;
           var h = canvas.clientHeight;
           ctx.clearRect(0, 0, w, h);
-
           var i, j, a, b, dx, dy, dist;
           for (i = 0; i < nodes.length; i++) {
             a = nodes[i];
@@ -278,47 +330,41 @@
             if (a.x < 0 || a.x > w) a.vx *= -1;
             if (a.y < 0 || a.y > h) a.vy *= -1;
           }
-
           for (i = 0; i < nodes.length; i++) {
             for (j = i + 1; j < nodes.length; j++) {
               a = nodes[i]; b = nodes[j];
               dx = a.x - b.x; dy = a.y - b.y;
               dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < 110) {
-                ctx.strokeStyle = 'rgba(90,208,255,' + (0.22 * (1 - dist / 110)) + ')';
+              if (dist < 120) {
+                ctx.strokeStyle = 'rgba(82,92,235,' + (0.28 * (1 - dist / 120)) + ')';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
                 ctx.lineTo(b.x, b.y);
                 ctx.stroke();
-                if (Math.random() < 0.002 && packets.length < 10) {
+                if (Math.random() < 0.0025 && packets.length < 12) {
                   packets.push({ a: i, b: j, t: 0, speed: 0.012 + Math.random() * 0.02 });
                 }
               }
             }
           }
-
           for (i = packets.length - 1; i >= 0; i--) {
             var p = packets[i];
             p.t += p.speed;
             if (p.t >= 1) { packets.splice(i, 1); continue; }
             a = nodes[p.a]; b = nodes[p.b];
-            var x = a.x + (b.x - a.x) * p.t;
-            var y = a.y + (b.y - a.y) * p.t;
-            ctx.fillStyle = 'rgba(160,240,255,0.95)';
+            ctx.fillStyle = 'rgba(170,180,255,0.95)';
             ctx.beginPath();
-            ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+            ctx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 2.1, 0, Math.PI * 2);
             ctx.fill();
           }
-
           for (i = 0; i < nodes.length; i++) {
             a = nodes[i];
-            ctx.fillStyle = 'rgba(120,220,255,0.9)';
+            ctx.fillStyle = 'rgba(120,130,255,0.9)';
             ctx.beginPath();
             ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
             ctx.fill();
           }
-
           vizRaf = requestAnimationFrame(tick);
         }
 
@@ -338,20 +384,19 @@
         }
       }
 
-      document.querySelectorAll('.roe-launch').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          openOverlay(btn.getAttribute('data-action'));
-        });
-      });
-
+      document.getElementById('open-login').addEventListener('click', openOverlay);
+      document.getElementById('open-login-hint').addEventListener('click', openOverlay);
       document.getElementById('roe-close').addEventListener('click', closeOverlay);
       document.getElementById('roe-cancel').addEventListener('click', closeOverlay);
-      document.getElementById('roe-continue').addEventListener('click', goContinue);
+      document.getElementById('roe-continue').addEventListener('click', closeOverlay);
+      document.getElementById('logout-btn').addEventListener('click', function () {
+        AtlasAuth.logout();
+        applyAuthUI();
+      });
 
       overlay.addEventListener('click', function (e) {
         if (e.target === overlay) closeOverlay();
       });
-
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && overlay.classList.contains('open')) closeOverlay();
       });
@@ -359,22 +404,21 @@
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         err.hidden = true;
-        var email = document.getElementById('roe-email').value;
-        var password = document.getElementById('roe-password').value;
-        var result = AtlasAuth.login(email, password);
+        var result = AtlasAuth.login(
+          document.getElementById('roe-email').value,
+          document.getElementById('roe-password').value
+        );
         if (!result.ok) {
-          if (result.reason === 'unauthorized_email') {
-            err.textContent = 'Email non autorisé.';
-          } else if (result.reason === 'bad_password') {
-            err.textContent = 'Mot de passe incorrect.';
-          } else {
-            err.textContent = 'Connexion impossible (stockage navigateur).';
-          }
+          if (result.reason === 'unauthorized_email') err.textContent = 'Email non autorisé.';
+          else if (result.reason === 'bad_password') err.textContent = 'Mot de passe incorrect.';
+          else err.textContent = 'Connexion impossible (stockage navigateur).';
           err.hidden = false;
           return;
         }
         showWelcome(result.session.firstName || result.user.firstName);
       });
+
+      applyAuthUI();
     })();
   </script>
 </body>
