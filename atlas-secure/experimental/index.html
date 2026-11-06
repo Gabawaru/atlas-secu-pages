@@ -155,7 +155,10 @@
       padding:5px 9px;border:1px solid var(--line);border-radius:2px;color:var(--muted);
       background:#f7fbfc;
     }
-    .beat.on{border-color:var(--teal-mid);color:var(--teal-deep);background:var(--teal-soft)}
+    .beat.on{border-color:var(--teal-mid);color:var(--teal-deep);background:var(--teal-soft);box-shadow:0 0 0 1px var(--teal-soft)}
+    .tabs button:focus-visible,.btn:focus-visible,.conv-cta:focus-visible,.fake-btn:focus-visible{
+      outline:2px solid var(--teal);outline-offset:2px;
+    }
 
     .panel{display:none}
     .panel.active{display:block}
@@ -185,6 +188,9 @@
     .globe .stroke{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
     .globe .teal{stroke:var(--teal)}
     .globe .core-dot{fill:var(--teal)}
+    .globe .core-dot{animation:core-breathe 2.8s ease-in-out infinite}
+    @keyframes core-breathe{0%,100%{opacity:1}50%{opacity:.55}}
+    .lockup.is-open .core-dot{animation:none}
 
     .lockup-stage{
       display:flex;align-items:center;justify-content:center;
@@ -607,7 +613,11 @@
       loginForm.classList.remove('show');
       loginLockup.classList.remove('is-ghost');
       loginLockup.classList.add('is-open');
-      loginTimers.push(setTimeout(() => sessionReveal.classList.add('show'), 700));
+      loginTimers.push(setTimeout(() => {
+        sessionReveal.classList.add('show');
+        const tip = sessionReveal.querySelector('.session-card p');
+        if (tip) tip.textContent = 'Coffre ouvert. Passe à l’onglet Logout pour la fermeture miroir.';
+      }, 700));
     });
 
     /* Logout sequence */
@@ -689,6 +699,24 @@
 
     /* Auto-start login preview once in demo */
     enter.addEventListener('click', () => setTimeout(playLogin, 200), { once: true });
+
+    /* Keyboard: 1–4 switch tabs when in demo */
+    document.addEventListener('keydown', (e) => {
+      if (!document.body.classList.contains('is-demo')) return;
+      const map = { '1': 'login', '2': 'logout', '3': 'logo', '4': 'replay' };
+      const key = map[e.key];
+      if (!key) return;
+      const btn = document.querySelector(`.tabs button[data-tab="${key}"]`);
+      if (btn) btn.click();
+    });
+
+    /* Auto-play logout when opening that tab the first time */
+    let logoutAuto = false;
+    document.querySelector('[data-tab="logout"]').addEventListener('click', () => {
+      if (logoutAuto) return;
+      logoutAuto = true;
+      setTimeout(playLogout, 350);
+    });
   })();
   </script>
 </body>
