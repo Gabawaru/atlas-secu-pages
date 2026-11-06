@@ -605,7 +605,7 @@
           <div class="cap-aura" aria-hidden="true"></div>
           <div class="cap-ring" aria-hidden="true"></div>
           <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">
+          <a class="cap-btn js-roe-cap" data-roe-action="recon" data-roe-host="pragma-serve.com" href="/launch/?action=recon&amp;host=pragma-serve.com#scanner">
             <span class="code">01 · recon</span>
             <span class="label">Reconnaissance</span>
             <span class="hint">Cartographie passive du périmètre</span>
@@ -615,7 +615,7 @@
           <div class="cap-aura" aria-hidden="true"></div>
           <div class="cap-ring" aria-hidden="true"></div>
           <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">
+          <a class="cap-btn js-roe-cap" data-roe-action="scan" data-roe-host="pragma-serve.com" href="/launch/?action=scan&amp;host=pragma-serve.com#scanner">
             <span class="code">02 · scan</span>
             <span class="label">Scan</span>
             <span class="hint">Balayage autorisé des surfaces</span>
@@ -625,7 +625,7 @@
           <div class="cap-aura" aria-hidden="true"></div>
           <div class="cap-ring" aria-hidden="true"></div>
           <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">
+          <a class="cap-btn js-roe-cap" data-roe-action="vuln" data-roe-host="pragma-serve.com" href="/launch/?action=vuln&amp;host=pragma-serve.com#scanner">
             <span class="code">03 · vuln</span>
             <span class="label">État vulnérabilité</span>
             <span class="hint">Évaluation des faiblesses signées</span>
@@ -635,7 +635,7 @@
           <div class="cap-aura" aria-hidden="true"></div>
           <div class="cap-ring" aria-hidden="true"></div>
           <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">
+          <a class="cap-btn js-roe-cap" data-roe-action="osint" data-roe-host="pragma-serve.com" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">
             <span class="code">04 · audit</span>
             <span class="label">Audit</span>
             <span class="hint">Collecte OSINT dans le RoE</span>
@@ -663,6 +663,7 @@
   </div>
 
   <script src="/auth.js"></script>
+  <script src="/authorizedLaunch.js"></script>
   <script>
     (function () {
       var MARK_SVG =
@@ -921,6 +922,42 @@
         pwMsg.className = 'pw-msg ok';
         pwMsg.hidden = false;
         pwForm.reset();
+      });
+
+      /* RoE caps → probe Atlas Local (reuse authorizedLaunch), else /launch/ */
+      document.querySelectorAll('.js-roe-cap').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          if (e.defaultPrevented) return;
+          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          var session = AtlasAuth.getSession();
+          if (!session) {
+            runFoldToAuth();
+            return;
+          }
+          if (!window.AuthorizedLaunch || btn.getAttribute('aria-busy') === 'true') {
+            location.assign(btn.getAttribute('href'));
+            return;
+          }
+          var action = btn.getAttribute('data-roe-action');
+          var host =
+            btn.getAttribute('data-roe-host') ||
+            AuthorizedLaunch.DEFAULT_AUTHORIZED_HOST;
+          btn.setAttribute('aria-busy', 'true');
+          AuthorizedLaunch.connectAuthorizedCapability(action, host, {
+            timeoutMs: 1400
+          }).then(function (result) {
+            if (!result || !result.ok) {
+              location.assign(
+                AuthorizedLaunch.pagesLaunchHref(action, host)
+              );
+            }
+          }).catch(function () {
+            location.assign(btn.getAttribute('href'));
+          }).then(function () {
+            btn.removeAttribute('aria-busy');
+          });
+        });
       });
 
       /* Restore session → dashboard */
