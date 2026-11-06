@@ -10,7 +10,8 @@
   <style>
     :root{
       --page-bg:#f7f7f5;--page-fg:#161616;--page-muted:#5a5a5a;--page-line:#d8d8d4;
-      --paper:#ffffff;--ink:#111111;--dim:#6b6b6b;--hairline:#cfcfc9;
+      --paper:#ffffff;--ink:#1a1a1a;--dim:#6b6b6b;--hairline:#cfcfc9;
+      --teal:#2f6f73;--teal-soft:rgba(47,111,115,.1);
       --accent:#8b1e1e;--accent-soft:rgba(139,30,30,.08);--ok:#2f5d3a;--ok-soft:rgba(47,93,58,.1);
       --danger:#8b1e1e;--grid:rgba(22,22,22,.045);
       --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;
@@ -25,7 +26,35 @@
         repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px),
         var(--page-bg);
     }
-    .wrap{max-width:720px;margin:0 auto;padding:8vh 20px 48px}
+
+    /* Concept-2 lockup boot */
+    .boot-lockup{
+      position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;
+      background:var(--page-bg);pointer-events:none;
+      transition:opacity .45s ease,visibility .45s ease;
+    }
+    .boot-lockup.is-done{opacity:0;visibility:hidden}
+    .boot-lockup-inner{display:flex;align-items:center;gap:18px}
+    .boot-globe{
+      width:72px;height:72px;flex-shrink:0;
+      opacity:0;transform:translateX(-36px) scale(.92);
+    }
+    .boot-word{
+      font-family:var(--sans);font-weight:700;font-size:2.35rem;letter-spacing:.28em;
+      color:var(--ink);text-transform:uppercase;line-height:1;padding-right:.12em;
+      opacity:0;transform:translateX(36px);
+    }
+    body.is-booting .boot-globe{animation:boot-globe-in .7s cubic-bezier(.22,.9,.28,1) .08s forwards}
+    body.is-booting .boot-word{animation:boot-word-in .7s cubic-bezier(.22,.9,.28,1) .18s forwards}
+    @keyframes boot-globe-in{to{opacity:1;transform:translateX(0) scale(1)}}
+    @keyframes boot-word-in{to{opacity:1;transform:translateX(0)}}
+    .wrap{
+      max-width:720px;margin:0 auto;padding:8vh 20px 48px;
+      opacity:0;transform:translateY(10px);
+    }
+    body.is-ready .wrap{animation:page-in .55s cubic-bezier(.22,.9,.28,1) forwards}
+    @keyframes page-in{to{opacity:1;transform:translateY(0)}}
+
     h1{
       margin:0 0 8px;font-family:var(--mono);font-size:1.65rem;font-weight:700;
       letter-spacing:.18em;text-transform:uppercase;
@@ -35,9 +64,11 @@
       display:inline-block;margin-top:8px;margin-right:8px;padding:12px 18px;
       background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:0;
       text-decoration:none;font:inherit;cursor:pointer;letter-spacing:.02em;
+      transition:transform .18s ease,background .18s ease,border-color .18s ease;
     }
     a.btn.secondary,button.btn.secondary{background:#fff;color:var(--ink)}
-    a.btn.secondary:hover,button.btn.secondary:hover{background:#f3f3f0}
+    a.btn.secondary:hover,button.btn.secondary:hover{background:#f3f3f0;border-color:var(--teal)}
+    a.btn:hover,button.btn:hover{transform:translateY(-1px)}
     .scope{margin-top:32px;padding-top:22px;border-top:1px solid var(--page-line)}
     .scope h2{margin:0 0 8px;font-family:var(--mono);font-size:.95rem;letter-spacing:.08em;text-transform:uppercase}
     .scope code{font-family:var(--mono);font-size:.9em}
@@ -48,9 +79,9 @@
       color:var(--ink);background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;
     }
     .auth-bar .sep{margin:0 8px;color:#999}
-    #roe-scope-section[hidden],#roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden],#admin-session-badge[hidden]{display:none!important}
+    #roe-caps-section[hidden],#roe-gated-hint[hidden],#auth-logged[hidden],#auth-anon[hidden],
+    #admin-session-badge[hidden],#pw-panel[hidden]{display:none!important}
 
-    /* Session administrateur badge */
     .admin-badge{
       display:flex;align-items:center;gap:12px;flex-wrap:wrap;
       margin:22px 0 0;padding:12px 14px;
@@ -75,7 +106,29 @@
       text-transform:uppercase;color:var(--dim);
     }
 
-    /* —— RoE login popup: white sterile SCP / clinical document —— */
+    .pw-panel{
+      margin-top:16px;padding:16px 16px 14px;background:var(--paper);
+      border:1px solid var(--hairline);
+    }
+    .pw-panel h3{
+      margin:0 0 10px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--dim);font-weight:600;
+    }
+    .pw-panel label{
+      display:block;margin-top:10px;font-family:var(--mono);font-size:.62rem;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+    }
+    .pw-panel input{
+      width:100%;max-width:320px;margin-top:5px;padding:10px 12px;border-radius:0;
+      border:1px solid var(--hairline);background:#fafaf8;color:var(--ink);
+      font-family:var(--mono);font-size:.85rem;outline:none;
+    }
+    .pw-panel input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+    .pw-panel .pw-actions{margin-top:12px}
+    .pw-msg{margin-top:10px;font-family:var(--mono);font-size:.72rem;min-height:1.2em}
+    .pw-msg.ok{color:var(--ok)}
+    .pw-msg.err{color:var(--danger)}
+
     .roe-overlay{
       position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;
       background:rgba(247,247,245,.82);padding:20px;
@@ -98,7 +151,7 @@
     }
     .roe-sweep{
       position:absolute;left:0;right:0;height:22%;pointer-events:none;z-index:0;
-      background:linear-gradient(180deg,transparent,rgba(139,30,30,.05),transparent);
+      background:linear-gradient(180deg,transparent,rgba(47,111,115,.06),transparent);
       animation:roe-sweep 3.6s ease-in-out infinite;
     }
     .roe-body{position:relative;z-index:1;padding:26px 26px 22px}
@@ -111,9 +164,7 @@
       border:1px solid var(--ink);background:#fff;
       display:flex;align-items:center;justify-content:center;
     }
-    .roe-logo img,.roe-logo video{
-      width:100%;height:100%;object-fit:cover;display:block;
-    }
+    .roe-logo img{width:100%;height:100%;object-fit:cover;display:block}
     .roe-brand h2{
       margin:0;font-family:var(--mono);font-size:.68rem;letter-spacing:.28em;
       text-transform:uppercase;color:var(--dim);font-weight:500;
@@ -143,7 +194,7 @@
       font-family:var(--mono);font-size:.85rem;outline:none;
       transition:border-color .2s,box-shadow .2s;
     }
-    .roe-panel input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(17,17,17,.06)}
+    .roe-panel input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
     .roe-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
     .roe-actions button{
       flex:1;min-width:120px;padding:11px 14px;border-radius:0;border:1px solid var(--ink);
@@ -171,17 +222,64 @@
       text-transform:uppercase;color:var(--ink);
     }
     .roe-welcome p{margin:0;font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--dim)}
+    .roe-overlay.open .roe-modal{animation:roe-modal-in .38s cubic-bezier(.22,.9,.28,1)}
+    .roe-overlay.open .roe-brand,
+    .roe-overlay.open .roe-stamp,
+    .roe-overlay.open .roe-lede,
+    .roe-overlay.open #roe-panel-login.active label,
+    .roe-overlay.open #roe-panel-login.active input,
+    .roe-overlay.open #roe-panel-login.active .roe-actions{
+      opacity:0;animation:roe-field-in .42s cubic-bezier(.22,.9,.28,1) forwards;
+    }
+    .roe-overlay.open .roe-brand{animation-delay:.05s}
+    .roe-overlay.open .roe-stamp{animation-delay:.12s}
+    .roe-overlay.open .roe-lede{animation-delay:.18s}
+    .roe-overlay.open #roe-panel-login.active label:nth-of-type(1){animation-delay:.24s}
+    .roe-overlay.open #roe-panel-login.active input:nth-of-type(1){animation-delay:.28s}
+    .roe-overlay.open #roe-panel-login.active label:nth-of-type(2){animation-delay:.34s}
+    .roe-overlay.open #roe-panel-login.active input:nth-of-type(2){animation-delay:.38s}
+    .roe-overlay.open #roe-panel-login.active .roe-actions{animation-delay:.46s}
+    #roe-panel-welcome.active .roe-welcome{animation:roe-welcome-in .45s cubic-bezier(.22,.9,.28,1)}
+    @keyframes roe-modal-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+    @keyframes roe-field-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    @keyframes roe-welcome-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
     @keyframes roe-sweep{0%,100%{transform:translateY(-120%)}50%{transform:translateY(420%)}}
     @keyframes roe-pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
     @media (prefers-reduced-motion:reduce){
-      .roe-sweep,.roe-welcome .check{animation:none}
+      .roe-sweep,.roe-welcome .check,
+      body.is-booting .boot-globe,body.is-booting .boot-word,
+      body.is-ready .wrap,
+      .roe-overlay.open .roe-modal,
+      .roe-overlay.open .roe-brand,
+      .roe-overlay.open .roe-stamp,
+      .roe-overlay.open .roe-lede,
+      .roe-overlay.open #roe-panel-login.active label,
+      .roe-overlay.open #roe-panel-login.active input,
+      .roe-overlay.open #roe-panel-login.active .roe-actions,
+      #roe-panel-welcome.active .roe-welcome{animation:none!important}
+      .boot-globe,.boot-word,.wrap{opacity:1;transform:none}
+      .boot-lockup.is-done,.boot-lockup{opacity:0;visibility:hidden}
     }
   </style>
 </head>
-<body>
+<body class="is-booting">
+  <div id="boot-lockup" class="boot-lockup" aria-hidden="true">
+    <div class="boot-lockup-inner" role="img" aria-label="Atlas">
+      <svg class="boot-globe" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="36" cy="36" r="28" stroke="#2f6f73" stroke-width="1.6"/>
+        <ellipse cx="36" cy="36" rx="14" ry="28" stroke="#2f6f73" stroke-width="1.35"/>
+        <ellipse cx="36" cy="36" rx="28" ry="10" stroke="#2f6f73" stroke-width="1.35"/>
+        <path d="M10 28c8 4 18 6 26 6s18-2 26-6" stroke="#2f6f73" stroke-width="1.2" opacity=".85"/>
+        <path d="M10 44c8-4 18-6 26-6s18 2 26 6" stroke="#2f6f73" stroke-width="1.2" opacity=".85"/>
+        <circle cx="62" cy="36" r="3.2" fill="#1a1a1a"/>
+      </svg>
+      <span class="boot-word">ATLAS</span>
+    </div>
+  </div>
+
   <div class="wrap">
     <h1>Atlas</h1>
-    <p class="lede">Assistant de pentest autorisé.</p>
+    <p class="lede">Assistant de pentest autorisé · atlas-secu.com</p>
     <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
 
     <div class="auth-bar">
@@ -190,6 +288,8 @@
       </span>
       <span id="auth-logged" hidden>
         <span id="auth-user-label"></span>
+        <span class="sep">·</span>
+        <button type="button" class="linkish" id="open-pw">Mot de passe</button>
         <span class="sep">·</span>
         <button type="button" class="linkish" id="logout-btn">Déconnexion</button>
       </span>
@@ -201,13 +301,24 @@
       <span class="meta">RoE · niveau A</span>
     </div>
 
-    <p id="roe-gated-hint" class="muted" style="margin-top:28px">
-      Le périmètre et les capacités RoE sont réservés aux comptes autorisés.
-      <button type="button" class="hint-login" id="open-login-hint">Se connecter</button>
-      pour les afficher.
-    </p>
+    <div id="pw-panel" class="pw-panel" hidden>
+      <h3>Changer le mot de passe</h3>
+      <form id="pw-form" autocomplete="off">
+        <label for="pw-current">Mot de passe actuel</label>
+        <input id="pw-current" type="password" required autocomplete="current-password">
+        <label for="pw-new">Nouveau mot de passe</label>
+        <input id="pw-new" type="password" required autocomplete="new-password">
+        <label for="pw-confirm">Confirmer</label>
+        <input id="pw-confirm" type="password" required autocomplete="new-password">
+        <div class="pw-actions">
+          <button type="submit" class="btn">Enregistrer</button>
+          <button type="button" class="btn secondary" id="pw-cancel">Fermer</button>
+        </div>
+        <p id="pw-msg" class="pw-msg" hidden></p>
+      </form>
+    </div>
 
-    <section id="roe-scope-section" class="scope" aria-labelledby="roe-title" hidden>
+    <section class="scope" aria-labelledby="roe-title">
       <h2 id="roe-title">Périmètre RoE (Gab)</h2>
       <p class="muted">
         Capacités autorisées uniquement sur
@@ -217,6 +328,12 @@
         — hors liste = hors scope.
       </p>
     </section>
+
+    <p id="roe-gated-hint" class="muted" style="margin-top:20px">
+      Les capacités RoE sont réservées aux comptes autorisés.
+      <button type="button" class="hint-login" id="open-login-hint">Se connecter</button>
+      pour les afficher.
+    </p>
 
     <section id="roe-caps-section" class="scope" aria-labelledby="caps-title" style="border-top:none;padding-top:8px;margin-top:8px" hidden>
       <h2 id="caps-title">Lancer une capacité autorisée</h2>
@@ -253,7 +370,7 @@
             >
           </div>
           <div>
-            <h2 id="roe-login-title">Atlas Network</h2>
+            <h2 id="roe-login-title">Atlas</h2>
             <p class="sub">Accès capacité RoE</p>
           </div>
         </div>
@@ -278,7 +395,7 @@
           <div class="roe-welcome">
             <div class="check" aria-hidden="true">OK</div>
             <h3 id="roe-welcome-title">Accès autorisé, bienvenue</h3>
-            <p id="roe-welcome-sub">Capacités RoE déverrouillées (recon · scan · vuln · OSINT).</p>
+            <p id="roe-welcome-sub">Session administrateur · capacités RoE déverrouillées.</p>
             <div class="roe-actions" style="justify-content:center">
               <button type="button" class="roe-submit" id="roe-continue">Continuer</button>
             </div>
@@ -291,13 +408,22 @@
   <script src="/auth.js"></script>
   <script>
     (function () {
+      var boot = document.getElementById('boot-lockup');
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function finishBoot() {
+        document.body.classList.remove('is-booting');
+        document.body.classList.add('is-ready');
+        if (boot) boot.classList.add('is-done');
+      }
+      if (reduceMotion) finishBoot();
+      else setTimeout(finishBoot, 1400);
+
       var overlay = document.getElementById('roe-login-overlay');
       var panelLogin = document.getElementById('roe-panel-login');
       var panelWelcome = document.getElementById('roe-panel-welcome');
       var form = document.getElementById('roe-login-form');
       var err = document.getElementById('roe-error');
       var welcomeTitle = document.getElementById('roe-welcome-title');
-      var scopeSection = document.getElementById('roe-scope-section');
       var capsSection = document.getElementById('roe-caps-section');
       var gatedHint = document.getElementById('roe-gated-hint');
       var authAnon = document.getElementById('auth-anon');
@@ -305,6 +431,9 @@
       var authUserLabel = document.getElementById('auth-user-label');
       var adminBadge = document.getElementById('admin-session-badge');
       var adminName = document.getElementById('admin-session-name');
+      var pwPanel = document.getElementById('pw-panel');
+      var pwForm = document.getElementById('pw-form');
+      var pwMsg = document.getElementById('pw-msg');
       var vizRaf = null;
 
       function showPanel(which) {
@@ -315,7 +444,6 @@
       function applyAuthUI() {
         var session = AtlasAuth.getSession();
         if (session) {
-          scopeSection.hidden = false;
           capsSection.hidden = false;
           gatedHint.hidden = true;
           authAnon.hidden = true;
@@ -324,7 +452,6 @@
           adminBadge.hidden = false;
           adminName.textContent = session.firstName || 'Utilisateur';
         } else {
-          scopeSection.hidden = true;
           capsSection.hidden = true;
           gatedHint.hidden = false;
           authAnon.hidden = false;
@@ -332,6 +459,7 @@
           authUserLabel.textContent = '';
           adminBadge.hidden = true;
           adminName.textContent = '';
+          pwPanel.hidden = true;
         }
       }
 
@@ -437,14 +565,14 @@
             p.t += p.speed;
             if (p.t >= 1) { packets.splice(i, 1); continue; }
             a = nodes[p.a]; b = nodes[p.b];
-            ctx.fillStyle = 'rgba(139,30,30,0.85)';
+            ctx.fillStyle = 'rgba(47,111,115,0.9)';
             ctx.beginPath();
             ctx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 2, 0, Math.PI * 2);
             ctx.fill();
           }
           for (i = 0; i < nodes.length; i++) {
             a = nodes[i];
-            ctx.fillStyle = 'rgba(17,17,17,0.72)';
+            ctx.fillStyle = i % 5 === 0 ? 'rgba(47,111,115,0.85)' : 'rgba(17,17,17,0.72)';
             ctx.beginPath();
             ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
             ctx.fill();
@@ -476,6 +604,47 @@
       document.getElementById('logout-btn').addEventListener('click', function () {
         AtlasAuth.logout();
         applyAuthUI();
+      });
+      document.getElementById('open-pw').addEventListener('click', function () {
+        pwMsg.hidden = true;
+        pwForm.reset();
+        pwPanel.hidden = false;
+      });
+      document.getElementById('pw-cancel').addEventListener('click', function () {
+        pwPanel.hidden = true;
+        pwMsg.hidden = true;
+        pwForm.reset();
+      });
+      pwForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        pwMsg.hidden = true;
+        var cur = document.getElementById('pw-current').value;
+        var neu = document.getElementById('pw-new').value;
+        var conf = document.getElementById('pw-confirm').value;
+        if (neu !== conf) {
+          pwMsg.textContent = 'Confirmation différente.';
+          pwMsg.className = 'pw-msg err';
+          pwMsg.hidden = false;
+          return;
+        }
+        var result = AtlasAuth.changePassword(cur, neu);
+        if (!result.ok) {
+          var map = {
+            bad_password: 'Mot de passe actuel incorrect.',
+            empty_password: 'Nouveau mot de passe vide.',
+            same_password: 'Le nouveau mot de passe doit être différent.',
+            no_session: 'Session expirée — reconnectez-vous.',
+            storage: 'Stockage navigateur indisponible.'
+          };
+          pwMsg.textContent = map[result.reason] || 'Changement impossible.';
+          pwMsg.className = 'pw-msg err';
+          pwMsg.hidden = false;
+          return;
+        }
+        pwMsg.textContent = 'Mot de passe mis à jour (cet appareil).';
+        pwMsg.className = 'pw-msg ok';
+        pwMsg.hidden = false;
+        pwForm.reset();
       });
 
       overlay.addEventListener('click', function (e) {

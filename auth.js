@@ -1,26 +1,18 @@
 /**
- * Atlas secu — client-side allowlist gate (static Pages).
+ * Atlas — client-side allowlist gate (static Pages).
  * Session: sessionStorage key `atlas_secu_session` = JSON { email, firstName, at }.
- * Not cryptographic auth; enough for a soft gate on a static site.
- *
- * Password change later: call AtlasAuth.setPassword(email, newPassword)
- * (mutates the in-memory allowlist for the current page load; persist by
- * editing AUTHORIZED_USERS below when ready to bake a new default).
+ * Password overrides: localStorage key `atlas_secu_pw_overrides` = { [email]: password }.
+ * Not cryptographic auth; soft gate for a static site.
  */
 (function (global) {
   var SESSION_KEY = 'atlas_secu_session';
+  var PW_KEY = 'atlas_secu_pw_overrides';
 
-  /**
-   * Active password is `password`. Optional `passwordAliases` are accepted
-   * during transition (e.g. Gabriel legacy password aliases).
-   * Remove aliases once everyone uses the new default.
-   */
   var AUTHORIZED_USERS = [
     {
       email: 'gabriel@atlas-secu.com',
       firstName: 'Gabriel',
-      password: '0000',
-      passwordAliases: ['156789101112']
+      password: '0000'
     },
     {
       email: 'benjamin@atlas-secu.com',
@@ -38,6 +30,26 @@
     return String(email || '').trim().toLowerCase();
   }
 
+  function loadOverrides() {
+    try {
+      var raw = localStorage.getItem(PW_KEY);
+      if (!raw) return {};
+      var parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveOverrides(map) {
+    try {
+      localStorage.setItem(PW_KEY, JSON.stringify(map));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function findUser(email) {
     var n = normalizeEmail(email);
     for (var i = 0; i < AUTHORIZED_USERS.length; i++) {
@@ -46,14 +58,17 @@
     return null;
   }
 
-  function passwordMatches(user, password) {
-    var p = String(password || '');
-    if (p === String(user.password)) return true;
-    var aliases = user.passwordAliases || [];
-    for (var i = 0; i < aliases.length; i++) {
-      if (p === String(aliases[i])) return true;
+  function effectivePassword(user) {
+    var overrides = loadOverrides();
+    var key = user.email.toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(overrides, key)) {
+      return String(overrides[key]);
     }
-    return false;
+    return String(user.password);
+  }
+
+  function passwordMatches(user, password) {
+    return String(password || '') === effectivePassword(user);
   }
 
   function login(email, password) {
@@ -106,26 +121,48 @@
     return s;
   }
 
-  /** Runtime password change (structure for later; not persisted to disk). */
+  /** Persist password override for this browser (localStorage). */
   function setPassword(email, newPassword) {
     var user = findUser(email);
     if (!user) return { ok: false, reason: 'unauthorized_email' };
-    if (!newPassword && newPassword !== 0) {
+    if (newPassword === undefined || newPassword === null || String(newPassword) === '') {
       return { ok: false, reason: 'empty_password' };
     }
+    var map = loadOverrides();
+    map[user.email.toLowerCase()] = String(newPassword);
+    if (!saveOverrides(map)) return { ok: false, reason: 'storage' };
     user.password = String(newPassword);
-    user.passwordAliases = [];
     return { ok: true, email: user.email };
+  }
+
+  /** Change password for the signed-in user (checks current). */
+  function changePassword(currentPassword, newPassword) {
+    var session = getSession();
+    if (!session) return { ok: false, reason: 'no_session' };
+    var user = findUser(session.email);
+    if (!user) return { ok: false, reason: 'unauthorized_email' };
+    if (!passwordMatches(user, currentPassword)) {
+      return { ok: false, reason: 'bad_password' };
+    }
+    if (newPassword === undefined || newPassword === null || String(newPassword) === '') {
+      return { ok: false, reason: 'empty_password' };
+    }
+    if (String(newPassword) === String(currentPassword)) {
+      return { ok: false, reason: 'same_password' };
+    }
+    return setPassword(user.email, newPassword);
   }
 
   global.AtlasAuth = {
     SESSION_KEY: SESSION_KEY,
+    PW_KEY: PW_KEY,
     AUTHORIZED_USERS: AUTHORIZED_USERS,
     login: login,
     logout: logout,
     getSession: getSession,
     requireSession: requireSession,
     setPassword: setPassword,
+    changePassword: changePassword,
     normalizeEmail: normalizeEmail,
     findUser: findUser
   };
