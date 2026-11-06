@@ -209,9 +209,15 @@
     .cta-band p{margin:0;color:var(--muted);max-width:42ch}
     .footer{
       max-width:1120px;margin:0 auto;padding:0 24px 40px;
-      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;
       font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;
     }
+    .footer .exp-chat{
+      text-transform:none;letter-spacing:.01em;font-family:var(--display);font-size:.85rem;
+      font-weight:500;opacity:.9;text-decoration:none;color:var(--teal-deep);
+      border-bottom:1px solid transparent;padding-bottom:1px;
+    }
+    .footer .exp-chat:hover{border-bottom-color:var(--teal-mid)}
 
     .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
     .reveal.is-in{opacity:1;transform:none}
@@ -536,6 +542,7 @@
     <footer class="footer">
       <span>Atlas · atlas-secu.com</span>
       <span>Pentest autorisé</span>
+      <a class="exp-chat" href="/atlas-secure/experimental/">Accéder à la session expérimentale</a>
     </footer>
   </div>
 
