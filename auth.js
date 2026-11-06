@@ -1,5 +1,5 @@
 /**
- * Atlas — client-side allowlist gate (static Pages).
+ * Atlas SECU — client-side allowlist gate (static Pages).
  * Session: sessionStorage key `atlas_secu_session` = JSON { email, firstName, at }.
  * Password overrides: localStorage key `atlas_secu_pw_overrides` = { [email]: password }.
  * Not cryptographic auth; soft gate for a static site.
