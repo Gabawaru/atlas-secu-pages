@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas — lancement autorisé</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:640px;margin:10vh auto;padding:0 20px;color:#111;line-height:1.45}
+    code{font-size:0.95em}
+    .muted{color:#444}
+  </style>
+</head>
+<body>
+  <h1>Atlas Local</h1>
+  <p class="muted">
+    Deep-link authorizedLaunch reçu. Installez Atlas puis démarrez le client
+    pour exécuter la capacité RoE (cible <code>pragma-serve.com</code> / ALLOW).
+  </p>
+  <p><a href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a> · <a href="/">Retour</a></p>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var action = params.get('action') || '';
+      var host = params.get('host') || 'pragma-serve.com';
+      var el = document.createElement('p');
+      el.innerHTML = 'Action : <code>' + action.replace(/[<>&]/g,'') +
+        '</code> — hôte : <code>' + host.replace(/[<>&]/g,'') + '</code>';
+      document.body.appendChild(el);
+    })();
+  </script>
+</body>
+</html>
