@@ -4,28 +4,214 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Atlas SECU — lancement autorisé</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    body{font-family:system-ui,sans-serif;max-width:640px;margin:10vh auto;padding:0 20px;color:#111;line-height:1.45}
-    code{font-size:0.95em}
-    .muted{color:#444}
+    :root{
+      --page-bg:#f7f7f5;--ink:#111;--dim:#6b6b6b;--accent:#8b1e1e;
+      --accent-soft:rgba(139,30,30,.08);--paper:#fff;--grid:rgba(22,22,22,.045);
+      --ok:#1f6b3a;--mono:'IBM Plex Mono',ui-monospace,monospace;
+      --sans:'IBM Plex Sans',system-ui,sans-serif;
+    }
+    body{
+      margin:0;min-height:100vh;color:var(--ink);line-height:1.45;
+      font-family:var(--sans);
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.65),rgba(247,247,245,.92)),
+        repeating-linear-gradient(0deg,transparent 0 23px,var(--grid) 23px 24px),
+        repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px),
+        var(--page-bg);
+    }
+    .wrap{max-width:640px;margin:0 auto;padding:8vh 20px 48px}
+    h1{
+      margin:0 0 8px;font-family:var(--mono);font-size:1.55rem;
+      letter-spacing:.04em;font-weight:700;
+    }
+    .muted{color:var(--dim)}
+    code{
+      font-family:var(--mono);font-size:.9em;
+      background:var(--accent-soft);padding:.1em .35em;
+    }
+    .banner{
+      margin:18px 0;padding:12px 14px;background:var(--paper);
+      border:1px solid var(--ink);box-shadow:3px 3px 0 rgba(17,17,17,.08);
+    }
+    .banner.ok{border-color:var(--ok)}
+    .banner.err{border-color:var(--accent);color:var(--accent)}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+    a.btn,button.btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border:1px solid var(--ink);background:var(--ink);
+      color:#fff;text-decoration:none;font-family:var(--mono);font-size:.78rem;
+      letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+    }
+    a.btn.secondary,button.btn.secondary{
+      background:var(--paper);color:var(--ink);
+    }
+    a.btn:hover,button.btn:hover{opacity:.92}
+    .meta{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+    #panel[hidden]{display:none!important}
   </style>
 </head>
 <body>
-  <h1>Atlas Local</h1>
-  <p class="muted">
-    Deep-link authorizedLaunch reçu. Installez Atlas puis démarrez le client
-    pour exécuter la capacité RoE (cible <code>pragma-serve.com</code> / ALLOW).
-  </p>
-  <p><a href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a> · <a href="/">Retour</a></p>
+  <div class="wrap" id="panel" hidden>
+    <p class="meta" id="session-meta"></p>
+    <h1>Atlas Local</h1>
+    <p class="muted" id="lead">
+      Deep-link <code>authorizedLaunch</code> — pont vers le client local
+      (<code>#scanner</code>).
+    </p>
+    <div class="banner" id="intent-banner" role="status"></div>
+    <div class="banner muted" id="bridge-status" role="status">Recherche d’Atlas Local…</div>
+    <div class="actions" id="actions"></div>
+    <p class="muted">
+      <a href="/">Retour Atlas SECU</a>
+      · <a href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a>
+    </p>
+  </div>
+  <script src="/auth.js"></script>
+  <script src="/authorizedLaunch.js"></script>
   <script>
     (function () {
-      var params = new URLSearchParams(location.search);
-      var action = params.get('action') || '';
-      var host = params.get('host') || 'pragma-serve.com';
-      var el = document.createElement('p');
-      el.innerHTML = 'Action : <code>' + action.replace(/[<>&]/g,'') +
-        '</code> — hôte : <code>' + host.replace(/[<>&]/g,'') + '</code>';
-      document.body.appendChild(el);
+      var session = AtlasAuth.requireSession('/');
+      if (!session) return;
+
+      AuthorizedLaunch.ensureScannerHash();
+
+      var panel = document.getElementById('panel');
+      var intentBanner = document.getElementById('intent-banner');
+      var bridgeStatus = document.getElementById('bridge-status');
+      var actions = document.getElementById('actions');
+      var sessionMeta = document.getElementById('session-meta');
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function addLink(label, href, primary) {
+        var a = document.createElement('a');
+        a.className = 'btn' + (primary ? '' : ' secondary');
+        a.href = href;
+        a.textContent = label;
+        if (href.indexOf('http://') === 0) {
+          a.rel = 'noopener';
+        }
+        actions.appendChild(a);
+        return a;
+      }
+
+      function addButton(label, onClick) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn secondary';
+        b.textContent = label;
+        b.addEventListener('click', onClick);
+        actions.appendChild(b);
+        return b;
+      }
+
+      function go(href) {
+        bridgeStatus.className = 'banner ok';
+        bridgeStatus.textContent = 'Ouverture Atlas Local…';
+        location.assign(href);
+      }
+
+      panel.hidden = false;
+      sessionMeta.textContent =
+        'Session · ' + (session.firstName || session.email) + ' · RoE A';
+
+      var parsed = AuthorizedLaunch.parseAuthorizedLaunch(location.search);
+      if (!parsed.ok) {
+        intentBanner.className = 'banner err';
+        intentBanner.textContent =
+          parsed.reason ||
+          'Deep-link invalide — manque action=recon|scan|vuln|osint.';
+        bridgeStatus.hidden = true;
+        addLink('Retour tableau de bord', '/', false);
+        return;
+      }
+
+      var intent = parsed.intent;
+      intentBanner.className = 'banner ok';
+      intentBanner.innerHTML =
+        '<strong>' +
+        escapeHtml(intent.label) +
+        '</strong> — cible RoE <code>' +
+        escapeHtml(intent.host) +
+        '</code> · fragment <code>#scanner</code>';
+
+      var clientHref = AuthorizedLaunch.authorizedLaunchHref(
+        intent.action,
+        intent.host,
+        AuthorizedLaunch.DEFAULT_CLIENT_ORIGIN
+      );
+      var clientHrefIpv4 = AuthorizedLaunch.authorizedLaunchHref(
+        intent.action,
+        intent.host,
+        AuthorizedLaunch.CLIENT_ORIGIN_IPV4
+      );
+      // Atlas.exe shell: same query + #scanner for local prefill.
+      var shellHref =
+        AuthorizedLaunch.ATLAS_LOCAL_ORIGIN +
+        '/?' +
+        new URLSearchParams({
+          action: intent.action,
+          host: intent.host
+        }).toString() +
+        '#scanner';
+
+      function renderFallback(bridge) {
+        actions.innerHTML = '';
+        if (bridge && bridge.clientOrigin) {
+          var href =
+            bridge.clientOrigin.indexOf('127.0.0.1') !== -1
+              ? clientHrefIpv4
+              : clientHref;
+          bridgeStatus.className = 'banner ok';
+          bridgeStatus.textContent =
+            'Client Atlas détecté sur ' +
+            bridge.clientOrigin +
+            ' — ouverture Scanner.';
+          addLink('Ouvrir le Scanner', href, true);
+          addLink('Atlas.exe (:17865)', shellHref, false);
+          addButton('Réessayer', function () {
+            location.reload();
+          });
+          go(href);
+          return;
+        }
+        if (bridge && bridge.shellOrigin) {
+          bridgeStatus.className = 'banner ok';
+          bridgeStatus.innerHTML =
+            'Atlas.exe détecté sur <code>:17865</code>. ' +
+            'Client Vite <code>:3002</code> absent — ouvrez le shell local, ' +
+            'démarrez l’API, puis le Scanner.';
+          addLink('Ouvrir Atlas Local', shellHref, true);
+          addLink('Essayer Scanner :3002', clientHref, false);
+          addLink('Télécharger Setup', '/Atlas-Setup.exe', false);
+          addButton('Réessayer le pont', function () {
+            location.reload();
+          });
+          return;
+        }
+        bridgeStatus.className = 'banner err';
+        bridgeStatus.innerHTML =
+          'Atlas Local introuvable (<code>localhost:3002</code> / ' +
+          '<code>127.0.0.1:17865</code>). Installez ou lancez Atlas, puis réessayez.';
+        addLink('Ouvrir Scanner (si lancé)', clientHref, true);
+        addLink('Ouvrir Atlas.exe', shellHref, false);
+        addLink('Télécharger Atlas-Setup.exe', '/Atlas-Setup.exe', false);
+        addButton('Réessayer le pont', function () {
+          location.reload();
+        });
+      }
+
+      AuthorizedLaunch.findAtlasLocalBridge(1400).then(renderFallback);
     })();
   </script>
 </body>
