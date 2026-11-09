@@ -647,7 +647,7 @@
           <div class="session-chip" role="status" aria-live="polite">
             <span class="dot" aria-hidden="true"></span>
             <span class="who" id="dash-who">—</span>
-            <span class="role">Administrateur</span>
+            <span class="role" id="dash-role">—</span>
           </div>
           <button type="button" class="linkish" id="open-pw">Mot de passe</button>
           <button type="button" class="btn ghost" id="logout-btn">Déconnexion</button>
@@ -943,6 +943,11 @@
         clearBodyModes();
         document.body.classList.add('is-dash');
         dashWho.textContent = session.firstName || 'Utilisateur';
+        var roleEl = document.getElementById('dash-role');
+        if (roleEl) {
+          roleEl.textContent = AtlasAuth.roleChipLabel(session) || 'Session';
+          roleEl.title = (session.post || '') + ' · clearance ' + (session.clearance || '');
+        }
         syncPragmaProductLinks(session);
         vaultAuth.hidden = true;
         setCapBarVisible(false);

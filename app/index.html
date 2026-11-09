@@ -23,41 +23,41 @@
         var(--page-bg);
     }
     .wrap{max-width:720px;margin:0 auto;padding:8vh 20px 48px}
-    .admin-badge{
+    .session-badge{
       display:flex;align-items:center;gap:12px;flex-wrap:wrap;
       margin:0 0 22px;padding:12px 14px;
       background:var(--paper);border:1px solid var(--ink);
       box-shadow:3px 3px 0 rgba(17,17,17,.08);
     }
-    .admin-badge .stamp{
+    .session-badge .stamp{
       display:inline-flex;align-items:center;gap:8px;
       padding:5px 10px;border:2px solid var(--accent);color:var(--accent);
       font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
       background:var(--accent-soft);
     }
-    .admin-badge .stamp::before{
+    .session-badge .stamp::before{
       content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);
       box-shadow:0 0 0 3px rgba(139,30,30,.18);
     }
-    .admin-badge .who{
+    .session-badge .who{
       font-family:var(--mono);font-size:.85rem;letter-spacing:.04em;font-weight:600;
     }
-    .admin-badge .meta{
+    .session-badge .meta{
       margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
       text-transform:uppercase;color:var(--dim);
     }
     #content{font-family:var(--mono);font-size:1.1rem;letter-spacing:.08em}
     .nav{margin-top:24px;font-size:.95rem}
     .nav a{color:var(--ink);margin-right:12px}
-    #admin-session-badge[hidden],#content[hidden],#nav[hidden]{display:none!important}
+    #session-badge[hidden],#content[hidden],#nav[hidden]{display:none!important}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div id="admin-session-badge" class="admin-badge" hidden role="status" aria-live="polite">
-      <span class="stamp">Session administrateur</span>
-      <span class="who" id="admin-session-name"></span>
-      <span class="meta">RoE</span>
+    <div id="session-badge" class="session-badge" hidden role="status" aria-live="polite">
+      <span class="stamp" id="session-role-stamp">—</span>
+      <span class="who" id="session-name"></span>
+      <span class="meta" id="session-clearance">RoE</span>
     </div>
     <div id="content" hidden>1 2 3 4</div>
     <p class="nav" id="nav" hidden>
@@ -71,8 +71,12 @@
     (function () {
       var session = AtlasAuth.requireSession('/');
       if (!session) return;
-      document.getElementById('admin-session-badge').hidden = false;
-      document.getElementById('admin-session-name').textContent = session.firstName || 'Utilisateur';
+      var role = AtlasAuth.resolveRole(session);
+      document.getElementById('session-badge').hidden = false;
+      document.getElementById('session-name').textContent = session.firstName || 'Utilisateur';
+      document.getElementById('session-role-stamp').textContent = (role && role.post) || 'Session';
+      document.getElementById('session-clearance').textContent =
+        role ? ('Clearance ' + role.clearance) : 'RoE';
       document.getElementById('content').hidden = false;
       document.getElementById('nav').hidden = false;
       var pragmaLinks = document.getElementById('pragma-product-links');

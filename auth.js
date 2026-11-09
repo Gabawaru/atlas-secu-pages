@@ -1,28 +1,51 @@
 /**
  * Atlas — client-side allowlist gate (static Pages).
- * Session: sessionStorage key `atlas_secu_session` = JSON { email, firstName, at }.
+ * Session: sessionStorage key `atlas_secu_session` = JSON {
+ *   email, firstName, post, clearance, systemRole, at
+ * }.
  * Password overrides: localStorage key `atlas_secu_pw_overrides` = { [email]: password }.
  * Not cryptographic auth; soft gate for a static site.
+ *
+ * Two axes (see confidential-roles research):
+ *   post      — ops / governance job title (Direction, Stagiaire, …)
+ *   clearance — need-to-know band A–D (data capabilities, not social rank)
  */
 (function (global) {
   var SESSION_KEY = 'atlas_secu_session';
   var PW_KEY = 'atlas_secu_pw_overrides';
 
+  /** Clearance rank for comparisons (A public → D governance). */
+  var CLEARANCE_RANK = { A: 1, B: 2, C: 3, D: 4 };
+
+  /**
+   * Allowlisted Atlas sessions.
+   * post / clearance from org research + hierarchie-acces (keep simple).
+   * systemRole: admin | operator | viewer | auditor (product capability, not org chart).
+   */
   var AUTHORIZED_USERS = [
     {
       email: 'gabriel@atlas-secu.com',
       firstName: 'Gabriel',
-      password: '0000'
+      password: '0000',
+      post: 'Stagiaire',
+      clearance: 'B',
+      systemRole: 'operator'
     },
     {
       email: 'benjamin@atlas-secu.com',
       firstName: 'Benjamin',
-      password: '0000'
+      password: '0000',
+      post: 'Direction',
+      clearance: 'D',
+      systemRole: 'admin'
     },
     {
       email: 'romain@atlas-secu.com',
       firstName: 'Romain',
-      password: '0000'
+      password: '0000',
+      post: 'Direction',
+      clearance: 'D',
+      systemRole: 'admin'
     }
   ];
 
@@ -71,17 +94,60 @@
     return String(password || '') === effectivePassword(user);
   }
 
+  /** Resolve post + clearance for a session or email (hydrates from allowlist). */
+  function resolveRole(sessionOrEmail) {
+    var email = typeof sessionOrEmail === 'string'
+      ? sessionOrEmail
+      : (sessionOrEmail && sessionOrEmail.email);
+    var user = findUser(email);
+    if (!user) return null;
+    var fromSession = sessionOrEmail && typeof sessionOrEmail === 'object' ? sessionOrEmail : null;
+    return {
+      email: user.email,
+      firstName: (fromSession && fromSession.firstName) || user.firstName,
+      post: user.post || 'Ops',
+      clearance: user.clearance || 'B',
+      systemRole: user.systemRole || 'operator'
+    };
+  }
+
+  /** Compact chip label: "Direction · D" */
+  function roleChipLabel(sessionOrEmail) {
+    var role = resolveRole(sessionOrEmail);
+    if (!role) return '';
+    return role.post + ' · ' + role.clearance;
+  }
+
+  function clearanceRank(band) {
+    var key = String(band || '').toUpperCase();
+    return Object.prototype.hasOwnProperty.call(CLEARANCE_RANK, key) ? CLEARANCE_RANK[key] : 0;
+  }
+
+  /** True if session clearance is at least minBand (e.g. 'B'). */
+  function hasClearance(session, minBand) {
+    var role = resolveRole(session);
+    if (!role) return false;
+    return clearanceRank(role.clearance) >= clearanceRank(minBand);
+  }
+
+  function buildSession(user) {
+    return {
+      email: user.email,
+      firstName: user.firstName,
+      post: user.post || 'Ops',
+      clearance: user.clearance || 'B',
+      systemRole: user.systemRole || 'operator',
+      at: Date.now()
+    };
+  }
+
   function login(email, password) {
     var user = findUser(email);
     if (!user) return { ok: false, reason: 'unauthorized_email' };
     if (!passwordMatches(user, password)) {
       return { ok: false, reason: 'bad_password' };
     }
-    var session = {
-      email: user.email,
-      firstName: user.firstName,
-      at: Date.now()
-    };
+    var session = buildSession(user);
     try {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch (e) {
@@ -103,8 +169,13 @@
         logout();
         return null;
       }
-      var user = findUser(parsed.email);
-      if (!parsed.firstName && user) parsed.firstName = user.firstName;
+      var role = resolveRole(parsed);
+      if (role) {
+        parsed.firstName = role.firstName;
+        parsed.post = role.post;
+        parsed.clearance = role.clearance;
+        parsed.systemRole = role.systemRole;
+      }
       return parsed;
     } catch (e) {
       logout();
@@ -123,12 +194,11 @@
 
   /**
    * Product links PragmaServe / PragmaCloud / PragmaUC:
-   * only Benjamin, Romain, Gabriel Atlas sessions — never anonymous marketing.
+   * accredited session with clearance ≥ B (Gabriel / Benjamin / Romain).
+   * Never anonymous marketing.
    */
   function canSeePragmaProductLinks(session) {
-    var s = session || getSession();
-    if (!s || !s.email) return false;
-    return !!findUser(s.email);
+    return hasClearance(session || getSession(), 'B');
   }
 
   /** Persist password override for this browser (localStorage). */
@@ -166,11 +236,15 @@
   global.AtlasAuth = {
     SESSION_KEY: SESSION_KEY,
     PW_KEY: PW_KEY,
+    CLEARANCE_RANK: CLEARANCE_RANK,
     AUTHORIZED_USERS: AUTHORIZED_USERS,
     login: login,
     logout: logout,
     getSession: getSession,
     requireSession: requireSession,
+    resolveRole: resolveRole,
+    roleChipLabel: roleChipLabel,
+    hasClearance: hasClearance,
     canSeePragmaProductLinks: canSeePragmaProductLinks,
     setPassword: setPassword,
     changePassword: changePassword,
