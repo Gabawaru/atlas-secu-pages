@@ -543,9 +543,9 @@
             <p class="explain">Le tableau de bord et les capacités RoE n’apparaissent qu’après une session Atlas accréditée.</p>
           </div>
           <div class="trust-item reveal reveal-delay-3">
-            <div class="label">URL</div>
-            <div class="value">N’importe quelle URL</div>
-            <p class="explain">Atlas vise l’URL que vous indiquez — site, API ou service — uniquement dans le cadre d’une autorisation claire.</p>
+            <div class="label">RoE</div>
+            <div class="value">Domaines Pragma autorisés</div>
+            <p class="explain">Policy Guard n’autorise que le périmètre RoE : <code style="font-family:var(--mono);font-size:.9em">*.pragma-serve.com</code>, <code style="font-family:var(--mono);font-size:.9em">*.pragma-cloud.com</code>, <code style="font-family:var(--mono);font-size:.9em">*.pragma.mc</code> — pas n’importe quelle URL.</p>
           </div>
           <div class="trust-item reveal reveal-delay-4">
             <div class="label">Brand</div>
@@ -558,11 +558,14 @@
       <section class="section scope" data-reveal>
         <div class="section-line"></div>
         <p class="section-kicker reveal">Rules of Engagement</p>
-        <h2 class="reveal reveal-delay-1">URL visée</h2>
+        <h2 class="reveal reveal-delay-1">Périmètre RoE</h2>
         <p class="support reveal reveal-delay-2">
-          En pratique, Atlas travaille sur <strong>n’importe quelle URL</strong> que vous choisissez
-          (page web, API, hôte). Ce n’est pas un « scope » magique : c’est la cible que vous
-          autorisez explicitement. Sans autorisation, pas de lancement.
+          Atlas ne scanne que les <strong>domaines Pragma autorisés</strong>
+          (<code style="font-family:var(--mono);font-size:.9em">*.pragma-serve.com</code>,
+          <code style="font-family:var(--mono);font-size:.9em">*.pragma-cloud.com</code>,
+          <code style="font-family:var(--mono);font-size:.9em">*.pragma.mc</code>).
+          Hors RoE → refus Policy Guard. Avant Sign / scan, l’opérateur doit
+          <strong>se déclarer responsable des tests</strong>. Sans autorisation, pas de lancement.
         </p>
         <p class="support" style="margin-bottom:0">
           Les capacités restent réservées aux comptes autorisés.
