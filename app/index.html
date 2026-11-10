@@ -2,42 +2,43 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atlas — Espace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      --page-bg:#f7f7f5;--ink:#111;--dim:#6b6b6b;--accent:#8b1e1e;
-      --accent-soft:rgba(139,30,30,.08);--paper:#fff;--grid:rgba(22,22,22,.045);
+      --page-bg:#f4f8fa;--ink:#2a3d45;--dim:#6b818a;--accent:#b23a3a;
+      --accent-soft:rgba(178,58,58,.08);--paper:#fff;--grid:rgba(42,61,69,.05);
       --mono:'IBM Plex Mono',ui-monospace,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif;
     }
+    html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
     body{
-      margin:0;min-height:100vh;color:var(--ink);line-height:1.45;
-      font-family:var(--sans);
+      margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);line-height:1.45;
+      font-family:var(--sans);overflow-x:hidden;
       background:
-        linear-gradient(180deg,rgba(255,255,255,.65),rgba(247,247,245,.92)),
+        linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,248,250,.94)),
         repeating-linear-gradient(0deg,transparent 0 23px,var(--grid) 23px 24px),
         repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px),
         var(--page-bg);
     }
-    .wrap{max-width:720px;margin:0 auto;padding:8vh 20px 48px}
+    .wrap{max-width:720px;margin:0 auto;padding:8vh 20px calc(48px + env(safe-area-inset-bottom,0px))}
     .session-badge{
       display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-      margin:0 0 22px;padding:12px 14px;
-      background:var(--paper);border:1px solid var(--ink);
-      box-shadow:3px 3px 0 rgba(17,17,17,.08);
+      margin:0 0 22px;padding:12px 14px;min-height:44px;
+      background:var(--paper);border:1px solid rgba(42,61,69,.22);
+      box-shadow:3px 3px 0 rgba(42,61,69,.06);
     }
     .session-badge .stamp{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:5px 10px;border:2px solid var(--accent);color:var(--accent);
+      display:inline-flex;align-items:center;gap:8px;min-height:36px;
+      padding:8px 12px;border:2px solid var(--accent);color:var(--accent);
       font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
       background:var(--accent-soft);
     }
     .session-badge .stamp::before{
       content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);
-      box-shadow:0 0 0 3px rgba(139,30,30,.18);
+      box-shadow:0 0 0 3px rgba(178,58,58,.18);
     }
     .session-badge .who{
       font-family:var(--mono);font-size:.85rem;letter-spacing:.04em;font-weight:600;
@@ -46,10 +47,18 @@
       margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;
       text-transform:uppercase;color:var(--dim);
     }
-    #content{font-family:var(--mono);font-size:1.1rem;letter-spacing:.08em}
-    .nav{margin-top:24px;font-size:.95rem}
-    .nav a{color:var(--ink);margin-right:12px}
+    #content{font-family:var(--mono);font-size:1.1rem;letter-spacing:.08em;overflow-wrap:anywhere}
+    .nav{margin-top:24px;font-size:.95rem;display:flex;flex-wrap:wrap;gap:8px 12px}
+    .nav a{
+      color:var(--ink);display:inline-flex;align-items:center;
+      min-height:44px;padding:8px 4px;text-decoration:underline;
+    }
     #session-badge[hidden],#content[hidden],#nav[hidden]{display:none!important}
+    @media (max-width:640px){
+      .wrap{padding:6vh 16px calc(40px + env(safe-area-inset-bottom,0px))}
+      .session-badge .meta{margin-left:0;width:100%}
+      #content{font-size:1rem;letter-spacing:.04em}
+    }
   </style>
 </head>
 <body>

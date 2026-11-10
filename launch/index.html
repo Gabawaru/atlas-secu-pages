@@ -2,56 +2,68 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atlas — lancement autorisé</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      --page-bg:#f7f7f5;--ink:#111;--dim:#6b6b6b;--accent:#8b1e1e;
-      --accent-soft:rgba(139,30,30,.08);--paper:#fff;--grid:rgba(22,22,22,.045);
-      --ok:#1f6b3a;--mono:'IBM Plex Mono',ui-monospace,monospace;
+      --page-bg:#f4f8fa;--ink:#2a3d45;--dim:#6b818a;--accent:#b23a3a;
+      --accent-soft:rgba(178,58,58,.08);--paper:#fff;--grid:rgba(42,61,69,.05);
+      --ok:#2d7a4f;--teal:#2f8f8a;--teal-deep:#1f6f6b;
+      --mono:'IBM Plex Mono',ui-monospace,monospace;
       --sans:'IBM Plex Sans',system-ui,sans-serif;
     }
+    html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
     body{
-      margin:0;min-height:100vh;color:var(--ink);line-height:1.45;
-      font-family:var(--sans);
+      margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);line-height:1.45;
+      font-family:var(--sans);overflow-x:hidden;
       background:
-        linear-gradient(180deg,rgba(255,255,255,.65),rgba(247,247,245,.92)),
+        linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,248,250,.94)),
         repeating-linear-gradient(0deg,transparent 0 23px,var(--grid) 23px 24px),
         repeating-linear-gradient(90deg,transparent 0 23px,var(--grid) 23px 24px),
         var(--page-bg);
     }
-    .wrap{max-width:640px;margin:0 auto;padding:8vh 20px 48px}
+    .wrap{max-width:640px;margin:0 auto;padding:8vh 20px calc(48px + env(safe-area-inset-bottom,0px))}
     h1{
-      margin:0 0 8px;font-family:var(--mono);font-size:1.55rem;
+      margin:0 0 8px;font-family:var(--mono);font-size:clamp(1.25rem,5vw,1.55rem);
       letter-spacing:.04em;font-weight:700;
     }
     .muted{color:var(--dim)}
     code{
       font-family:var(--mono);font-size:.9em;
-      background:var(--accent-soft);padding:.1em .35em;
+      background:var(--accent-soft);padding:.1em .35em;overflow-wrap:anywhere;
     }
     .banner{
       margin:18px 0;padding:12px 14px;background:var(--paper);
-      border:1px solid var(--ink);box-shadow:3px 3px 0 rgba(17,17,17,.08);
+      border:1px solid rgba(42,61,69,.22);box-shadow:3px 3px 0 rgba(42,61,69,.06);
+      overflow-wrap:anywhere;
     }
     .banner.ok{border-color:var(--ok)}
     .banner.err{border-color:var(--accent);color:var(--accent)}
     .actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
     a.btn,button.btn{
       display:inline-flex;align-items:center;justify-content:center;
-      padding:10px 14px;border:1px solid var(--ink);background:var(--ink);
-      color:#fff;text-decoration:none;font-family:var(--mono);font-size:.78rem;
-      letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+      min-height:44px;padding:12px 16px;border:1.5px solid var(--teal-deep);
+      background:var(--teal);color:#fff;text-decoration:none;
+      font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;
+      text-transform:uppercase;cursor:pointer;
     }
     a.btn.secondary,button.btn.secondary{
-      background:var(--paper);color:var(--ink);
+      background:var(--paper);color:var(--teal-deep);border-color:rgba(47,143,138,.35);
     }
     a.btn:hover,button.btn:hover{opacity:.92}
     .meta{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+    .wrap > p.muted a{
+      color:var(--teal-deep);display:inline-flex;align-items:center;min-height:44px;
+    }
     #panel[hidden]{display:none!important}
+    @media (max-width:640px){
+      .wrap{padding:6vh 16px calc(40px + env(safe-area-inset-bottom,0px))}
+      .actions{flex-direction:column;align-items:stretch}
+      a.btn,button.btn{width:100%}
+    }
   </style>
 </head>
 <body>
