@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atlas — Pentest autorisé</title>
   <meta name="description" content="Atlas — assistant de pentest autorisé. Téléchargement public, capacités RoE sous accréditation.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,9 +22,14 @@
       --shadow:0 18px 50px rgba(42,61,69,.08);
     }
     *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
+    html{
+      scroll-behavior:smooth;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+      overflow-x:hidden;
+    }
     body{
-      margin:0;min-height:100vh;color:var(--ink);line-height:1.55;
+      margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);line-height:1.55;
       font-family:var(--display);
       background:
         radial-gradient(1100px 520px at 12% -8%,rgba(47,143,138,.16),transparent 60%),
@@ -461,6 +466,107 @@
     .pw-msg{margin-top:10px;font-family:var(--mono);font-size:.72rem}
     .pw-msg.ok{color:var(--ok)}
     .pw-msg.err{color:var(--accent)}
+
+    /* —— Mobile: readable phone layout, no horizontal scroll, ≥44px targets —— */
+    @media (max-width:640px){
+      .nav{padding:16px 16px 0;gap:12px;align-items:flex-start}
+      .brand-lockup .name{letter-spacing:.16em;font-size:.7rem}
+      .nav-actions{gap:8px;justify-content:flex-end}
+      .linkish{
+        min-height:44px;min-width:44px;padding:12px 14px;
+        display:inline-flex;align-items:center;
+      }
+      .btn,a.btn,button.btn{
+        min-height:44px;padding:12px 18px;
+      }
+      .hero{padding:28px 16px 40px;gap:20px}
+      .hero-brand{
+        font-size:clamp(2rem,12vw,2.8rem);letter-spacing:.12em;word-break:keep-all;
+      }
+      .hero h1{font-size:1.15rem;max-width:none}
+      .hero .lede{font-size:1rem;max-width:none;margin-bottom:22px}
+      .hero-cta{flex-direction:column;align-items:stretch}
+      .hero-cta .btn{width:100%}
+      .hero-visual{width:min(260px,72vw)}
+      .section{padding:48px 16px}
+      .section h2{max-width:none}
+      .section .support{max-width:none}
+      .trust-strip{grid-template-columns:1fr}
+      .cta-band{padding:16px 16px 96px}
+      .cta-band-inner{padding:28px 18px}
+      .footer{
+        padding:0 16px calc(96px + env(safe-area-inset-bottom,0px));
+        flex-direction:column;align-items:flex-start;gap:10px;
+      }
+      .boot-inner{flex-direction:column;gap:12px}
+      .boot-word{letter-spacing:.16em;font-size:clamp(1.35rem,7vw,1.8rem)}
+
+      #cap-bar{
+        gap:8px;justify-content:flex-start;
+        padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+      }
+      .cap-bar-label{width:100%;margin:0 0 2px}
+      .cap-bar-chip{
+        flex:1 1 calc(50% - 8px);min-height:44px;padding:12px 10px;
+        text-align:center;display:inline-flex;align-items:center;justify-content:center;
+      }
+
+      #vault-stage{
+        padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+        overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;
+      }
+      .vault-lockup{flex-direction:column;gap:10px;max-width:100%}
+      .vault-lockup .vault-mark{width:72px;height:72px}
+      .vault-word{
+        letter-spacing:.14em;font-size:clamp(1.45rem,7.5vw,1.9rem);
+        justify-content:center;max-width:100%;
+      }
+      body.is-vault-auth .vault-lockup{
+        top:28%;transform:translate(-50%,-50%) scale(1.05);
+      }
+      body.is-vault-open .vault-arc-l{transform:translate(-14px,-6px) rotate(-12deg)}
+      body.is-vault-open .vault-arc-r{transform:translate(14px,-6px) rotate(12deg)}
+      body.is-vault-open .vault-letter:nth-child(1){transform:translate(-18px,-10px) rotate(-6deg)}
+      body.is-vault-open .vault-letter:nth-child(2){transform:translate(-8px,12px) rotate(4deg)}
+      body.is-vault-open .vault-letter:nth-child(3){transform:translate(0,-14px)}
+      body.is-vault-open .vault-letter:nth-child(4){transform:translate(8px,12px) rotate(-4deg)}
+      body.is-vault-open .vault-letter:nth-child(5){transform:translate(18px,-8px) rotate(6deg)}
+      .vault-auth{width:100%;padding:22px 18px 18px;margin-top:8px}
+      .vault-auth input{
+        font-size:16px;min-height:44px;padding:12px 14px;
+      }
+      .vault-auth .actions{flex-direction:column}
+      .vault-auth .actions .btn{min-width:0;width:100%}
+
+      .dash-wrap{padding:24px 16px calc(48px + env(safe-area-inset-bottom,0px))}
+      .dash-top{flex-direction:column;align-items:stretch}
+      .dash-brand .title{letter-spacing:.14em;font-size:1.15rem}
+      .dash-brand .sub{letter-spacing:.08em;line-height:1.4}
+      .dash-actions-bar{width:100%}
+      .session-chip{
+        width:100%;min-height:44px;border-radius:12px;flex-wrap:wrap;
+        box-sizing:border-box;
+      }
+      .dash-actions-bar .btn,.dash-actions-bar .linkish{flex:1 1 auto;justify-content:center}
+      .pragma-links a{
+        min-height:44px;display:inline-flex;align-items:center;padding:12px 14px;
+      }
+      .cap-slot{overflow:hidden}
+      .cap-aura,.cap-ring{inset:-6px}
+      .cap-orbit{inset:-10px}
+      .cap-btn{min-height:112px;padding:18px 16px}
+      .pw-panel{max-width:none}
+      .pw-panel input{
+        max-width:none;width:100%;font-size:16px;min-height:44px;padding:12px 14px;
+      }
+      .pw-actions .btn,.pw-actions .linkish{min-height:44px}
+    }
+
+    @media (max-width:380px){
+      .nav-actions .btn.secondary{padding:12px 12px;font-size:.92rem}
+      .cap-bar-chip{flex:1 1 100%}
+      .hero-brand{letter-spacing:.08em}
+    }
 
     @media (prefers-reduced-motion:reduce){
       html{scroll-behavior:auto}
