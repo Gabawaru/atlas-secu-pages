@@ -4,22 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atlas — Créatif</title>
-  <meta name="description" content="Atlas — moodboard créatif. Document clinique.">
+  <meta name="description" content="Atlas — moodboard créatif produit.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Calm sterile lab — soft paper, warm liminal cue (not horror) */
-      --paper: #f4f2ea;
-      --paper-deep: #ebe6d8;
-      --warm: #e4dcc4;
-      --ink: #1c2426;
-      --ink-soft: #3d4a4e;
-      --muted: #6a7578;
-      --stamp: #1f6f6b;
-      --rule: rgba(28, 36, 38, 0.18);
-      --accent-line: rgba(31, 111, 107, 0.28);
+      /* Warm calm product-lab — not medical, not horror */
+      --bg: #f2efe6;
+      --bg-soft: #e8e3d6;
+      --ink: #1e2a2e;
+      --ink-soft: #44555a;
+      --muted: #6d7c80;
+      --teal: #2f8f8a;
+      --teal-deep: #1f6f6b;
       --display: "Archivo Black", "Arial Black", sans-serif;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
       --ease: cubic-bezier(0.22, 0.9, 0.28, 1);
@@ -32,56 +30,38 @@
       margin: 0;
       color: var(--ink);
       font-family: var(--mono);
-      background: var(--paper-deep);
+      background: var(--bg);
       overflow-x: hidden;
     }
 
-    /* Soft field — sterile paper + subtle liminal depth cue */
     .field {
       position: fixed;
       inset: 0;
       z-index: 0;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 90% 60% at 50% 18%, rgba(255, 255, 252, 0.7), transparent 62%),
-        radial-gradient(ellipse 70% 50% at 50% 88%, rgba(212, 200, 160, 0.22), transparent 65%),
-        linear-gradient(165deg, #faf8f2 0%, var(--paper) 45%, var(--warm) 100%);
+        radial-gradient(ellipse 100% 70% at 50% 0%, rgba(255, 252, 245, 0.85), transparent 58%),
+        radial-gradient(ellipse 80% 50% at 80% 90%, rgba(47, 143, 138, 0.08), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 12% 70%, rgba(180, 160, 110, 0.12), transparent 55%),
+        linear-gradient(168deg, #faf7f0 0%, var(--bg) 48%, var(--bg-soft) 100%);
     }
 
-    /* Quiet perspective grid — moodboard liminal, not corridor horror */
     .field::before {
       content: "";
       position: absolute;
       inset: 0;
-      opacity: 0.28;
+      opacity: 0.22;
       background-image:
-        linear-gradient(var(--accent-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--accent-line) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: radial-gradient(ellipse at 50% 42%, #000 15%, transparent 72%);
-      animation: grid-drift 36s linear infinite;
-    }
-
-    /* Soft lab light wash */
-    .field::after {
-      content: "";
-      position: absolute;
-      left: 20%;
-      right: 20%;
-      top: 0;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 250, 0.85), transparent);
-      box-shadow: 0 12px 48px 8px rgba(255, 252, 240, 0.35);
-      animation: light-breathe 8s ease-in-out infinite;
+        linear-gradient(rgba(47, 143, 138, 0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47, 143, 138, 0.14) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at 50% 40%, #000 18%, transparent 70%);
+      animation: grid-drift 40s linear infinite;
     }
 
     @keyframes grid-drift {
       from { background-position: 0 0, 0 0; }
-      to { background-position: 48px 24px, 24px 48px; }
-    }
-    @keyframes light-breathe {
-      0%, 100% { opacity: 0.55; }
-      50% { opacity: 1; }
+      to { background-position: 56px 28px, 28px 56px; }
     }
 
     .stage {
@@ -92,69 +72,24 @@
       display: grid;
       grid-template-rows: auto 1fr auto;
       padding:
-        max(16px, env(safe-area-inset-top))
-        max(16px, env(safe-area-inset-right))
-        max(16px, env(safe-area-inset-bottom))
-        max(16px, env(safe-area-inset-left));
+        max(20px, env(safe-area-inset-top))
+        max(20px, env(safe-area-inset-right))
+        max(20px, env(safe-area-inset-bottom))
+        max(20px, env(safe-area-inset-left));
     }
 
-    .doc-bar {
+    .top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
-      padding: 10px 12px;
-      background:
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 27px,
-          rgba(28, 36, 38, 0.035) 28px
-        ),
-        rgba(255, 253, 248, 0.92);
-      border: 1px solid var(--rule);
-      border-bottom-width: 2px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
       opacity: 0;
       transform: translateY(-8px);
       animation: rise 0.7s var(--ease) 0.06s forwards;
     }
 
-    .doc-meta {
-      display: grid;
-      gap: 4px;
-      font-size: 0.62rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--ink-soft);
-    }
-    .doc-meta strong {
-      color: var(--stamp);
-      font-weight: 600;
-      letter-spacing: 0.16em;
-    }
-
-    .stamp {
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--stamp);
-      border: 1.5px solid var(--stamp);
-      padding: 6px 10px;
-      align-self: center;
-      opacity: 0;
-      animation: stamp-in 0.5s var(--ease) 0.45s forwards;
-    }
-
-    .links {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-    }
     .mono-link {
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       text-decoration: none;
@@ -163,8 +98,8 @@
       transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
     }
     .mono-link:hover {
-      color: var(--stamp);
-      border-color: var(--stamp);
+      color: var(--teal-deep);
+      border-color: var(--teal);
     }
 
     .hero {
@@ -172,7 +107,7 @@
       place-items: center;
       text-align: center;
       gap: clamp(16px, 3.5vh, 28px);
-      padding: clamp(20px, 5vh, 48px) 12px;
+      padding: clamp(16px, 4vh, 40px) 12px;
     }
 
     .mark-wrap {
@@ -180,23 +115,23 @@
       aspect-ratio: 1;
       opacity: 0;
       transform: scale(0.92) translateY(14px);
-      animation: rise 0.9s var(--ease) 0.18s forwards;
-      filter: drop-shadow(0 6px 16px rgba(28, 36, 38, 0.1));
+      animation: rise 0.9s var(--ease) 0.16s forwards;
+      filter: drop-shadow(0 8px 20px rgba(30, 42, 46, 0.1));
     }
     .mark-svg { width: 100%; height: 100%; overflow: visible; display: block; }
     .mark-svg .frame { stroke: var(--ink); stroke-width: 7; fill: none; stroke-linejoin: round; }
     .mark-svg .inner { stroke: var(--ink); stroke-width: 6; fill: none; stroke-linejoin: round; }
     .mark-svg .orbit {
-      stroke: var(--stamp);
+      stroke: var(--teal);
       stroke-width: 2.2;
       fill: none;
-      opacity: 0.85;
+      opacity: 0.9;
       transform-origin: 60px 62px;
       animation: orbit-spin 14s linear infinite;
     }
-    .mark-svg .orbit.alt { animation-duration: 18s; animation-direction: reverse; opacity: 0.5; }
-    .mark-svg .link { stroke: var(--stamp); stroke-width: 2; fill: none; opacity: 0.8; }
-    .mark-svg .node { fill: var(--stamp); }
+    .mark-svg .orbit.alt { animation-duration: 18s; animation-direction: reverse; opacity: 0.55; }
+    .mark-svg .link { stroke: var(--teal); stroke-width: 2; fill: none; opacity: 0.85; }
+    .mark-svg .node { fill: var(--teal); }
 
     @keyframes orbit-spin { to { transform: rotate(360deg); } }
 
@@ -214,6 +149,18 @@
       animation: rise 0.95s var(--ease) 0.28s forwards;
     }
 
+    .lede {
+      margin: 0;
+      max-width: 28ch;
+      font-size: clamp(0.72rem, 2vw, 0.85rem);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.85s var(--ease) 0.4s forwards;
+    }
+
     .cta-row {
       display: flex;
       flex-wrap: wrap;
@@ -221,7 +168,7 @@
       justify-content: center;
       opacity: 0;
       transform: translateY(10px);
-      animation: rise 0.85s var(--ease) 0.42s forwards;
+      animation: rise 0.85s var(--ease) 0.5s forwards;
     }
 
     .cta {
@@ -237,23 +184,23 @@
       text-transform: uppercase;
       text-decoration: none;
       color: #fff;
-      background: var(--ink);
-      border: 1.5px solid var(--ink);
-      transition: background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
+      background: var(--teal);
+      border: 1.5px solid var(--teal-deep);
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease);
     }
     .cta:hover {
       transform: translateY(-2px);
-      background: var(--stamp);
-      border-color: var(--stamp);
+      background: var(--teal-deep);
     }
     .cta.ghost {
       color: var(--ink);
-      background: rgba(255, 253, 248, 0.9);
-      border-color: var(--ink);
+      background: rgba(255, 252, 245, 0.75);
+      border-color: rgba(30, 42, 46, 0.28);
     }
     .cta.ghost:hover {
       color: #fff;
       background: var(--ink);
+      border-color: var(--ink);
     }
 
     .foot {
@@ -261,23 +208,15 @@
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      padding: 10px 12px;
       font-size: 0.62rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--muted);
-      background: rgba(255, 253, 248, 0.9);
-      border: 1px solid var(--rule);
-      border-top-width: 2px;
       opacity: 0;
-      animation: rise 0.7s var(--ease) 0.55s forwards;
+      animation: rise 0.7s var(--ease) 0.6s forwards;
     }
 
     @keyframes rise {
-      to { opacity: 1; transform: none; }
-    }
-    @keyframes stamp-in {
-      from { opacity: 0; transform: scale(1.06); }
       to { opacity: 1; transform: none; }
     }
 
@@ -286,21 +225,18 @@
       .brand { letter-spacing: 0.08em; }
       .cta-row { width: 100%; max-width: 320px; flex-direction: column; }
       .cta { width: 100%; }
-      .doc-bar { flex-direction: column; }
-      .stamp { align-self: flex-start; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .field::before,
-      .field::after,
       .mark-svg .orbit,
-      .doc-bar,
-      .stamp,
+      .top,
       .mark-wrap,
       .brand,
+      .lede,
       .cta-row,
       .foot { animation: none !important; }
-      .doc-bar, .stamp, .mark-wrap, .brand, .cta-row, .foot {
+      .top, .mark-wrap, .brand, .lede, .cta-row, .foot {
         opacity: 1;
         transform: none;
       }
@@ -311,16 +247,9 @@
   <div class="field" aria-hidden="true"></div>
 
   <div class="stage">
-    <header class="doc-bar">
-      <div class="doc-meta">
-        <strong>Document clinique</strong>
-        <span>Ref · ATLAS / CREATIF</span>
-      </div>
-      <span class="stamp" aria-hidden="true">Moodboard</span>
-      <nav class="links" aria-label="Navigation">
-        <a class="mono-link" href="/">Atlas</a>
-        <a class="mono-link" href="/#download">Télécharger</a>
-      </nav>
+    <header class="top">
+      <a class="mono-link" href="/">Atlas</a>
+      <a class="mono-link" href="/#download">Télécharger</a>
     </header>
 
     <main class="hero" aria-label="Atlas">
@@ -337,6 +266,7 @@
         </svg>
       </div>
       <h1 class="brand">Atlas</h1>
+      <p class="lede">Créatif · lab produit</p>
       <div class="cta-row">
         <a class="cta" href="/">Entrer</a>
         <a class="cta ghost" href="/#download">Télécharger</a>
@@ -344,7 +274,7 @@
     </main>
 
     <footer class="foot">
-      <span>Lab · créatif</span>
+      <span>Moodboard</span>
       <span>atlas-secu.com</span>
     </footer>
   </div>
