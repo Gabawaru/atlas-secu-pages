@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Atlas — Créatif</title>
+  <meta name="description" content="Atlas — expérience visuelle. Pentest autorisé.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #e8f1f3;
+      --bg-deep: #d5e6ea;
+      --ink: #1c2e35;
+      --ink-soft: #3d5560;
+      --muted: #5f7680;
+      --teal: #2f8f8a;
+      --teal-deep: #1f6f6b;
+      --line: rgba(31, 111, 107, 0.22);
+      --display: "Syne", "Avenir Next", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --ease: cubic-bezier(0.22, 0.9, 0.28, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--display);
+      background:
+        radial-gradient(1200px 700px at 18% 12%, rgba(47, 143, 138, 0.22), transparent 58%),
+        radial-gradient(900px 560px at 88% 78%, rgba(28, 46, 53, 0.12), transparent 55%),
+        linear-gradient(165deg, #f4fbfb 0%, var(--bg) 42%, var(--bg-deep) 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+      background-image:
+        linear-gradient(rgba(47, 143, 138, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47, 143, 138, 0.06) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at 50% 40%, #000 20%, transparent 75%);
+      animation: grid-drift 28s linear infinite;
+    }
+
+    @keyframes grid-drift {
+      from { background-position: 0 0, 0 0; }
+      to { background-position: 56px 28px, 28px 56px; }
+    }
+
+    .stage {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding:
+        max(20px, env(safe-area-inset-top))
+        max(20px, env(safe-area-inset-right))
+        max(20px, env(safe-area-inset-bottom))
+        max(20px, env(safe-area-inset-left));
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mono-link {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--ink-soft);
+      border-bottom: 1px solid transparent;
+      transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+    }
+    .mono-link:hover {
+      color: var(--teal-deep);
+      border-color: var(--teal);
+    }
+
+    .hero {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: clamp(20px, 4vh, 36px);
+      padding: clamp(12px, 3vh, 28px) 0;
+    }
+
+    .mark-wrap {
+      width: min(42vw, 280px);
+      aspect-ratio: 1;
+      opacity: 0;
+      transform: scale(0.88) translateY(18px);
+      animation: rise 1s var(--ease) 0.1s forwards;
+    }
+
+    .mark-svg { width: 100%; height: 100%; overflow: visible; display: block; }
+    .mark-svg .frame { stroke: var(--ink); stroke-width: 7; fill: none; stroke-linejoin: round; }
+    .mark-svg .inner { stroke: var(--ink); stroke-width: 6; fill: none; stroke-linejoin: round; }
+    .mark-svg .orbit {
+      stroke: var(--teal);
+      stroke-width: 2.2;
+      fill: none;
+      opacity: 0.9;
+      transform-origin: 60px 62px;
+      animation: orbit-spin 10s linear infinite;
+    }
+    .mark-svg .orbit.alt { animation-duration: 14s; animation-direction: reverse; opacity: 0.6; }
+    .mark-svg .link { stroke: var(--teal); stroke-width: 2; fill: none; opacity: 0.85; }
+    .mark-svg .node {
+      fill: var(--teal);
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: node-pulse 2.6s ease-in-out infinite;
+    }
+    .mark-svg .node.n2 { animation-delay: 0.4s; }
+    .mark-svg .node.n3 { animation-delay: 0.8s; }
+
+    @keyframes orbit-spin { to { transform: rotate(360deg); } }
+    @keyframes node-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.28); opacity: 0.72; }
+    }
+
+    .brand {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(3.4rem, 18vw, 9.5rem);
+      letter-spacing: 0.16em;
+      line-height: 0.9;
+      text-transform: uppercase;
+      color: var(--ink);
+      opacity: 0;
+      transform: translateY(28px);
+      animation: rise 1s var(--ease) 0.28s forwards;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 22ch;
+      font-family: var(--mono);
+      font-size: clamp(0.78rem, 2.2vw, 0.95rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0;
+      transform: translateY(16px);
+      animation: rise 0.9s var(--ease) 0.48s forwards;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 4px;
+      padding: 14px 22px;
+      min-height: 48px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #fff;
+      background: var(--teal);
+      border: 1.5px solid var(--teal-deep);
+      opacity: 0;
+      transform: translateY(14px);
+      animation: rise 0.85s var(--ease) 0.66s forwards;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+    }
+    .cta:hover {
+      background: var(--teal-deep);
+      transform: translateY(-2px);
+    }
+
+    @keyframes rise {
+      to { opacity: 1; transform: none; }
+    }
+
+    .scan {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 1px;
+      top: 42%;
+      background: linear-gradient(90deg, transparent, rgba(47, 143, 138, 0.55), transparent);
+      pointer-events: none;
+      animation: scan-sweep 7.5s var(--ease) infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes scan-sweep {
+      0% { transform: translateY(-18vh); opacity: 0; }
+      15% { opacity: 0.75; }
+      85% { opacity: 0.75; }
+      100% { transform: translateY(28vh); opacity: 0; }
+    }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .mark-wrap { width: min(58vw, 200px); }
+      .brand { letter-spacing: 0.1em; }
+      .cta { width: 100%; max-width: 280px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body::before,
+      .mark-svg .orbit,
+      .mark-svg .node,
+      .scan,
+      .mark-wrap,
+      .brand,
+      .lede,
+      .cta { animation: none !important; }
+      .mark-wrap, .brand, .lede, .cta {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <header class="top">
+      <a class="mono-link" href="/">Atlas</a>
+      <a class="mono-link" href="/#download">Télécharger</a>
+    </header>
+
+    <main class="hero" aria-label="Atlas">
+      <div class="scan" aria-hidden="true"></div>
+      <div class="mark-wrap" aria-hidden="true">
+        <svg class="mark-svg" viewBox="0 0 120 120">
+          <path class="frame" d="M60 14 L102 98 H18 Z"/>
+          <ellipse class="orbit" cx="60" cy="62" rx="34" ry="22"/>
+          <ellipse class="orbit alt" cx="60" cy="62" rx="22" ry="34"/>
+          <path class="inner" d="M60 48 L84 90 H36 Z"/>
+          <path class="link" d="M42 58 L78 58 L60 88 Z"/>
+          <circle class="node n1" cx="42" cy="58" r="4.2"/>
+          <circle class="node n2" cx="78" cy="58" r="4.2"/>
+          <circle class="node n3" cx="60" cy="88" r="4.2"/>
+        </svg>
+      </div>
+      <h1 class="brand">Atlas</h1>
+      <p class="lede">Pentest autorisé</p>
+      <a class="cta" href="/">Entrer</a>
+    </main>
+
+    <footer class="foot">
+      <span>Créatif</span>
+      <span>atlas-secu.com</span>
+    </footer>
+  </div>
+</body>
+</html>

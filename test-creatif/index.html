@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas — test-creatif (functional)</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Gab proxy functional checks for creatif paths. Pass/fail only.">
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      font: 14px/1.45 ui-monospace, "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+      color: #111;
+      background: #fff;
+    }
+    h1 { font-size: 16px; margin: 0 0 4px; font-weight: 700; }
+    .meta { color: #444; margin: 0 0 16px; }
+    table { border-collapse: collapse; width: 100%; max-width: 720px; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #f3f3f3; font-weight: 600; }
+    .pass { color: #0a7a2f; font-weight: 700; }
+    .fail { color: #b00020; font-weight: 700; }
+    .run { color: #666; }
+    #summary { margin: 14px 0; font-weight: 700; }
+    ul { margin: 8px 0 0; padding-left: 18px; }
+    a { color: #0645ad; }
+  </style>
+</head>
+<body>
+  <h1>test-creatif — functional checks</h1>
+  <p class="meta">Gab proxy harness. Not a design page. Pass / fail only.</p>
+
+  <p><strong>Links</strong></p>
+  <ul>
+    <li><a href="/creatif/">/creatif/</a></li>
+    <li><a href="/">/</a> (home)</li>
+    <li><a href="/assets/atlas-tokens.css">/assets/atlas-tokens.css</a></li>
+    <li><a href="/test/">/test/</a></li>
+  </ul>
+
+  <p id="summary" class="run">Running…</p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Check</th><th>Result</th><th>Detail</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    (function () {
+      var rows = document.getElementById("rows");
+      var summary = document.getElementById("summary");
+      var n = 0, pass = 0, fail = 0;
+
+      function add(name, ok, detail) {
+        n += 1;
+        if (ok) pass += 1; else fail += 1;
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + n + "</td>" +
+          "<td>" + name + "</td>" +
+          '<td class="' + (ok ? "pass" : "fail") + '">' + (ok ? "PASS" : "FAIL") + "</td>" +
+          "<td>" + (detail || "") + "</td>";
+        rows.appendChild(tr);
+      }
+
+      function headOk(url) {
+        return fetch(url, { method: "GET", cache: "no-store" })
+          .then(function (r) { return { ok: r.ok, status: r.status, url: url }; })
+          .catch(function (e) { return { ok: false, status: 0, url: url, err: String(e) }; });
+      }
+
+      Promise.all([
+        headOk("/creatif/"),
+        headOk("/creatif/index.html"),
+        headOk("/assets/atlas-tokens.css"),
+        headOk("/"),
+        headOk("/test/"),
+        headOk("/CNAME")
+      ]).then(function (results) {
+        add("/creatif/ reachable", results[0].ok, "HTTP " + results[0].status);
+        add("/creatif/index.html reachable", results[1].ok, "HTTP " + results[1].status);
+        add("atlas-tokens.css reachable", results[2].ok, "HTTP " + results[2].status);
+        add("home / reachable", results[3].ok, "HTTP " + results[3].status);
+        add("/test/ reachable", results[4].ok, "HTTP " + results[4].status);
+        add("CNAME present", results[5].ok, "HTTP " + results[5].status);
+
+        add(
+          "this page is /test-creatif/",
+          /\/test-creatif\/?$/.test(location.pathname) || /\/test-creatif\/index\.html$/.test(location.pathname),
+          location.pathname
+        );
+
+        add(
+          "JS runtime alive",
+          typeof window !== "undefined" && typeof document !== "undefined",
+          "document.readyState=" + document.readyState
+        );
+
+        summary.className = fail ? "fail" : "pass";
+        summary.textContent = fail
+          ? "FAIL — " + fail + " failed / " + n + " checks"
+          : "PASS — " + pass + " / " + n + " checks";
+        document.title = (fail ? "FAIL" : "PASS") + " — test-creatif";
+      });
+    })();
+  </script>
+</body>
+</html>
