@@ -189,6 +189,18 @@
     .note .blocked { color: var(--accent); font-weight: 600; }
     .note .todo { color: var(--ink-soft); }
     .note a { font-weight: 600; }
+    .note pre {
+      margin: 10px 0 0;
+      padding: 10px;
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 0.7rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--ink-soft);
+    }
+    .note .row-meta { margin-top: 8px; font-size: 0.7rem; color: var(--muted); }
 
     footer {
       margin-top: 28px;
@@ -227,17 +239,35 @@
     </div>
 
     <section class="note" id="handoff-c1-status" aria-labelledby="handoff-c1-title">
-      <h2 id="handoff-c1-title">Handoff C1 — statut</h2>
+      <h2 id="handoff-c1-title">Handoff — statut produit</h2>
       <dl>
-        <dt>Atlas client</dt>
-        <dd>Confirm locale avant prise en charge · phone fail-closed · shipped <a href="https://github.com/Gabawaru/Atlas/pull/143">#143</a></dd>
-        <dt>API Bearer</dt>
-        <dd><code>pcConfirmedAt</code> requis · <code>initiatedFrom=phone</code> refusé</dd>
+        <dt>Atlas C1</dt>
+        <dd>PC confirm locale · phone fail-closed · <a href="https://github.com/Gabawaru/Atlas/pull/143">#143</a></dd>
+        <dt>API status</dt>
+        <dd><code>GET /v1/support/status</code> · <a href="https://github.com/Gabawaru/Atlas/pull/144">#144</a> (états + intent)</dd>
         <dt>Phone→PC</dt>
         <dd class="blocked">Bloqué — Ben <code>ATLAS_API_BASE</code> (D5)</dd>
         <dt>Pages soft twin</dt>
-        <dd class="todo">TODO — même confirm C1 avant <code>requestHandoff</code> (pas de faux twin phone)</dd>
+        <dd class="todo">TODO — confirm C1 avant <code>requestHandoff</code> (pas de faux twin phone)</dd>
       </dl>
+    </section>
+
+    <section class="note" id="api-status" aria-labelledby="api-status-title">
+      <h2 id="api-status-title">Live — <code>GET /v1/support/status</code></h2>
+      <dl id="api-status-dl">
+        <dt>Base</dt>
+        <dd id="api-status-base" class="todo">…</dd>
+        <dt>HTTP</dt>
+        <dd id="api-status-http" class="todo">…</dd>
+        <dt>handoff</dt>
+        <dd id="api-status-handoff" class="todo">…</dd>
+        <dt>c1Required</dt>
+        <dd id="api-status-c1">…</dd>
+        <dt>phoneToPc</dt>
+        <dd id="api-status-phone" class="blocked">…</dd>
+      </dl>
+      <p class="row-meta" id="api-status-meta"></p>
+      <pre id="api-status-json" hidden></pre>
     </section>
 
     <h2>Santé des chemins</h2>
@@ -260,7 +290,7 @@
 
     <footer>
       <span>atlas-secu.com / test</span>
-      <span id="sprint">Handoff C1 status · /test produit</span>
+      <span id="sprint">Support status poll · /test produit</span>
     </footer>
   </div>
 
@@ -295,6 +325,119 @@
           })
           .catch(function (e) {
             return { ok: false, status: 0, url: url, text: "", err: String(e) };
+          });
+      }
+
+      function apiBase() {
+        var fromWin = typeof window !== "undefined" && window.ATLAS_API_BASE;
+        if (fromWin && typeof fromWin === "string" && fromWin.trim()) {
+          return fromWin.replace(/\/$/, "");
+        }
+        try {
+          var q = new URLSearchParams(location.search).get("api");
+          if (q && /^https?:\/\//i.test(q)) return q.replace(/\/$/, "");
+        } catch (e) {}
+        return "";
+      }
+
+      function supportSessionId() {
+        try {
+          var raw = localStorage.getItem("atlas.support-tracking.v1");
+          if (!raw) return "";
+          var parsed = JSON.parse(raw);
+          return parsed && typeof parsed.supportSessionId === "string"
+            ? parsed.supportSessionId
+            : "";
+        } catch (e) {
+          return "";
+        }
+      }
+
+      function setText(id, value, className) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = value;
+        if (className) el.className = className;
+      }
+
+      function renderApiStatus(result) {
+        setText("api-status-base", result.base || "(unset — D5)", result.base ? "" : "blocked");
+        setText("api-status-http", result.http || "—", result.ok ? "pass" : (result.base ? "fail" : "todo"));
+        setText("api-status-handoff", result.handoff || "—", result.handoff === "active" ? "pass" : "");
+        setText("api-status-c1", result.c1Required == null ? "—" : String(result.c1Required));
+        setText(
+          "api-status-phone",
+          result.phoneToPc || "—",
+          /blocked/i.test(result.phoneToPc || "") ? "blocked" : ""
+        );
+        var meta = document.getElementById("api-status-meta");
+        if (meta) meta.textContent = result.meta || "";
+        var pre = document.getElementById("api-status-json");
+        if (pre) {
+          if (result.jsonText) {
+            pre.hidden = false;
+            pre.textContent = result.jsonText;
+          } else {
+            pre.hidden = true;
+            pre.textContent = "";
+          }
+        }
+      }
+
+      function pollSupportStatus() {
+        var base = apiBase();
+        var sid = supportSessionId();
+        if (!base) {
+          renderApiStatus({
+            base: "",
+            ok: false,
+            http: "skipped",
+            handoff: "n/a",
+            c1Required: true,
+            phoneToPc: "blocked_until_ATLAS_API_BASE",
+            meta: "ATLAS_API_BASE unset — poll skipped. Optional: ?api=https://…"
+          });
+          return Promise.resolve({ ok: false, skipped: true, reason: "no_base" });
+        }
+        var headers = { Accept: "application/json" };
+        if (sid) headers["X-Atlas-Support-Session"] = sid;
+        return fetch(base + "/v1/support/status", {
+          method: "GET",
+          cache: "no-store",
+          headers: headers
+        })
+          .then(function (r) {
+            return r.text().then(function (text) {
+              var data = null;
+              try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+              var ok = r.ok && data && typeof data === "object";
+              renderApiStatus({
+                base: base,
+                ok: ok,
+                http: "HTTP " + r.status,
+                handoff: data && data.handoff,
+                c1Required: data && data.c1Required,
+                phoneToPc: data && data.phoneToPc,
+                meta: sid
+                  ? "session header sent · id=" + sid.slice(0, 12) + "…"
+                  : "no session header → expect handoff=none",
+                jsonText: text ? text.slice(0, 800) : ""
+              });
+              return { ok: ok, status: r.status, data: data, base: base };
+            });
+          })
+          .catch(function (e) {
+            renderApiStatus({
+              base: base,
+              ok: false,
+              http: "error",
+              handoff: "—",
+              c1Required: "—",
+              phoneToPc: "—",
+              meta: String(e),
+              jsonText: ""
+            });
+            return { ok: false, err: String(e), base: base };
           });
       }
 
@@ -348,16 +491,56 @@
         var c1 = document.getElementById("handoff-c1-status");
         var c1Text = c1 ? c1.textContent : "";
         add(
-          "handoff C1 status block present",
-          !!c1 && /pcConfirmedAt/i.test(c1Text) && /ATLAS_API_BASE/i.test(c1Text),
+          "handoff status block present",
+          !!c1 && /ATLAS_API_BASE/i.test(c1Text) && /support\/status/i.test(c1Text),
           c1 ? "id=handoff-c1-status" : "missing #handoff-c1-status"
         );
         add(
-          "handoff C1 · no fake phone soft twin",
+          "handoff · no fake phone soft twin",
           !!c1 && /TODO/i.test(c1Text) && !/phone soft twin ready/i.test(c1Text),
           "soft twin CTA still TODO"
         );
 
+        var apiPanel = document.getElementById("api-status");
+        add(
+          "api status panel present",
+          !!apiPanel && !!document.getElementById("api-status-json"),
+          apiPanel ? "id=api-status" : "missing #api-status"
+        );
+
+        return pollSupportStatus().then(function (api) {
+          var baseSet = !!apiBase();
+          if (!baseSet) {
+            add(
+              "api status · D5 unset → skipped",
+              api && api.skipped === true,
+              "ATLAS_API_BASE unset"
+            );
+            add(
+              "api status · phoneToPc blocked flag shown",
+              /blocked_until_ATLAS_API_BASE/.test(
+                (document.getElementById("api-status-phone") || {}).textContent || ""
+              ),
+              "phoneToPc label"
+            );
+          } else {
+            add(
+              "api status · GET /v1/support/status",
+              !!(api && api.ok && api.data),
+              api && api.status ? "HTTP " + api.status : (api && api.err) || "no response"
+            );
+            add(
+              "api status · shape handoff/c1/phoneToPc",
+              !!(api && api.data && api.data.handoff && api.data.c1Required === true && api.data.phoneToPc),
+              api && api.data ? JSON.stringify({
+                handoff: api.data.handoff,
+                c1Required: api.data.c1Required,
+                phoneToPc: api.data.phoneToPc
+              }) : "missing"
+            );
+          }
+        });
+      }).then(function () {
         summary.className = "badge " + (fail ? "fail" : "pass");
         summary.textContent = fail
           ? "FAIL — " + fail + " / " + n
