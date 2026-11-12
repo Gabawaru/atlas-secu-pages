@@ -255,15 +255,17 @@
 
 
     <section class="note" id="scanner-product-status" aria-labelledby="scanner-product-title">
-      <h2 id="scanner-product-title">Scanner — prêt client (Atlas #147–#151)</h2>
-      <p class="row-meta" style="margin:0 0 8px">Depth + export for the Atlas client risk table / bilan. Not decorative.</p>
+      <h2 id="scanner-product-title">Scanner / Historique — prêt client (Atlas #147–#152)</h2>
+      <p class="row-meta" style="margin:0 0 8px">Depth, Signal (Scanner+Historique), HSTS floor, export bilan — client-ready. Not decorative.</p>
       <dl>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/147">#147</a></dt>
         <dd>Redirect depth scored — http without HTTPS upgrade → faible; stuck 3xx → info (faible if ≥5 hops). Client sees redirect risk, not silent chains.</dd>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/148">#148</a></dt>
         <dd>API JSON responses: CSP/XFO skip observed in risk table (avoid false “missing header” on JSON APIs).</dd>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/149">#149</a></dt>
-        <dd>Signal column on actionable findings — operator sees why a row matters without leaving results.</dd>
+        <dd>Scanner Signal column on actionable findings — operator sees why a row matters without leaving results.</dd>
+        <dt><a href="https://github.com/Gabawaru/Atlas/pull/152">#152</a></dt>
+        <dd>Historique Signal column (parity with #149) — local tracking table shows stored <code>signal</code> between Risque and Cible; no <code>ATLAS_API_BASE</code>.</dd>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/150">#150</a></dt>
         <dd>HSTS max-age below 180-day floor flagged — weak HSTS no longer silent in the table.</dd>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/151">#151</a></dt>
@@ -311,7 +313,7 @@
 
     <footer>
       <span>atlas-secu.com / test</span>
-      <span id="sprint">Scanner board #147–#151 · /test</span>
+      <span id="sprint">Scanner board #147–#152 · /test</span>
     </footer>
   </div>
 
@@ -571,10 +573,12 @@
         var scan = document.getElementById("scanner-product-status");
         var scanText = scan ? scan.textContent : "";
         add(
-          "scanner product board #147–#151 present",
+          "scanner product board #147–#152 present",
           !!scan &&
             /#147/.test(scanText) &&
             /#151/.test(scanText) &&
+            /#152/.test(scanText) &&
+            /Historique/.test(scanText) &&
             /bilanScore/.test(scanText) &&
             /priorityActions/.test(scanText) &&
             /Signal/.test(scanText) &&
