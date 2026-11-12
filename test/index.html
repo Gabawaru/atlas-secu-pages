@@ -248,7 +248,7 @@
         <dt>Phone→PC</dt>
         <dd class="blocked">Bloqué — Ben <code>ATLAS_API_BASE</code> (D5)</dd>
         <dt>Pages soft twin</dt>
-        <dd class="todo">TODO — confirm C1 avant <code>requestHandoff</code> (pas de faux twin phone)</dd>
+        <dd>C1 PC <code>window.confirm</code> avant <code>requestHandoff</code> · phone fail-closed (pas de faux twin)</dd>
       </dl>
     </section>
 
@@ -290,7 +290,7 @@
 
     <footer>
       <span>atlas-secu.com / test</span>
-      <span id="sprint">Support status poll · /test produit</span>
+      <span id="sprint">Soft twin C1 + status poll · /test</span>
     </footer>
   </div>
 
@@ -448,7 +448,8 @@
         get("/test-creatif/"),
         get("/assets/atlas-tokens.css"),
         get("/CNAME"),
-        get("/Atlas-Setup.exe")
+        get("/Atlas-Setup.exe"),
+        get("/supportTracking.js")
       ]).then(function (results) {
         var home = results[0];
         var creatif = results[1];
@@ -457,6 +458,7 @@
         var tokens = results[4];
         var cname = results[5];
         var setup = results[6];
+        var supportJs = results[7];
 
         add("home / reachable", home.ok, "HTTP " + home.status);
         add("/creatif/ reachable", creatif.ok, "HTTP " + creatif.status);
@@ -465,6 +467,11 @@
         add("atlas-tokens.css reachable", tokens.ok, "HTTP " + tokens.status);
         add("CNAME present", cname.ok, "HTTP " + cname.status + (cname.text ? " · " + cname.text.trim() : ""));
         add("Atlas-Setup.exe reachable", setup.ok, "HTTP " + setup.status);
+        add(
+          "supportTracking.js · C1 gate",
+          supportJs.ok && /gateSupportHandoffC1/.test(supportJs.text || ""),
+          supportJs.ok ? "gateSupportHandoffC1 present" : "HTTP " + supportJs.status
+        );
 
         var html = creatif.ok ? creatif.text : (creatifIdx.ok ? creatifIdx.text : "");
         var hasEntrer = /href=["']\/["'][^>]*>\s*Entrer/i.test(html) || />\s*Entrer\s*<\/a>/i.test(html) && /href=["']\/["']/.test(html);
@@ -496,9 +503,9 @@
           c1 ? "id=handoff-c1-status" : "missing #handoff-c1-status"
         );
         add(
-          "handoff · no fake phone soft twin",
-          !!c1 && /TODO/i.test(c1Text) && !/phone soft twin ready/i.test(c1Text),
-          "soft twin CTA still TODO"
+          "handoff · soft twin C1 shipped (no fake phone)",
+          !!c1 && /window\.confirm/i.test(c1Text) && /fail-closed/i.test(c1Text) && !/TODO/i.test(c1Text),
+          "soft twin C1 on status block"
         );
 
         var apiPanel = document.getElementById("api-status");

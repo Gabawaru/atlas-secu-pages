@@ -224,27 +224,32 @@
   /**
    * POST handoff — never sends email/name/session. Opaque id only in response.
    */
-  function tryRemoteHandoff(ticketPayload) {
+  function tryRemoteHandoff(ticketPayload, c1) {
     var base = apiBase();
     if (!base) {
       return Promise.resolve({ ok: true, mode: 'local', snapshot: null });
     }
     var t = withTimeout(2500);
+    var body = {
+      kind: 'prise_en_charge',
+      source: 'atlas-secu-pages',
+      ticket: {
+        id: ticketPayload.id,
+        subject: ticketPayload.subject,
+        status: ticketPayload.status
+      }
+    };
+    if (c1 && c1.pcConfirmedAt) {
+      body.pcConfirmedAt = c1.pcConfirmedAt;
+      body.initiatedFrom = c1.initiatedFrom || 'pc';
+    }
     return fetch(base + '/v1/support/handoff', {
       method: 'POST',
       headers: Object.assign(
         { 'Content-Type': 'application/json' },
         sessionHeaders(null)
       ),
-      body: JSON.stringify({
-        kind: 'prise_en_charge',
-        source: 'atlas-secu-pages',
-        ticket: {
-          id: ticketPayload.id,
-          subject: ticketPayload.subject,
-          status: ticketPayload.status
-        }
-      }),
+      body: JSON.stringify(body),
       signal: t.signal
     })
       .then(function (res) {
@@ -351,6 +356,80 @@
     return load().supportSessionId || null;
   }
 
+
+  /**
+   * C1 gate (Pages soft twin) — mirror Atlas client.
+   * PC: window.confirm → { ok, pcConfirmedAt, initiatedFrom:"pc" }.
+   * Phone / doubt: fail-closed (no fake phone soft twin; A1 needs ATLAS_API_BASE).
+   * Test hooks: __ATLAS_C1_FORCE_PHONE__, __ATLAS_C1_CONFIRM__.
+   */
+  function isPhoneLikeInitiator() {
+    if (typeof global.__ATLAS_C1_FORCE_PHONE__ === 'boolean') {
+      return global.__ATLAS_C1_FORCE_PHONE__;
+    }
+    try {
+      var nav = global.navigator || {};
+      if (nav.userAgentData && typeof nav.userAgentData.mobile === 'boolean') {
+        if (nav.userAgentData.mobile) return true;
+      }
+      var ua = String(nav.userAgent || nav.vendor || '');
+      if (/Android|iPhone|iPod|iPad|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua)) {
+        return true;
+      }
+      if (typeof global.matchMedia === 'function') {
+        if (global.matchMedia('(pointer: coarse)').matches) return true;
+      }
+    } catch (e) {
+      return true; /* doubt → phone */
+    }
+    return false;
+  }
+
+  function gateSupportHandoffC1() {
+    if (isPhoneLikeInitiator()) {
+      return {
+        ok: false,
+        reason: 'phone_blocked',
+        message:
+          'Prise en charge téléphone bloquée tant que ATLAS_API_BASE n’est pas branché (confirm PC requis).'
+      };
+    }
+    var accepted = false;
+    try {
+      if (typeof global.__ATLAS_C1_CONFIRM__ === 'function') {
+        accepted = !!global.__ATLAS_C1_CONFIRM__();
+      } else if (typeof global.confirm === 'function') {
+        accepted = !!global.confirm(
+          'Confirmer la demande de prise en charge Atlas ?'
+        );
+      } else {
+        return {
+          ok: false,
+          reason: 'no_confirm',
+          message: 'Confirmation locale indisponible.'
+        };
+      }
+    } catch (e) {
+      return {
+        ok: false,
+        reason: 'confirm_error',
+        message: 'Confirmation locale impossible.'
+      };
+    }
+    if (!accepted) {
+      return {
+        ok: false,
+        reason: 'c1_cancelled',
+        message: 'Demande annulée.'
+      };
+    }
+    return {
+      ok: true,
+      pcConfirmedAt: nowIso(),
+      initiatedFrom: 'pc'
+    };
+  }
+
   /**
    * Request prise en charge. Idempotent if already requested:
    * returns current state (and refreshes from remote when possible).
@@ -368,16 +447,31 @@
         };
       });
     }
+    var gate = gateSupportHandoffC1();
+    if (!gate.ok) {
+      return Promise.resolve({
+        ok: false,
+        reason: gate.reason,
+        message: gate.message,
+        state: current
+      });
+    }
     var seeded = seedAfterHandoff(current);
     if (!save(seeded)) {
       return Promise.resolve({ ok: false, reason: 'storage', state: current });
     }
     var ticket = seeded.tickets[0];
-    return tryRemoteHandoff({
-      id: ticket.id,
-      subject: ticket.subject,
-      status: ticket.status
-    }).then(function (remote) {
+    return tryRemoteHandoff(
+      {
+        id: ticket.id,
+        subject: ticket.subject,
+        status: ticket.status
+      },
+      {
+        pcConfirmedAt: gate.pcConfirmedAt,
+        initiatedFrom: gate.initiatedFrom
+      }
+    ).then(function (remote) {
       var overrides = {
         mode: remote.mode || 'local',
         supportSessionId:
@@ -503,6 +597,8 @@
     getState: getState,
     isHandoffRequested: isHandoffRequested,
     getSupportSessionId: getSupportSessionId,
+    gateSupportHandoffC1: gateSupportHandoffC1,
+    isPhoneLikeInitiator: isPhoneLikeInitiator,
     requestHandoff: requestHandoff,
     syncFromRemote: syncFromRemote,
     ingestVulns: ingestVulns,

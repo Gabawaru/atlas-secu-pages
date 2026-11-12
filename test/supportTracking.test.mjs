@@ -2,7 +2,7 @@
  * Node smoke for multi-device support tracking (no browser).
  * Run: node --test test/supportTracking.test.mjs
  */
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -31,9 +31,12 @@ function loadModule(env = {}) {
     setTimeout,
     clearTimeout,
     Response,
+    /* Default PC-confirmed path for existing handoff tests. */
+    __ATLAS_C1_FORCE_PHONE__: env.forcePhone ?? false,
+    __ATLAS_C1_CONFIRM__: env.confirm ?? (() => true),
   };
   vm.runInNewContext(src, global, { filename: 'supportTracking.js' });
-  return { api: global.AtlasSupportTracking, fetches, localStorage, store };
+  return { api: global.AtlasSupportTracking, fetches, localStorage, store, global };
 }
 
 describe('AtlasSupportTracking multi-device', () => {
@@ -68,6 +71,8 @@ describe('AtlasSupportTracking multi-device', () => {
           assert.equal(body.source, 'atlas-secu-pages');
           assert.equal(body.email, undefined);
           assert.equal(body.name, undefined);
+          assert.equal(body.initiatedFrom, 'pc');
+          assert.ok(typeof body.pcConfirmedAt === 'string' && body.pcConfirmedAt.length > 10);
           return new Response(
             JSON.stringify({
               supportSessionId: sid,
@@ -162,5 +167,30 @@ describe('AtlasSupportTracking multi-device', () => {
     const r = await api.ingestVulns([{ title: 'HSTS', risk: 'moyen' }]);
     assert.equal(r.ok, false);
     assert.equal(r.reason, 'no_handoff');
+  });
+
+  it('C1 phone fail-closed — no soft twin seed', async () => {
+    const { api } = loadModule({ forcePhone: true });
+    const r = await api.requestHandoff();
+    assert.equal(r.ok, false);
+    assert.equal(r.reason, 'phone_blocked');
+    assert.equal(api.getState().handoffRequested, false);
+    assert.equal(api.getState().tickets.length, 0);
+  });
+
+  it('C1 cancel — no soft twin seed', async () => {
+    const { api } = loadModule({ confirm: () => false });
+    const r = await api.requestHandoff();
+    assert.equal(r.ok, false);
+    assert.equal(r.reason, 'c1_cancelled');
+    assert.equal(api.getState().handoffRequested, false);
+  });
+
+  it('gateSupportHandoffC1 PC ok returns pcConfirmedAt', () => {
+    const { api } = loadModule();
+    const g = api.gateSupportHandoffC1();
+    assert.equal(g.ok, true);
+    assert.equal(g.initiatedFrom, 'pc');
+    assert.ok(g.pcConfirmedAt);
   });
 });
