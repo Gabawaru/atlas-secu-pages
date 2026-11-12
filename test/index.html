@@ -188,6 +188,7 @@
     .note dd { margin: 0; color: var(--ink); }
     .note .blocked { color: var(--accent); font-weight: 600; }
     .note .todo { color: var(--ink-soft); }
+    .note .awaiting { color: var(--teal-deep); font-weight: 600; }
     .note a { font-weight: 600; }
     .note pre {
       margin: 10px 0 0;
@@ -243,12 +244,12 @@
       <dl>
         <dt>Atlas C1</dt>
         <dd>PC confirm locale · phone fail-closed · <a href="https://github.com/Gabawaru/Atlas/pull/143">#143</a></dd>
-        <dt>API status</dt>
-        <dd><code>GET /v1/support/status</code> · <a href="https://github.com/Gabawaru/Atlas/pull/144">#144</a> (états + intent)</dd>
+        <dt>API</dt>
+        <dd><code>status</code> <a href="https://github.com/Gabawaru/Atlas/pull/144">#144</a> · intent→confirm <a href="https://github.com/Gabawaru/Atlas/pull/146">#146</a> · restore <a href="https://github.com/Gabawaru/Atlas/pull/145">#145</a></dd>
         <dt>Phone→PC</dt>
         <dd class="blocked">Bloqué — Ben <code>ATLAS_API_BASE</code> (D5)</dd>
         <dt>Pages soft twin</dt>
-        <dd>C1 PC <code>window.confirm</code> avant <code>requestHandoff</code> · phone fail-closed (pas de faux twin)</dd>
+        <dd>C1 OK · CTA still legacy <code>POST /handoff</code> · intent→confirm wiring TODO</dd>
       </dl>
     </section>
 
@@ -261,6 +262,8 @@
         <dd id="api-status-http" class="todo">…</dd>
         <dt>handoff</dt>
         <dd id="api-status-handoff" class="todo">…</dd>
+        <dt>intent</dt>
+        <dd id="api-status-intent" class="todo">…</dd>
         <dt>c1Required</dt>
         <dd id="api-status-c1">…</dd>
         <dt>phoneToPc</dt>
@@ -290,7 +293,7 @@
 
     <footer>
       <span>atlas-secu.com / test</span>
-      <span id="sprint">Soft twin C1 + status poll · /test</span>
+      <span id="sprint">Intent+confirm status · /test</span>
     </footer>
   </div>
 
@@ -353,6 +356,23 @@
         }
       }
 
+      function handoffIntentId() {
+        try {
+          var q = new URLSearchParams(location.search).get("intent");
+          if (q && /^hin_/i.test(q)) return q.trim();
+        } catch (e) {}
+        try {
+          var raw = localStorage.getItem("atlas.support-tracking.v1");
+          if (!raw) return "";
+          var parsed = JSON.parse(raw);
+          return parsed && typeof parsed.handoffIntentId === "string"
+            ? parsed.handoffIntentId
+            : "";
+        } catch (e) {
+          return "";
+        }
+      }
+
       function setText(id, value, className) {
         var el = document.getElementById(id);
         if (!el) return;
@@ -363,7 +383,15 @@
       function renderApiStatus(result) {
         setText("api-status-base", result.base || "(unset — D5)", result.base ? "" : "blocked");
         setText("api-status-http", result.http || "—", result.ok ? "pass" : (result.base ? "fail" : "todo"));
-        setText("api-status-handoff", result.handoff || "—", result.handoff === "active" ? "pass" : "");
+        var hClass = "";
+        if (result.handoff === "active") hClass = "pass";
+        else if (result.handoff === "awaiting_confirm") hClass = "awaiting";
+        setText("api-status-handoff", result.handoff || "—", hClass);
+        setText(
+          "api-status-intent",
+          result.handoffIntentId || result.intentQuery || "—",
+          result.handoff === "awaiting_confirm" ? "awaiting" : ""
+        );
         setText("api-status-c1", result.c1Required == null ? "—" : String(result.c1Required));
         setText(
           "api-status-phone",
@@ -387,21 +415,25 @@
       function pollSupportStatus() {
         var base = apiBase();
         var sid = supportSessionId();
+        var intent = handoffIntentId();
         if (!base) {
           renderApiStatus({
             base: "",
             ok: false,
             http: "skipped",
             handoff: "n/a",
+            intentQuery: intent || "",
             c1Required: true,
             phoneToPc: "blocked_until_ATLAS_API_BASE",
-            meta: "ATLAS_API_BASE unset — poll skipped. Optional: ?api=https://…"
+            meta: "ATLAS_API_BASE unset — poll skipped. Optional: ?api=https://…&intent=hin_…"
           });
           return Promise.resolve({ ok: false, skipped: true, reason: "no_base" });
         }
         var headers = { Accept: "application/json" };
         if (sid) headers["X-Atlas-Support-Session"] = sid;
-        return fetch(base + "/v1/support/status", {
+        if (intent) headers["X-Atlas-Handoff-Intent"] = intent;
+        var url = base + "/v1/support/status" + (intent ? ("?intent=" + encodeURIComponent(intent)) : "");
+        return fetch(url, {
           method: "GET",
           cache: "no-store",
           headers: headers
@@ -411,19 +443,28 @@
               var data = null;
               try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
               var ok = r.ok && data && typeof data === "object";
+              var handoffOk = ok && data && (
+                data.handoff === "none" ||
+                data.handoff === "awaiting_confirm" ||
+                data.handoff === "active"
+              );
+              var metaBits = [];
+              if (sid) metaBits.push("session=" + sid.slice(0, 12) + "…");
+              if (intent) metaBits.push("intent=" + intent.slice(0, 12) + "…");
+              if (!sid && !intent) metaBits.push("no session/intent → expect handoff=none");
               renderApiStatus({
                 base: base,
-                ok: ok,
+                ok: handoffOk,
                 http: "HTTP " + r.status,
                 handoff: data && data.handoff,
+                handoffIntentId: data && data.handoffIntentId,
+                intentQuery: intent || "",
                 c1Required: data && data.c1Required,
                 phoneToPc: data && data.phoneToPc,
-                meta: sid
-                  ? "session header sent · id=" + sid.slice(0, 12) + "…"
-                  : "no session header → expect handoff=none",
+                meta: metaBits.join(" · "),
                 jsonText: text ? text.slice(0, 800) : ""
               });
-              return { ok: ok, status: r.status, data: data, base: base };
+              return { ok: handoffOk, status: r.status, data: data, base: base, intent: intent };
             });
           })
           .catch(function (e) {
@@ -432,6 +473,7 @@
               ok: false,
               http: "error",
               handoff: "—",
+              intentQuery: intent || "",
               c1Required: "—",
               phoneToPc: "—",
               meta: String(e),
@@ -499,13 +541,13 @@
         var c1Text = c1 ? c1.textContent : "";
         add(
           "handoff status block present",
-          !!c1 && /ATLAS_API_BASE/i.test(c1Text) && /support\/status/i.test(c1Text),
+          !!c1 && /ATLAS_API_BASE/i.test(c1Text) && /#146/i.test(c1Text),
           c1 ? "id=handoff-c1-status" : "missing #handoff-c1-status"
         );
         add(
-          "handoff · soft twin C1 shipped (no fake phone)",
-          !!c1 && /window\.confirm/i.test(c1Text) && /fail-closed/i.test(c1Text) && !/TODO/i.test(c1Text),
-          "soft twin C1 on status block"
+          "handoff · soft twin C1 OK, intent CTA TODO",
+          !!c1 && /C1 OK/i.test(c1Text) && /intent→confirm wiring TODO/i.test(c1Text),
+          "legacy handoff until intent CTA"
         );
 
         var apiPanel = document.getElementById("api-status");
@@ -536,11 +578,19 @@
               !!(api && api.ok && api.data),
               api && api.status ? "HTTP " + api.status : (api && api.err) || "no response"
             );
+            var h = api && api.data && api.data.handoff;
+            var shapeOk = !!(
+              api && api.data &&
+              (h === "none" || h === "awaiting_confirm" || h === "active") &&
+              api.data.c1Required === true &&
+              api.data.phoneToPc
+            );
             add(
-              "api status · shape handoff/c1/phoneToPc",
-              !!(api && api.data && api.data.handoff && api.data.c1Required === true && api.data.phoneToPc),
+              "api status · shape none|awaiting_confirm|active",
+              shapeOk,
               api && api.data ? JSON.stringify({
                 handoff: api.data.handoff,
+                handoffIntentId: api.data.handoffIntentId,
                 c1Required: api.data.c1Required,
                 phoneToPc: api.data.phoneToPc
               }) : "missing"
