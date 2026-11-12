@@ -71,20 +71,38 @@
           .catch(function (e) { return { ok: false, status: 0, url: url, err: String(e) }; });
       }
 
+      function getText(url) {
+        return fetch(url, { method: "GET", cache: "no-store" })
+          .then(function (r) {
+            return r.text().then(function (text) {
+              return { ok: r.ok, status: r.status, url: url, text: text };
+            });
+          })
+          .catch(function (e) {
+            return { ok: false, status: 0, url: url, text: "", err: String(e) };
+          });
+      }
+
       Promise.all([
-        headOk("/creatif/"),
+        getText("/creatif/"),
         headOk("/creatif/index.html"),
         headOk("/assets/atlas-tokens.css"),
         headOk("/"),
         headOk("/test/"),
         headOk("/CNAME")
       ]).then(function (results) {
-        add("/creatif/ reachable", results[0].ok, "HTTP " + results[0].status);
+        var creatif = results[0];
+        add("/creatif/ reachable", creatif.ok, "HTTP " + creatif.status);
         add("/creatif/index.html reachable", results[1].ok, "HTTP " + results[1].status);
         add("atlas-tokens.css reachable", results[2].ok, "HTTP " + results[2].status);
         add("home / reachable", results[3].ok, "HTTP " + results[3].status);
         add("/test/ reachable", results[4].ok, "HTTP " + results[4].status);
         add("CNAME present", results[5].ok, "HTTP " + results[5].status);
+
+        var html = creatif.text || "";
+        add("creatif Entrer → /", /href=["']\/["']/.test(html) && /Entrer/i.test(html), "CTA Entrer");
+        add("creatif Télécharger → /#download", /href=["']\/#download["']/i.test(html), "href /#download");
+        add("creatif no product pitch", !/Pentest autoris/i.test(html), "effects-only");
 
         add(
           "this page is /test-creatif/",
