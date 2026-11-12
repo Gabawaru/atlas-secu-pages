@@ -1185,22 +1185,15 @@
         tbody.appendChild(tr);
       }
 
-      function renderSupportTracking() {
+      function paintSupportTracking(state) {
         var meta = document.getElementById('support-tracking-meta');
         var btn = document.getElementById('support-handoff-btn');
         var tTickets = document.getElementById('support-tbody-tickets');
         var tVulns = document.getElementById('support-tbody-vulns');
         var tProgress = document.getElementById('support-tbody-progress');
-        if (!window.AtlasSupportTracking) {
-          setSupportEmpty(tTickets, 4, 'Module suivi indisponible.');
-          setSupportEmpty(tVulns, 5, 'Module suivi indisponible.');
-          setSupportEmpty(tProgress, 5, 'Module suivi indisponible.');
-          return;
-        }
-        var state = AtlasSupportTracking.getState();
         var emptyMsg = 'Aucune entrée — demandez une prise en charge.';
 
-        if (!state.handoffRequested) {
+        if (!state || !state.handoffRequested) {
           if (meta) {
             meta.textContent = 'État · aucune prise en charge';
             meta.setAttribute('data-state', 'idle');
@@ -1216,9 +1209,13 @@
         }
 
         if (meta) {
+          var sid = state.supportSessionId
+            ? ' · sync ' + String(state.supportSessionId).slice(0, 8)
+            : '';
           meta.textContent =
             'État · prise en charge · ' +
             (state.mode || 'local') +
+            sid +
             (state.requestedAt ? ' · ' + formatSupportDate(state.requestedAt) : '');
           meta.setAttribute('data-state', 'active');
         }
@@ -1284,6 +1281,28 @@
               tProgress.appendChild(tr);
             });
           }
+        }
+      }
+
+      function renderSupportTracking() {
+        if (!window.AtlasSupportTracking) {
+          var tTickets = document.getElementById('support-tbody-tickets');
+          var tVulns = document.getElementById('support-tbody-vulns');
+          var tProgress = document.getElementById('support-tbody-progress');
+          setSupportEmpty(tTickets, 4, 'Module suivi indisponible.');
+          setSupportEmpty(tVulns, 5, 'Module suivi indisponible.');
+          setSupportEmpty(tProgress, 5, 'Module suivi indisponible.');
+          return;
+        }
+        paintSupportTracking(AtlasSupportTracking.getState());
+        /* Multi-device: refresh from opaque support session when API base set */
+        if (
+          typeof AtlasSupportTracking.syncFromRemote === 'function' &&
+          AtlasSupportTracking.isHandoffRequested()
+        ) {
+          AtlasSupportTracking.syncFromRemote().then(function (r) {
+            if (r && r.synced) paintSupportTracking(r.state);
+          });
         }
       }
 
