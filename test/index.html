@@ -158,6 +158,38 @@
       border: 1px solid var(--line);
       font-size: 0.78rem;
     }
+
+    .note {
+      margin: 0 0 18px;
+      padding: 12px 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--teal);
+      border-radius: var(--radius-soft);
+      text-align: left;
+    }
+    .note h2 {
+      margin: 0 0 8px;
+      font-size: 0.85rem;
+    }
+    .note dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: minmax(7rem, 9rem) 1fr;
+      gap: 6px 12px;
+      font-size: 0.74rem;
+    }
+    .note dt {
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .note dd { margin: 0; color: var(--ink); }
+    .note .blocked { color: var(--accent); font-weight: 600; }
+    .note .todo { color: var(--ink-soft); }
+    .note a { font-weight: 600; }
+
     footer {
       margin-top: 28px;
       padding-top: 14px;
@@ -194,6 +226,20 @@
       <span id="counts" class="meta"></span>
     </div>
 
+    <section class="note" id="handoff-c1-status" aria-labelledby="handoff-c1-title">
+      <h2 id="handoff-c1-title">Handoff C1 — statut</h2>
+      <dl>
+        <dt>Atlas client</dt>
+        <dd>Confirm locale avant prise en charge · phone fail-closed · shipped <a href="https://github.com/Gabawaru/Atlas/pull/143">#143</a></dd>
+        <dt>API Bearer</dt>
+        <dd><code>pcConfirmedAt</code> requis · <code>initiatedFrom=phone</code> refusé</dd>
+        <dt>Phone→PC</dt>
+        <dd class="blocked">Bloqué — Ben <code>ATLAS_API_BASE</code> (D5)</dd>
+        <dt>Pages soft twin</dt>
+        <dd class="todo">TODO — même confirm C1 avant <code>requestHandoff</code> (pas de faux twin phone)</dd>
+      </dl>
+    </section>
+
     <h2>Santé des chemins</h2>
     <table>
       <thead>
@@ -214,7 +260,7 @@
 
     <footer>
       <span>atlas-secu.com / test</span>
-      <span id="sprint">Sprint overnight · creatif effets + test produit</span>
+      <span id="sprint">Handoff C1 status · /test produit</span>
     </footer>
   </div>
 
@@ -297,6 +343,19 @@
           "JS runtime alive",
           typeof window !== "undefined" && typeof document !== "undefined",
           "readyState=" + document.readyState
+        );
+
+        var c1 = document.getElementById("handoff-c1-status");
+        var c1Text = c1 ? c1.textContent : "";
+        add(
+          "handoff C1 status block present",
+          !!c1 && /pcConfirmedAt/i.test(c1Text) && /ATLAS_API_BASE/i.test(c1Text),
+          c1 ? "id=handoff-c1-status" : "missing #handoff-c1-status"
+        );
+        add(
+          "handoff C1 · no fake phone soft twin",
+          !!c1 && /TODO/i.test(c1Text) && !/phone soft twin ready/i.test(c1Text),
+          "soft twin CTA still TODO"
         );
 
         summary.className = "badge " + (fail ? "fail" : "pass");
