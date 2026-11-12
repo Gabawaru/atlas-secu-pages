@@ -128,7 +128,44 @@
         0 0 40px 8px rgba(20, 16, 6, 0.35);
       opacity: 0.85;
       pointer-events: none;
+      animation: exit-pulse 9s var(--ease) infinite;
     }
+
+    /* Wet linoleum sheen under the fluo */
+    .wet {
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      top: 52%;
+      height: 38%;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          180deg,
+          transparent 0%,
+          rgba(245, 241, 208, 0.08) 18%,
+          rgba(245, 241, 208, 0.2) 42%,
+          transparent 78%
+        );
+      filter: blur(0.5px);
+      mix-blend-mode: soft-light;
+      transform-origin: 50% 0%;
+      animation: wet-sheen 7.5s var(--ease) infinite alternate;
+    }
+
+    /* Slow wall drip */
+    .drip {
+      position: absolute;
+      width: 2px;
+      border-radius: 1px;
+      background: linear-gradient(180deg, rgba(70, 58, 18, 0.55), rgba(70, 58, 18, 0.05));
+      pointer-events: none;
+      opacity: 0.55;
+      animation: drip-fall 8s linear infinite;
+    }
+    .drip.d1 { left: 16%; top: 10%; height: 18vh; animation-delay: 0s; }
+    .drip.d2 { left: 78%; top: 14%; height: 14vh; animation-delay: 2.4s; width: 1.5px; }
+    .drip.d3 { left: 34%; top: 8%; height: 11vh; animation-delay: 5.1s; opacity: 0.4; }
 
     .walls {
       position: absolute;
@@ -163,6 +200,16 @@
     .stain.a { width: 38vw; height: 28vh; left: -4%; top: 12%; opacity: 0.75; }
     .stain.b { width: 28vw; height: 22vh; right: -2%; top: 38%; opacity: 0.6; }
     .stain.c { width: 42vw; height: 18vh; left: 28%; bottom: 8%; opacity: 0.5; }
+
+    /* Ambient fluorescent hum on the whole corridor wash */
+    .hum {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 80% 50% at 50% 12%, rgba(245, 241, 208, 0.16), transparent 70%);
+      animation: hum-pulse 3.6s ease-in-out infinite;
+      mix-blend-mode: soft-light;
+    }
 
     /* Fluorescent strip + flicker */
     .fluo-bar {
@@ -239,6 +286,28 @@
       8% { opacity: 0.55; }
       92% { opacity: 0.4; }
       100% { transform: translateY(92vh); opacity: 0; }
+    }
+
+    @keyframes wet-sheen {
+      from { opacity: 0.45; transform: scaleY(1) translateY(0); }
+      to { opacity: 0.85; transform: scaleY(1.08) translateY(2%); }
+    }
+
+    @keyframes hum-pulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 0.95; }
+    }
+
+    @keyframes drip-fall {
+      0% { transform: scaleY(0.35); opacity: 0; }
+      12% { opacity: 0.55; }
+      70% { transform: scaleY(1); opacity: 0.45; }
+      100% { transform: scaleY(1.15) translateY(8%); opacity: 0; }
+    }
+
+    @keyframes exit-pulse {
+      0%, 100% { opacity: 0.78; filter: brightness(0.95); }
+      50% { opacity: 0.92; filter: brightness(1.05); }
     }
 
     /* Soft clinical vignette / paper dust */
@@ -469,6 +538,8 @@
       .cta { width: 100%; }
       .doc-bar { flex-direction: column; }
       .stamp { align-self: flex-start; }
+      .exit { width: min(18vw, 72px); height: min(18vh, 120px); top: 30%; }
+      .wet { left: 10%; right: 10%; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -477,6 +548,10 @@
       .ceiling,
       .haze,
       .scan,
+      .wet,
+      .hum,
+      .drip,
+      .exit,
       .mark-svg .orbit,
       .doc-bar,
       .stamp,
@@ -490,6 +565,7 @@
       }
       .stamp { transform: rotate(-3deg); }
       .haze { opacity: 0.5; }
+      .wet, .hum { opacity: 0.55; }
     }
   </style>
 </head>
@@ -500,7 +576,12 @@
     <div class="exit"></div>
     <div class="walls"></div>
     <div class="seams"></div>
+    <div class="hum"></div>
     <div class="fluo-bar"></div>
+    <div class="wet"></div>
+    <div class="drip d1"></div>
+    <div class="drip d2"></div>
+    <div class="drip d3"></div>
     <div class="stain a"></div>
     <div class="stain b"></div>
     <div class="stain c"></div>
