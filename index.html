@@ -1473,8 +1473,16 @@
               handoffBtn.textContent = 'Demander une prise en charge';
               var meta = document.getElementById('support-tracking-meta');
               if (meta) {
-                meta.textContent = 'État · stockage navigateur indisponible';
-                meta.setAttribute('data-state', 'idle');
+                var reason = result && result.reason;
+                var msg =
+                  (result && result.message) ||
+                  (reason === 'phone_blocked'
+                    ? 'Téléphone bloqué — ouvrez Atlas sur PC (D5).'
+                    : reason === 'c1_cancelled'
+                      ? 'Demande annulée.'
+                      : 'État · stockage navigateur indisponible');
+                meta.textContent = 'État · ' + msg;
+                meta.setAttribute('data-state', reason === 'phone_blocked' ? 'blocked' : 'idle');
               }
               return;
             }
