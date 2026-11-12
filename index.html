@@ -456,6 +456,51 @@
     .pw-msg.ok{color:var(--ok)}
     .pw-msg.err{color:var(--accent)}
 
+    /* —— Support tracking (empty until prise en charge) —— */
+    .support-tracking{
+      margin-top:40px;padding-top:28px;border-top:1px solid rgba(200,216,222,.9);
+    }
+    .support-tracking-head{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .support-tracking-head h2{
+      margin:0 0 6px;font-size:1.15rem;font-weight:700;letter-spacing:-.01em;
+    }
+    .support-tracking-head .lede{
+      margin:0;color:var(--muted);max-width:46ch;font-size:.95rem;
+    }
+    .support-tracking-meta{
+      margin:0 0 18px;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--muted);
+    }
+    .support-tracking-meta[data-state="active"]{color:var(--teal-deep)}
+    .support-block{margin-bottom:22px}
+    .support-block h3{
+      margin:0 0 8px;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--teal);
+    }
+    .support-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .support-table{
+      width:100%;border-collapse:collapse;font-size:.9rem;background:rgba(255,255,255,.72);
+    }
+    .support-table th,.support-table td{
+      text-align:left;padding:10px 12px;border-bottom:1px solid rgba(200,216,222,.85);
+      vertical-align:top;
+    }
+    .support-table th{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--muted);font-weight:600;background:rgba(244,248,250,.9);
+    }
+    .support-table td.mono{font-family:var(--mono);font-size:.82rem;letter-spacing:.02em}
+    .support-table .empty-row td{
+      color:var(--muted);font-style:italic;padding:14px 12px;
+    }
+    .support-pct{
+      display:inline-block;min-width:3.2em;font-family:var(--mono);font-size:.82rem;
+      color:var(--teal-deep);
+    }
+
     /* —— Mobile: readable phone layout, no horizontal scroll, ≥44px targets —— */
     @media (max-width:640px){
       .nav{padding:16px 16px 0;gap:12px;align-items:flex-start}
@@ -544,6 +589,10 @@
       .cap-aura,.cap-ring{inset:-6px}
       .cap-orbit{inset:-10px}
       .cap-btn{min-height:112px;padding:18px 16px}
+      .support-tracking{margin-top:32px;padding-top:22px}
+      .support-tracking-head{flex-direction:column;align-items:stretch}
+      .support-tracking-head .btn{width:100%;min-height:44px;justify-content:center}
+      .support-table th,.support-table td{padding:10px 8px;font-size:.85rem}
       .pw-panel{max-width:none}
       .pw-panel input{
         max-width:none;width:100%;font-size:16px;min-height:44px;padding:12px 14px;
@@ -803,6 +852,78 @@
         </div>
       </div>
 
+      <section id="support-tracking" class="support-tracking" aria-labelledby="support-tracking-title">
+        <div class="support-tracking-head">
+          <div>
+            <h2 id="support-tracking-title">Suivi support</h2>
+            <p class="lede">
+              Tickets, vulnérabilités signalées et progression — vides tant qu’aucune
+              prise en charge n’est demandée. Aucune donnée personnelle dans ces tableaux
+              avant la demande.
+            </p>
+          </div>
+          <button type="button" class="btn" id="support-handoff-btn">
+            Demander une prise en charge
+          </button>
+        </div>
+        <p class="support-tracking-meta" id="support-tracking-meta" data-state="idle">
+          État · aucune prise en charge
+        </p>
+
+        <div class="support-block">
+          <h3>Tickets</h3>
+          <div class="support-table-wrap">
+            <table class="support-table" id="support-table-tickets">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Sujet</th>
+                  <th scope="col">Statut</th>
+                  <th scope="col">Maj</th>
+                </tr>
+              </thead>
+              <tbody id="support-tbody-tickets"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="support-block">
+          <h3>Vulnérabilités signalées</h3>
+          <div class="support-table-wrap">
+            <table class="support-table" id="support-table-vulns">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Titre</th>
+                  <th scope="col">Risque</th>
+                  <th scope="col">Ticket</th>
+                  <th scope="col">Statut</th>
+                </tr>
+              </thead>
+              <tbody id="support-tbody-vulns"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="support-block">
+          <h3>Progression</h3>
+          <div class="support-table-wrap">
+            <table class="support-table" id="support-table-progress">
+              <thead>
+                <tr>
+                  <th scope="col">Ticket</th>
+                  <th scope="col">Étape</th>
+                  <th scope="col">Avancement</th>
+                  <th scope="col">Note</th>
+                  <th scope="col">Maj</th>
+                </tr>
+              </thead>
+              <tbody id="support-tbody-progress"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <div id="pw-panel" class="pw-panel" hidden>
         <h3>Changer le mot de passe</h3>
         <form id="pw-form" autocomplete="off">
@@ -824,6 +945,7 @@
 
   <script src="/auth.js"></script>
   <script src="/authorizedLaunch.js"></script>
+  <script src="/supportTracking.js"></script>
   <script>
     (function () {
       /* Pre-v3 abstract triangle mark — vault-piece groups keep login/logout motion */
@@ -1037,6 +1159,134 @@
         });
       }, { passive: true });
 
+      function formatSupportDate(iso) {
+        if (!iso) return '—';
+        try {
+          var d = new Date(iso);
+          if (isNaN(d.getTime())) return '—';
+          return d.toLocaleString('fr-FR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
+        } catch (e) {
+          return '—';
+        }
+      }
+
+      function setSupportEmpty(tbody, cols, message) {
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        var tr = document.createElement('tr');
+        tr.className = 'empty-row';
+        var td = document.createElement('td');
+        td.colSpan = cols;
+        td.textContent = message;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      function renderSupportTracking() {
+        var meta = document.getElementById('support-tracking-meta');
+        var btn = document.getElementById('support-handoff-btn');
+        var tTickets = document.getElementById('support-tbody-tickets');
+        var tVulns = document.getElementById('support-tbody-vulns');
+        var tProgress = document.getElementById('support-tbody-progress');
+        if (!window.AtlasSupportTracking) {
+          setSupportEmpty(tTickets, 4, 'Module suivi indisponible.');
+          setSupportEmpty(tVulns, 5, 'Module suivi indisponible.');
+          setSupportEmpty(tProgress, 5, 'Module suivi indisponible.');
+          return;
+        }
+        var state = AtlasSupportTracking.getState();
+        var emptyMsg = 'Aucune entrée — demandez une prise en charge.';
+
+        if (!state.handoffRequested) {
+          if (meta) {
+            meta.textContent = 'État · aucune prise en charge';
+            meta.setAttribute('data-state', 'idle');
+          }
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Demander une prise en charge';
+          }
+          setSupportEmpty(tTickets, 4, emptyMsg);
+          setSupportEmpty(tVulns, 5, emptyMsg);
+          setSupportEmpty(tProgress, 5, emptyMsg);
+          return;
+        }
+
+        if (meta) {
+          meta.textContent =
+            'État · prise en charge · ' +
+            (state.mode || 'local') +
+            (state.requestedAt ? ' · ' + formatSupportDate(state.requestedAt) : '');
+          meta.setAttribute('data-state', 'active');
+        }
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Prise en charge demandée';
+        }
+
+        /* Tickets — IDs / sujets / statuts only (no session PII) */
+        if (tTickets) {
+          tTickets.innerHTML = '';
+          if (!state.tickets.length) {
+            setSupportEmpty(tTickets, 4, 'Aucun ticket.');
+          } else {
+            state.tickets.forEach(function (t) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td class="mono"></td><td></td><td></td><td class="mono"></td>';
+              tr.cells[0].textContent = t.id || '—';
+              tr.cells[1].textContent = t.subject || '—';
+              tr.cells[2].textContent = t.status || '—';
+              tr.cells[3].textContent = formatSupportDate(t.updatedAt);
+              tTickets.appendChild(tr);
+            });
+          }
+        }
+
+        if (tVulns) {
+          tVulns.innerHTML = '';
+          if (!state.vulns.length) {
+            setSupportEmpty(tVulns, 5, 'Aucune vulnérabilité signalée.');
+          } else {
+            state.vulns.forEach(function (v) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td class="mono"></td><td></td><td></td><td class="mono"></td><td></td>';
+              tr.cells[0].textContent = v.id || '—';
+              tr.cells[1].textContent = v.title || '—';
+              tr.cells[2].textContent = v.risk || '—';
+              tr.cells[3].textContent = v.ticketId || '—';
+              tr.cells[4].textContent = v.status || '—';
+              tVulns.appendChild(tr);
+            });
+          }
+        }
+
+        if (tProgress) {
+          tProgress.innerHTML = '';
+          if (!state.progress.length) {
+            setSupportEmpty(tProgress, 5, 'Aucune progression.');
+          } else {
+            state.progress.forEach(function (p) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td class="mono"></td><td></td><td></td><td></td><td class="mono"></td>';
+              tr.cells[0].textContent = p.ticketId || '—';
+              tr.cells[1].textContent = p.label || '—';
+              var pct = typeof p.pct === 'number' ? p.pct : 0;
+              tr.cells[2].innerHTML = '<span class="support-pct"></span>';
+              tr.cells[2].querySelector('.support-pct').textContent = pct + ' %';
+              tr.cells[3].textContent = p.note || '—';
+              tr.cells[4].textContent = formatSupportDate(p.updatedAt);
+              tProgress.appendChild(tr);
+            });
+          }
+        }
+      }
+
       function showDash(session) {
         clearTimers();
         clearBodyModes();
@@ -1050,6 +1300,7 @@
         syncPragmaProductLinks(session);
         vaultAuth.hidden = true;
         setCapBarVisible(false);
+        renderSupportTracking();
       }
 
       function showMarketing() {
@@ -1186,6 +1437,32 @@
       });
 
       document.getElementById('logout-btn').addEventListener('click', runVaultLogout);
+
+      var handoffBtn = document.getElementById('support-handoff-btn');
+      if (handoffBtn) {
+        handoffBtn.addEventListener('click', function () {
+          if (!window.AtlasSupportTracking) return;
+          if (AtlasSupportTracking.isHandoffRequested()) {
+            renderSupportTracking();
+            return;
+          }
+          handoffBtn.disabled = true;
+          handoffBtn.textContent = 'Demande en cours…';
+          AtlasSupportTracking.requestHandoff().then(function (result) {
+            if (!result || !result.ok) {
+              handoffBtn.disabled = false;
+              handoffBtn.textContent = 'Demander une prise en charge';
+              var meta = document.getElementById('support-tracking-meta');
+              if (meta) {
+                meta.textContent = 'État · stockage navigateur indisponible';
+                meta.setAttribute('data-state', 'idle');
+              }
+              return;
+            }
+            renderSupportTracking();
+          });
+        });
+      }
 
       document.getElementById('open-pw').addEventListener('click', function () {
         pwMsg.hidden = true;
