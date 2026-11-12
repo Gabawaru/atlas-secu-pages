@@ -48,38 +48,40 @@
       z-index: 0;
       overflow: hidden;
       background:
-        radial-gradient(ellipse 70% 40% at 50% 14%, rgba(245, 241, 208, 0.42), transparent 62%),
-        linear-gradient(180deg, #8a7c38 0%, var(--damp) 36%, var(--floor) 70%, #5a4c20 100%);
+        /* Dimmer mid-field so the vanishing exit punches through */
+        radial-gradient(ellipse 55% 32% at 50% 12%, rgba(245, 241, 208, 0.28), transparent 58%),
+        radial-gradient(ellipse 28% 22% at 50% 34%, rgba(20, 16, 6, 0.35), transparent 70%),
+        linear-gradient(180deg, #7a6c32 0%, var(--damp) 34%, var(--floor) 68%, #4a3e18 100%);
       perspective: 980px;
-      perspective-origin: 50% 40%;
+      perspective-origin: 50% 38%;
     }
 
     /* Endless floor plane — linoleum tiles toward vanishing point */
     .corridor-depth {
       position: absolute;
       left: 50%;
-      top: 36%;
-      width: 160vmax;
-      height: 160vmax;
-      transform: translateX(-50%) rotateX(62deg);
+      top: 38%;
+      width: 170vmax;
+      height: 170vmax;
+      transform: translateX(-50%) rotateX(64deg);
       transform-origin: 50% 0%;
       background:
         repeating-linear-gradient(
           90deg,
           transparent 0,
-          transparent calc(8% - 1.5px),
-          rgba(70, 58, 18, 0.28) calc(8% - 1.5px),
-          rgba(70, 58, 18, 0.28) 8%
+          transparent calc(7% - 2px),
+          rgba(50, 40, 12, 0.4) calc(7% - 2px),
+          rgba(50, 40, 12, 0.4) 7%
         ),
         repeating-linear-gradient(
           0deg,
           transparent 0,
-          transparent calc(7% - 1.5px),
-          rgba(55, 46, 14, 0.22) calc(7% - 1.5px),
-          rgba(55, 46, 14, 0.22) 7%
+          transparent calc(6% - 2px),
+          rgba(40, 32, 10, 0.32) calc(6% - 2px),
+          rgba(40, 32, 10, 0.32) 6%
         ),
-        linear-gradient(180deg, var(--damp-wet), var(--floor) 45%, #6e5f28 100%);
-      opacity: 0.95;
+        linear-gradient(180deg, #8a7a38, var(--floor) 40%, #5a4c20 100%);
+      opacity: 0.98;
       animation: depth-breathe 16s var(--ease) infinite alternate;
     }
 
@@ -113,21 +115,23 @@
       animation: ceiling-drift 18s var(--ease) infinite alternate;
     }
 
-    /* Vanishing doorway — liminal exit */
+    /* Vanishing doorway — liminal exit (must read behind the lockup) */
     .exit {
       position: absolute;
       left: 50%;
-      top: 28%;
-      width: min(12vw, 88px);
-      height: min(22vh, 160px);
-      transform: translate(-50%, -20%);
+      top: 22%;
+      width: min(18vw, 120px);
+      height: min(28vh, 200px);
+      transform: translate(-50%, -12%);
       background:
-        linear-gradient(180deg, #2a2410 0%, #1a160c 55%, #0e0c06 100%);
+        linear-gradient(180deg, #1a160c 0%, #0a0804 60%, #050403 100%);
+      clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
       box-shadow:
-        0 0 0 2px rgba(90, 78, 28, 0.45),
-        0 0 40px 8px rgba(20, 16, 6, 0.35);
-      opacity: 0.85;
+        0 0 0 3px rgba(70, 58, 18, 0.55),
+        0 0 60px 16px rgba(10, 8, 4, 0.55);
+      opacity: 0.95;
       pointer-events: none;
+      z-index: 0;
       animation: exit-pulse 9s var(--ease) infinite;
     }
 
@@ -171,22 +175,22 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(90deg, rgba(55, 46, 14, 0.82) 0%, rgba(55, 46, 14, 0.35) 10%, transparent 22%, transparent 78%, rgba(55, 46, 14, 0.35) 90%, rgba(55, 46, 14, 0.82) 100%),
-        linear-gradient(180deg, rgba(90, 78, 30, 0.4) 0%, transparent 30%);
+        linear-gradient(90deg, rgba(40, 32, 10, 0.9) 0%, rgba(55, 46, 14, 0.45) 12%, transparent 26%, transparent 74%, rgba(55, 46, 14, 0.45) 88%, rgba(40, 32, 10, 0.9) 100%),
+        linear-gradient(180deg, rgba(70, 58, 20, 0.45) 0%, transparent 32%);
       pointer-events: none;
     }
 
-    /* Wall panel seams converging to exit */
+    /* Wall panel seams converging hard to exit */
     .seams {
       position: absolute;
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(98deg, transparent 14%, rgba(60, 50, 16, 0.35) 14.2%, transparent 14.5%),
-        linear-gradient(82deg, transparent 85.5%, rgba(60, 50, 16, 0.35) 85.8%, transparent 86%),
-        linear-gradient(94deg, transparent 22%, rgba(60, 50, 16, 0.22) 22.15%, transparent 22.4%),
-        linear-gradient(86deg, transparent 77.6%, rgba(60, 50, 16, 0.22) 77.85%, transparent 78%);
-      opacity: 0.7;
+        linear-gradient(102deg, transparent 8%, rgba(40, 32, 10, 0.55) 8.15%, transparent 8.45%),
+        linear-gradient(78deg, transparent 91.55%, rgba(40, 32, 10, 0.55) 91.85%, transparent 92%),
+        linear-gradient(96deg, transparent 18%, rgba(50, 40, 12, 0.35) 18.2%, transparent 18.5%),
+        linear-gradient(84deg, transparent 81.5%, rgba(50, 40, 12, 0.35) 81.8%, transparent 82%);
+      opacity: 0.85;
     }
 
     /* Moisture stains */
@@ -538,7 +542,7 @@
       .cta { width: 100%; }
       .doc-bar { flex-direction: column; }
       .stamp { align-self: flex-start; }
-      .exit { width: min(18vw, 72px); height: min(18vh, 120px); top: 30%; }
+      .exit { width: min(24vw, 96px); height: min(22vh, 150px); top: 24%; }
       .wet { left: 10%; right: 10%; }
     }
 
