@@ -255,8 +255,8 @@
 
 
     <section class="note" id="scanner-product-status" aria-labelledby="scanner-product-title">
-      <h2 id="scanner-product-title">Scanner / Historique — prêt client (Atlas #147–#155)</h2>
-      <p class="row-meta" style="margin:0 0 8px">Depth, Signal, RDAP, SPF apex TXT, HSTS floor, export bilan — client-ready. Not decorative.</p>
+      <h2 id="scanner-product-title">Scanner / Historique — prêt client (Atlas #147–#158)</h2>
+      <p class="row-meta" style="margin:0 0 8px">Depth, Signal, RDAP (registrar/expiry windows), SPF, HSTS, export bilan — client-ready. Not decorative.</p>
       <dl>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/147">#147</a></dt>
         <dd>Redirect depth scored — http without HTTPS upgrade → faible; stuck 3xx → info (faible if ≥5 hops). Client sees redirect risk, not silent chains.</dd>
@@ -274,6 +274,8 @@
         <dd>RDAP Signal enriched with registrar + expiry — operator sees who/when from evidence already collected; client rebuild offline (no <code>ATLAS_API_BASE</code>).</dd>
         <dt><a href="https://github.com/Gabawaru/Atlas/pull/155">#155</a></dt>
         <dd>SPF present/absent scored from apex TXT sample — mail auth gap visible in risk table; offline rebuild (no DMARC/CAA enum).</dd>
+        <dt><a href="https://github.com/Gabawaru/Atlas/pull/158">#158</a></dt>
+        <dd>RDAP domain expiry windows scored — expired / ≤30d / ≤90d from apex evidence; offline rebuild (no <code>ATLAS_API_BASE</code>).</dd>
       </dl>
     </section>
 
@@ -317,7 +319,7 @@
 
     <footer>
       <span>atlas-secu.com / test</span>
-      <span id="sprint">Scanner board #147–#155 · /test</span>
+      <span id="sprint">Scanner board #147–#158 · /test</span>
     </footer>
   </div>
 
@@ -577,16 +579,18 @@
         var scan = document.getElementById("scanner-product-status");
         var scanText = scan ? scan.textContent : "";
         add(
-          "scanner product board #147–#155 present",
+          "scanner product board #147–#158 present",
           !!scan &&
             /#147/.test(scanText) &&
             /#151/.test(scanText) &&
             /#152/.test(scanText) &&
             /#153/.test(scanText) &&
             /#155/.test(scanText) &&
+            /#158/.test(scanText) &&
             /Historique/.test(scanText) &&
             /RDAP/.test(scanText) &&
             /registrar/.test(scanText) &&
+            /expiry|≤30d|expired/i.test(scanText) &&
             /SPF/.test(scanText) &&
             /bilanScore/.test(scanText) &&
             /priorityActions/.test(scanText) &&
