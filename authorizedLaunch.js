@@ -1,8 +1,10 @@
 /**
  * Deep-link entry from atlas-secu.com → local Atlas client.
  * Browser port of Gabawaru/Atlas apps/client/src/authorizedLaunch.ts
- * RoE Gab: recon / scan / vuln / osint only on *.pragma-serve.com,
- * *.pragma-cloud.com, *.pragma.mc (+ apexes).
+ *
+ * Public model: the scan target URL/host is chosen in Atlas Local by the
+ * operator. Pages do not advertise a fixed Pragma/RoE perimeter. The client
+ * is responsible for ensuring the scan is authorized.
  */
 (function (global) {
   var AUTHORIZED_ACTIONS = ['recon', 'scan', 'vuln', 'osint'];
@@ -14,19 +16,12 @@
     osint: 'OSINT'
   };
 
-  var DEFAULT_AUTHORIZED_HOST = 'pragma-serve.com';
+  /* Empty default: target is chosen in Atlas Local, not forced by Pages. */
+  var DEFAULT_AUTHORIZED_HOST = '';
 
-  var ROE_SCOPE_PATTERNS = [
-    '*.pragma-serve.com',
-    '*.pragma-cloud.com',
-    '*.pragma.mc'
-  ];
-
-  var ROE_EXPLICIT_APEXES = [
-    'pragma-serve.com',
-    'pragma-cloud.com',
-    'pragma.mc'
-  ];
+  /* Legacy export names retained for callers; no fixed perimeter list. */
+  var ROE_SCOPE_PATTERNS = [];
+  var ROE_EXPLICIT_APEXES = [];
 
   /** Preferred Vite client (authorizedLaunch + #scanner). */
   var DEFAULT_CLIENT_ORIGIN = 'http://localhost:3002';
@@ -50,17 +45,20 @@
     return host;
   }
 
-  function isAuthorizedRoeHost(host) {
+  /** Format check only — not a product perimeter. Empty host = client chooses. */
+  function isValidLaunchHost(host) {
     var h = normalizeLaunchHost(host);
-    if (!h || h.indexOf(' ') !== -1 || h.indexOf('..') !== -1 || h.indexOf(':') !== -1) {
+    if (!h) return false;
+    if (h.indexOf(' ') !== -1 || h.indexOf('..') !== -1 || h.indexOf(':') !== -1) {
       return false;
     }
-    if (ROE_EXPLICIT_APEXES.indexOf(h) !== -1) return true;
-    for (var i = 0; i < ROE_SCOPE_PATTERNS.length; i++) {
-      var suffix = ROE_SCOPE_PATTERNS[i].slice(1);
-      if (h.length > suffix.length && h.slice(-suffix.length) === suffix) return true;
-    }
-    return false;
+    /* Basic hostname / IPv4-ish token; Atlas Local validates further. */
+    return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i.test(h);
+  }
+
+  /** @deprecated name kept for callers; means "syntactically usable host". */
+  function isAuthorizedRoeHost(host) {
+    return isValidLaunchHost(host);
   }
 
   function isAuthorizedAction(value) {
@@ -68,7 +66,10 @@
   }
 
   function parseAuthorizedLaunch(search, defaultHost) {
-    var def = defaultHost || DEFAULT_AUTHORIZED_HOST;
+    var def =
+      defaultHost === undefined || defaultHost === null
+        ? DEFAULT_AUTHORIZED_HOST
+        : defaultHost;
     var params = new URLSearchParams(
       search.charAt(0) === '?' ? search.slice(1) : search
     );
@@ -85,15 +86,13 @@
           ' » non autorisée — utiliser recon|scan|vuln|osint.'
       };
     }
-    var hostRaw = (params.get('host') || '').trim() || def;
-    var host = normalizeLaunchHost(hostRaw);
-    if (!isAuthorizedRoeHost(host)) {
+    var hostRaw = (params.get('host') || '').trim();
+    if (!hostRaw && def) hostRaw = String(def).trim();
+    var host = hostRaw ? normalizeLaunchHost(hostRaw) : '';
+    if (hostRaw && !isValidLaunchHost(host)) {
       return {
         ok: false,
-        reason:
-          'Cible « ' +
-          hostRaw +
-          ' » hors périmètre autorisé.'
+        reason: 'Cible invalide — choisissez l’URL dans Atlas Local.'
       };
     }
     return {
@@ -106,35 +105,26 @@
     };
   }
 
+  function buildLaunchQuery(action, host) {
+    var q = new URLSearchParams({ action: action });
+    var h = host || DEFAULT_AUTHORIZED_HOST;
+    if (h) q.set('host', h);
+    return q.toString();
+  }
+
   function authorizedLaunchHref(action, host, origin) {
     var o = origin || DEFAULT_CLIENT_ORIGIN;
-    var q = new URLSearchParams({
-      action: action,
-      host: host || DEFAULT_AUTHORIZED_HOST
-    });
-    return o + '/?' + q.toString() + '#scanner';
+    return o + '/?' + buildLaunchQuery(action, host) + '#scanner';
   }
 
   /** Pages fallback when loopback Atlas is down — still runs the live probe UI. */
   function pagesLaunchHref(action, host) {
-    var q = new URLSearchParams({
-      action: action,
-      host: host || DEFAULT_AUTHORIZED_HOST
-    });
-    return '/launch/?' + q.toString() + '#scanner';
+    return '/launch/?' + buildLaunchQuery(action, host) + '#scanner';
   }
 
   /** Atlas.exe shell deep-link (same query + #scanner). */
   function shellLaunchHref(action, host) {
-    return (
-      ATLAS_LOCAL_ORIGIN +
-      '/?' +
-      new URLSearchParams({
-        action: action,
-        host: host || DEFAULT_AUTHORIZED_HOST
-      }).toString() +
-      '#scanner'
-    );
+    return ATLAS_LOCAL_ORIGIN + '/?' + buildLaunchQuery(action, host) + '#scanner';
   }
 
   /**
@@ -161,12 +151,10 @@
     var timeoutMs = opts.timeoutMs || 1400;
     var navigate = opts.navigate !== false;
     var fallbackToLaunch = opts.fallbackToLaunch !== false;
-    var parsed = parseAuthorizedLaunch(
-      'action=' +
-        encodeURIComponent(action || '') +
-        '&host=' +
-        encodeURIComponent(host || DEFAULT_AUTHORIZED_HOST)
-    );
+    var q = 'action=' + encodeURIComponent(action || '');
+    var hostVal = host || DEFAULT_AUTHORIZED_HOST;
+    if (hostVal) q += '&host=' + encodeURIComponent(hostVal);
+    var parsed = parseAuthorizedLaunch(q);
     if (!parsed.ok) {
       return Promise.resolve({
         ok: false,
@@ -280,6 +268,7 @@
     CLIENT_ORIGIN_IPV4: CLIENT_ORIGIN_IPV4,
     ATLAS_LOCAL_ORIGIN: ATLAS_LOCAL_ORIGIN,
     normalizeLaunchHost: normalizeLaunchHost,
+    isValidLaunchHost: isValidLaunchHost,
     isAuthorizedRoeHost: isAuthorizedRoeHost,
     isAuthorizedAction: isAuthorizedAction,
     parseAuthorizedLaunch: parseAuthorizedLaunch,
