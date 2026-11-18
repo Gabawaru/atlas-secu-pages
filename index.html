@@ -135,6 +135,9 @@
     .btn.secondary:hover{background:#f3faf9}
     .btn.ghost{background:transparent;color:var(--ink-soft);border-color:var(--line);box-shadow:none}
     .btn.ghost:hover{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-soft)}
+    .btn.danger{background:transparent;color:#8b3a3a;border-color:rgba(139,58,58,.35);box-shadow:none}
+    .btn.danger:hover{border-color:#8b3a3a;background:rgba(139,58,58,.06)}
+    .support-erase-msg{margin:.35rem 0 0;font-size:.9rem;color:var(--ink-soft)}
 
     .hero{
       max-width:1120px;margin:0 auto;padding:clamp(48px,10vh,96px) 24px 64px;
@@ -716,6 +719,7 @@
             <span class="role" id="dash-role">—</span>
           </div>
           <button type="button" class="linkish" id="open-pw">Mot de passe</button>
+          <button type="button" class="btn danger" id="erase-account-btn">Supprimer mon compte…</button>
           <button type="button" class="btn ghost" id="logout-btn">Déconnexion</button>
         </div>
       </div>
@@ -812,10 +816,14 @@
           <button type="button" class="btn" id="support-handoff-btn">
             Demander une prise en charge
           </button>
+          <button type="button" class="btn ghost" id="support-wipe-btn" hidden>
+            Effacer le suivi local…
+          </button>
         </div>
         <p class="support-tracking-meta" id="support-tracking-meta" data-state="idle">
           État · aucune prise en charge
         </p>
+        <p class="support-erase-msg" id="support-erase-msg" hidden role="status"></p>
 
         <div class="support-block">
           <h3>Tickets</h3>
@@ -845,6 +853,7 @@
                   <th scope="col">Risque</th>
                   <th scope="col">Ticket</th>
                   <th scope="col">Statut</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody id="support-tbody-vulns"></tbody>
@@ -1134,8 +1143,10 @@
             btn.textContent = 'Demander une prise en charge';
           }
           setSupportEmpty(tTickets, 4, emptyMsg);
-          setSupportEmpty(tVulns, 5, emptyMsg);
+          setSupportEmpty(tVulns, 6, emptyMsg);
           setSupportEmpty(tProgress, 5, emptyMsg);
+          var wipeIdle = document.getElementById('support-wipe-btn');
+          if (wipeIdle) wipeIdle.hidden = true;
           return;
         }
 
@@ -1154,6 +1165,8 @@
           btn.disabled = true;
           btn.textContent = 'Prise en charge demandée';
         }
+        var wipeBtn = document.getElementById('support-wipe-btn');
+        if (wipeBtn) wipeBtn.hidden = false;
 
         /* Tickets — IDs / sujets / statuts only (no session PII) */
         if (tTickets) {
@@ -1177,17 +1190,27 @@
         if (tVulns) {
           tVulns.innerHTML = '';
           if (!state.vulns.length) {
-            setSupportEmpty(tVulns, 5, 'Aucune vulnérabilité signalée.');
+            setSupportEmpty(tVulns, 6, 'Aucune vulnérabilité signalée.');
           } else {
             state.vulns.forEach(function (v) {
               var tr = document.createElement('tr');
               tr.innerHTML =
-                '<td class="mono"></td><td></td><td></td><td class="mono"></td><td></td>';
+                '<td class="mono"></td><td></td><td></td><td class="mono"></td><td></td><td></td>';
               tr.cells[0].textContent = v.id || '—';
               tr.cells[1].textContent = v.title || '—';
               tr.cells[2].textContent = v.risk || '—';
               tr.cells[3].textContent = v.ticketId || '—';
               tr.cells[4].textContent = v.status || '—';
+              var del = document.createElement('button');
+              del.type = 'button';
+              del.className = 'btn danger';
+              del.textContent = 'Supprimer…';
+              del.setAttribute(
+                'data-erase-vuln',
+                v.fingerprint || v.id || ''
+              );
+              del.setAttribute('aria-label', 'Supprimer ' + (v.id || 'ligne'));
+              tr.cells[5].appendChild(del);
               tVulns.appendChild(tr);
             });
           }
@@ -1221,7 +1244,7 @@
           var tVulns = document.getElementById('support-tbody-vulns');
           var tProgress = document.getElementById('support-tbody-progress');
           setSupportEmpty(tTickets, 4, 'Module suivi indisponible.');
-          setSupportEmpty(tVulns, 5, 'Module suivi indisponible.');
+          setSupportEmpty(tVulns, 6, 'Module suivi indisponible.');
           setSupportEmpty(tProgress, 5, 'Module suivi indisponible.');
           return;
         }
@@ -1384,6 +1407,98 @@
       });
 
       document.getElementById('logout-btn').addEventListener('click', runVaultLogout);
+
+      function setSupportEraseMsg(text) {
+        var el = document.getElementById('support-erase-msg');
+        if (!el) return;
+        if (!text) {
+          el.hidden = true;
+          el.textContent = '';
+          return;
+        }
+        el.hidden = false;
+        el.textContent = text;
+      }
+
+      function confirmTypeDelete(message) {
+        var typed = window.prompt(
+          message + '\n\nTapez DELETE pour confirmer.',
+          ''
+        );
+        return typed === 'DELETE';
+      }
+
+      document.getElementById('erase-account-btn').addEventListener('click', function () {
+        if (
+          !confirmTypeDelete(
+            'Supprimer mon compte Atlas SECU (session locale + suivi support navigateur) ?'
+          )
+        ) {
+          return;
+        }
+        var result = AtlasAuth.eraseLocalAccount
+          ? AtlasAuth.eraseLocalAccount()
+          : { ok: true, notice: 'Session effacée.' };
+        setSupportEraseMsg(
+          (result && result.notice) ||
+            'Session Atlas SECU et données locales effacées.'
+        );
+        runVaultLogout();
+      });
+
+      var supportWipeBtn = document.getElementById('support-wipe-btn');
+      if (supportWipeBtn) {
+        supportWipeBtn.addEventListener('click', function () {
+          if (
+            !confirmTypeDelete(
+              'Effacer le suivi support local Atlas SECU (navigateur uniquement) ?'
+            )
+          ) {
+            return;
+          }
+          if (window.AtlasSupportTracking) {
+            paintSupportTracking(AtlasSupportTracking.reset());
+          }
+          setSupportEraseMsg(
+            'Suivi support local effacé (atlas.support-tracking.v1).'
+          );
+        });
+      }
+
+      var supportSection = document.getElementById('support-tracking');
+      if (supportSection) {
+        supportSection.addEventListener('click', function (ev) {
+          var t = ev.target;
+          if (!t || !t.getAttribute) return;
+          var key = t.getAttribute('data-erase-vuln');
+          if (!key) return;
+          if (
+            !confirmTypeDelete(
+              'Supprimer cette vulnérabilité du suivi support Atlas SECU ?'
+            )
+          ) {
+            return;
+          }
+          t.disabled = true;
+          if (
+            !window.AtlasSupportTracking ||
+            typeof AtlasSupportTracking.removeVuln !== 'function'
+          ) {
+            return;
+          }
+          AtlasSupportTracking.removeVuln(key).then(function (result) {
+            paintSupportTracking(
+              (result && result.state) || AtlasSupportTracking.getState()
+            );
+            setSupportEraseMsg(
+              (result && result.notice) ||
+                (result && result.removed
+                  ? 'Ligne retirée du suivi support.'
+                  : 'Aucune ligne correspondante.')
+            );
+          });
+        });
+      }
 
       var handoffBtn = document.getElementById('support-handoff-btn');
       if (handoffBtn) {

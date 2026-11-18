@@ -160,6 +160,51 @@
     try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
   }
 
+  /**
+   * Soft twin « supprimer mon compte » — Pages n'a pas de compte serveur.
+   * Efface session, override mot de passe local, et suivi support navigateur.
+   * L'allowlist statique AUTHORIZED_USERS n'est pas modifiable depuis le navigateur.
+   */
+  function eraseLocalAccount() {
+    var session = null;
+    try {
+      session = getSession();
+    } catch (e) {
+      session = null;
+    }
+    var email = session && session.email ? normalizeEmail(session.email) : null;
+    logout();
+    if (email) {
+      try {
+        var map = loadOverrides();
+        if (Object.prototype.hasOwnProperty.call(map, email)) {
+          delete map[email];
+          saveOverrides(map);
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    try {
+      if (
+        global.AtlasSupportTracking &&
+        typeof global.AtlasSupportTracking.reset === 'function'
+      ) {
+        global.AtlasSupportTracking.reset();
+      } else {
+        localStorage.removeItem('atlas.support-tracking.v1');
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    return {
+      ok: true,
+      notice:
+        'Session Atlas SECU et données locales effacées. Compte allowlist statique non supprimable depuis Pages.',
+      retained: ['AUTHORIZED_USERS (allowlist statique du site)']
+    };
+  }
+
   function getSession() {
     try {
       var raw = sessionStorage.getItem(SESSION_KEY);
@@ -240,6 +285,7 @@
     AUTHORIZED_USERS: AUTHORIZED_USERS,
     login: login,
     logout: logout,
+    eraseLocalAccount: eraseLocalAccount,
     getSession: getSession,
     requireSession: requireSession,
     resolveRole: resolveRole,
