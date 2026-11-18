@@ -248,6 +248,15 @@
       border-bottom:1px solid transparent;padding-bottom:1px;
     }
     .footer .exp-chat:hover{border-bottom-color:var(--teal-mid)}
+    .footer .footer-legal{display:inline-flex;align-items:center;gap:8px}
+    .footer .footer-legal a{
+      color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;
+    }
+    .footer .footer-legal a:hover{color:var(--teal-deep);border-bottom-color:var(--teal-mid)}
+    .legal-inline{
+      margin:.55rem 0 0;font-size:.88rem;color:var(--muted);line-height:1.45;max-width:48ch;
+    }
+    .legal-inline a{color:var(--teal-deep)}
 
     .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
     .reveal.is-in{opacity:1;transform:none}
@@ -682,6 +691,11 @@
 
       <footer class="footer">
         <span>Atlas SECU · atlas-secu.com</span>
+        <span class="footer-legal">
+          <a href="/cgu.html">CGU</a>
+          <span aria-hidden="true">·</span>
+          <a href="/confidentialite.html">Confidentialité</a>
+        </span>
         <span>Pentest autorisé</span>
         <a class="exp-chat" href="/atlas-secure/experimental/">Accéder à la session expérimentale</a>
       </footer>
@@ -746,6 +760,10 @@
         Session active. Aucune action de scan n’est lancée depuis atlas-secu.com —
         recon / scan / vuln / audit existent uniquement dans Atlas Local sur votre machine.
         Vous choisissez la cible URL en local et restez responsable de l’autorisation.
+        Suppression de compte&nbsp;:
+        <a href="/confidentialite.html#compte" target="_blank" rel="noopener">Politique de confidentialité</a>
+        ·
+        <a href="/cgu.html" target="_blank" rel="noopener">CGU</a>.
       </p>
 
       <nav id="pragma-product-links" class="pragma-links" hidden aria-label="Produits Pragma"></nav>
@@ -815,6 +833,13 @@
               Activer Atlas SECU
             </button>
           </div>
+          <p class="legal-inline">
+            En créant un compte, vous acceptez les
+            <a href="/cgu.html" target="_blank" rel="noopener">CGU</a>
+            et la
+            <a href="/confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a>
+            (brouillon produit — à valider conseil).
+          </p>
         </form>
         <p class="support-tracking-meta" id="atlas-secu-commercial-meta" data-state="idle">
           État · compte puis abonnement requis avant prise en charge
@@ -838,6 +863,12 @@
             Effacer le suivi local…
           </button>
         </div>
+        <p class="legal-inline">
+          PEC = opt-in sur éléments sélectionnés.
+          <a href="/confidentialite.html#pec" target="_blank" rel="noopener">Confidentialité — PEC</a>
+          ·
+          <a href="/cgu.html" target="_blank" rel="noopener">CGU</a>
+        </p>
         <p class="support-tracking-meta" id="support-tracking-meta" data-state="idle">
           État · aucune prise en charge
         </p>

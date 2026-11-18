@@ -10,12 +10,16 @@ Static GitHub Pages site for **Atlas SECU** (`https://atlas-secu.com`).
 | Binary | `/Atlas-Setup.exe` |
 | Design tokens | `/assets/atlas-tokens.css` (shared with Atlas Scanner) |
 | Hero mark | Three.js interactive Earth + static cyber-pro (`/assets/atlas-hero-mark.js`) |
+| CGU | [`/cgu.html`](cgu.html) (brouillon produit) |
+| Confidentialité | [`/confidentialite.html`](confidentialite.html) (brouillon produit) |
 
 Deploy = merge / push to `main`.
 
 ## Hero mark (ATLAS)
 
 Landing brand wordmark is **ATLAS**. The hero visual is a static kneeling cyber-pro figure holding a textured Earth globe. The globe auto-rotates; drag (mouse/touch) spins it any direction while the character stays fixed. Network nodes/arcs sit on the globe surface. Loads Three.js from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`.
+
+Legal pages are **draft product copy** (à valider conseil), linked from footer, register, PEC, and account delete surfaces.
 
 ## Design tokens
 
