@@ -66,7 +66,7 @@
     <div id="session-badge" class="session-badge" hidden role="status" aria-live="polite">
       <span class="stamp" id="session-role-stamp">—</span>
       <span class="who" id="session-name"></span>
-      <span class="meta" id="session-clearance">RoE</span>
+      <span class="meta" id="session-clearance">Atlas SECU</span>
     </div>
     <div id="content" hidden>1 2 3 4</div>
     <p class="nav" id="nav" hidden>
@@ -85,7 +85,7 @@
       document.getElementById('session-name').textContent = session.firstName || 'Utilisateur';
       document.getElementById('session-role-stamp').textContent = (role && role.post) || 'Session';
       document.getElementById('session-clearance').textContent =
-        role ? ('Clearance ' + role.clearance) : 'RoE';
+        role ? ('Clearance ' + role.clearance) : 'Atlas SECU';
       document.getElementById('content').hidden = false;
       document.getElementById('nav').hidden = false;
       var pragmaLinks = document.getElementById('pragma-product-links');
