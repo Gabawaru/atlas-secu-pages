@@ -405,6 +405,20 @@
       text-transform:uppercase;color:var(--muted);
     }
     .support-tracking-meta[data-state="active"]{color:var(--teal-deep)}
+    .support-tracking-meta[data-state="ok"]{color:var(--teal-deep)}
+    .support-tracking-meta[data-state="blocked"]{color:var(--accent)}
+    .support-tracking-meta[data-state="pending"]{color:var(--ink-soft)}
+    .atlas-secu-form{
+      display:grid;gap:12px;max-width:420px;margin:12px 0 8px;
+    }
+    .atlas-secu-form label{
+      display:grid;gap:6px;font-size:.92rem;color:var(--ink-soft);
+    }
+    .atlas-secu-form input{
+      min-height:44px;padding:10px 12px;border:1px solid var(--line);
+      border-radius:2px;background:var(--paper);color:var(--ink);font:inherit;
+    }
+    .atlas-secu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
     .support-block{margin-bottom:22px}
     .support-block h3{
       margin:0 0 8px;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
@@ -726,14 +740,73 @@
         </div>
       </section>
 
+      <section
+        id="atlas-secu-commercial"
+        class="support-tracking atlas-secu-commercial"
+        aria-labelledby="atlas-secu-commercial-title"
+      >
+        <div class="support-tracking-head">
+          <div>
+            <h2 id="atlas-secu-commercial-title">Atlas SECU</h2>
+            <p class="lede" id="atlas-secu-price-label">
+              En beta test avec …… <strong>0 €</strong>
+            </p>
+            <p class="lede">
+              Créez un compte, activez avec le code promo, puis demandez une prise en
+              charge. Le scan local reste gratuit.
+            </p>
+          </div>
+        </div>
+        <form id="atlas-secu-account-form" class="atlas-secu-form">
+          <label>
+            Email
+            <input type="email" id="atlas-secu-email" required autocomplete="username" />
+          </label>
+          <label>
+            Mot de passe
+            <input
+              type="password"
+              id="atlas-secu-password"
+              required
+              minlength="8"
+              autocomplete="new-password"
+            />
+          </label>
+          <label>
+            Code promo
+            <input
+              type="text"
+              id="atlas-secu-promo"
+              value="YOOO2026"
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </label>
+          <div class="atlas-secu-actions">
+            <button type="submit" class="btn" id="atlas-secu-register-btn">
+              Créer un compte
+            </button>
+            <button type="button" class="btn ghost" id="atlas-secu-login-btn">
+              Connexion
+            </button>
+            <button type="button" class="btn" id="atlas-secu-activate-btn">
+              Activer Atlas SECU
+            </button>
+          </div>
+        </form>
+        <p class="support-tracking-meta" id="atlas-secu-commercial-meta" data-state="idle">
+          État · compte puis abonnement requis avant prise en charge
+        </p>
+      </section>
+
       <section id="support-tracking" class="support-tracking" aria-labelledby="support-tracking-title">
         <div class="support-tracking-head">
           <div>
             <h2 id="support-tracking-title">Suivi support</h2>
             <p class="lede">
               Tickets, vulnérabilités signalées et progression — vides tant qu’aucune
-              prise en charge n’est demandée. Aucune donnée personnelle dans ces tableaux
-              avant la demande.
+              prise en charge n’est demandée. Compte + Atlas SECU actifs requis pour
+              l’envoi serveur.
             </p>
           </div>
           <button type="button" class="btn" id="support-handoff-btn">
@@ -818,6 +891,7 @@
   </div>
 
   <script src="/auth.js"></script>
+  <script src="/atlasSecuCommercial.js"></script>
   <script src="/supportTracking.js"></script>
   <script>
     (function () {
@@ -1331,12 +1405,21 @@
                 var msg =
                   (result && result.message) ||
                   (reason === 'phone_blocked'
-                    ? 'Téléphone bloqué — ouvrez Atlas sur PC (D5).'
-                    : reason === 'c1_cancelled'
-                      ? 'Demande annulée.'
-                      : 'État · stockage navigateur indisponible');
+                    ? 'Téléphone bloqué — ouvrez Atlas SECU sur PC (D5).'
+                    : reason === 'auth_required' || reason === 'subscription_required'
+                      ? 'Compte + Atlas SECU (YOOO2026) requis avant prise en charge.'
+                      : reason === 'c1_cancelled'
+                        ? 'Demande annulée.'
+                        : 'Stockage navigateur indisponible');
                 meta.textContent = 'État · ' + msg;
-                meta.setAttribute('data-state', reason === 'phone_blocked' ? 'blocked' : 'idle');
+                meta.setAttribute(
+                  'data-state',
+                  reason === 'phone_blocked' ||
+                    reason === 'auth_required' ||
+                    reason === 'subscription_required'
+                    ? 'blocked'
+                    : 'idle'
+                );
               }
               return;
             }
@@ -1344,6 +1427,78 @@
           });
         });
       }
+
+      (function wireAtlasSecuCommercial() {
+        if (!window.AtlasSecuCommercial) return;
+        var form = document.getElementById('atlas-secu-account-form');
+        var meta = document.getElementById('atlas-secu-commercial-meta');
+        var loginBtn = document.getElementById('atlas-secu-login-btn');
+        var activateBtn = document.getElementById('atlas-secu-activate-btn');
+        function setMeta(text, state) {
+          if (!meta) return;
+          meta.textContent = 'État · ' + text;
+          meta.setAttribute('data-state', state || 'idle');
+        }
+        function fields() {
+          return {
+            email: (document.getElementById('atlas-secu-email') || {}).value || '',
+            password:
+              (document.getElementById('atlas-secu-password') || {}).value || '',
+            promo: (document.getElementById('atlas-secu-promo') || {}).value || ''
+          };
+        }
+        if (form) {
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var f = fields();
+            setMeta('création du compte…', 'pending');
+            AtlasSecuCommercial.register(f.email, f.password).then(function (r) {
+              if (!r.ok) {
+                setMeta(r.message || 'échec inscription', 'blocked');
+                return;
+              }
+              setMeta('compte créé — activez avec YOOO2026', 'ok');
+            });
+          });
+        }
+        if (loginBtn) {
+          loginBtn.addEventListener('click', function () {
+            var f = fields();
+            setMeta('connexion…', 'pending');
+            AtlasSecuCommercial.login(f.email, f.password).then(function (r) {
+              if (!r.ok) {
+                setMeta(r.message || 'échec connexion', 'blocked');
+                return;
+              }
+              setMeta('connecté — activez Atlas SECU si besoin', 'ok');
+            });
+          });
+        }
+        if (activateBtn) {
+          activateBtn.addEventListener('click', function () {
+            var f = fields();
+            setMeta('activation…', 'pending');
+            AtlasSecuCommercial.activatePromo(f.promo || 'YOOO2026').then(
+              function (r) {
+                if (!r.ok) {
+                  setMeta(r.message || 'échec activation', 'blocked');
+                  return;
+                }
+                setMeta(r.notice || 'Atlas SECU actif (beta 0 €)', 'ok');
+              }
+            );
+          });
+        }
+        if (AtlasSecuCommercial.getToken()) {
+          AtlasSecuCommercial.status().then(function (st) {
+            if (st && st.commerciallyActive) {
+              setMeta('Atlas SECU actif — prise en charge débloquée', 'ok');
+            } else if (AtlasSecuCommercial.getToken()) {
+              setMeta('connecté — activez avec YOOO2026 (0 €)', 'idle');
+            }
+          });
+        }
+      })();
 
       document.getElementById('open-pw').addEventListener('click', function () {
         pwMsg.hidden = true;

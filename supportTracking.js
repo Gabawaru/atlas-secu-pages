@@ -1,21 +1,38 @@
 /**
- * Atlas — support tracking (Pages soft twin + multi-device sync).
+ * Atlas SECU — support tracking (Pages + multi-device sync).
  *
  * Default: local-only via localStorage. Tables stay empty until the user
  * requests « prise en charge ». After handoff, an opaque supportSessionId
  * is the only cross-device key — never email / name / login session.
  *
+ * Egress serveur : compte Atlas API + abonnement Atlas SECU actifs
+ * (Bearer `atlas_api_token`). Plus de soft twin anonyme.
+ *
  * When window.ATLAS_API_BASE is set, talk to Atlas API:
- *   POST {base}/v1/support/handoff
+ *   POST {base}/v1/support/handoff  (Authorization: Bearer …)
  *   GET  {base}/v1/support/tickets|vulns|progress
  * Header: X-Atlas-Support-Session: <opaque id>
- * Failure → soft-twin local seed (UI unchanged).
  *
  * Store key: atlas.support-tracking.v1
  */
 (function (global) {
   var KEY = 'atlas.support-tracking.v1';
   var SESSION_HEADER = 'X-Atlas-Support-Session';
+  var API_TOKEN_KEY = 'atlas_api_token';
+
+  function readApiToken() {
+    try {
+      var s =
+        (typeof sessionStorage !== 'undefined' &&
+          sessionStorage.getItem(API_TOKEN_KEY)) ||
+        (typeof localStorage !== 'undefined' &&
+          localStorage.getItem(API_TOKEN_KEY)) ||
+        '';
+      return String(s || '').trim();
+    } catch (e) {
+      return '';
+    }
+  }
 
   function emptyState() {
     return {
@@ -222,12 +239,26 @@
   }
 
   /**
-   * POST handoff — never sends email/name/session. Opaque id only in response.
+   * POST handoff — Bearer + Atlas SECU required. Never sends email/name.
    */
   function tryRemoteHandoff(ticketPayload, c1) {
     var base = apiBase();
+    var token = readApiToken();
     if (!base) {
-      return Promise.resolve({ ok: true, mode: 'local', snapshot: null });
+      return Promise.resolve({
+        ok: false,
+        reason: 'api_missing',
+        message:
+          'API Atlas non configurée (ATLAS_API_BASE). Ouvrez le client Atlas SECU local.'
+      });
+    }
+    if (!token) {
+      return Promise.resolve({
+        ok: false,
+        reason: 'auth_required',
+        message:
+          'Compte Atlas SECU requis — créez un compte, activez avec YOOO2026 (0 €), puis réessayez.'
+      });
     }
     var t = withTimeout(2500);
     var body = {
@@ -246,7 +277,10 @@
     return fetch(base + '/v1/support/handoff', {
       method: 'POST',
       headers: Object.assign(
-        { 'Content-Type': 'application/json' },
+        {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
         sessionHeaders(null)
       ),
       body: JSON.stringify(body),
@@ -254,25 +288,66 @@
     })
       .then(function (res) {
         t.clear();
-        if (!res.ok) return { ok: true, mode: 'soft-twin', snapshot: null };
+        if (res.status === 401) {
+          return {
+            ok: false,
+            reason: 'auth_required',
+            message:
+              'Compte Atlas SECU requis — créez un compte, activez avec YOOO2026 (0 €).'
+          };
+        }
+        if (res.status === 403) {
+          return {
+            ok: false,
+            reason: 'subscription_required',
+            message:
+              'Abonnement Atlas SECU inactif — activez la beta avec le code YOOO2026 (0 €).'
+          };
+        }
+        if (!res.ok) {
+          return res.json().then(
+            function (data) {
+              var msg =
+                (data && data.message) ||
+                'Prise en charge refusée (HTTP ' + res.status + ').';
+              if (Array.isArray(msg)) msg = msg.join('; ');
+              return { ok: false, reason: 'http_error', message: String(msg) };
+            },
+            function () {
+              return {
+                ok: false,
+                reason: 'http_error',
+                message: 'Prise en charge refusée (HTTP ' + res.status + ').'
+              };
+            }
+          );
+        }
         return res.json().then(
           function (data) {
             var snap = parseSnapshot(data);
             return {
               ok: true,
-              mode: snap && snap.supportSessionId ? 'remote' : 'soft-twin',
+              mode: snap && snap.supportSessionId ? 'remote' : 'local',
               snapshot: snap,
-              ticketId: data && (data.ticketId || data.id) || null
+              ticketId: (data && (data.ticketId || data.id)) || null
             };
           },
           function () {
-            return { ok: true, mode: 'soft-twin', snapshot: null };
+            return {
+              ok: false,
+              reason: 'http_error',
+              message: 'Réponse API invalide.'
+            };
           }
         );
       })
       .catch(function () {
         t.clear();
-        return { ok: true, mode: 'soft-twin', snapshot: null };
+        return {
+          ok: false,
+          reason: 'network',
+          message: 'Réseau indisponible — réessayez plus tard.'
+        };
       });
   }
 
@@ -447,6 +522,15 @@
         };
       });
     }
+    if (!readApiToken()) {
+      return Promise.resolve({
+        ok: false,
+        reason: 'auth_required',
+        message:
+          'Compte + Atlas SECU requis avant prise en charge. Créez un compte ci-dessus, code YOOO2026 (0 €).',
+        state: current
+      });
+    }
     var gate = gateSupportHandoffC1();
     if (!gate.ok) {
       return Promise.resolve({
@@ -456,27 +540,30 @@
         state: current
       });
     }
-    var seeded = seedAfterHandoff(current);
-    if (!save(seeded)) {
-      return Promise.resolve({ ok: false, reason: 'storage', state: current });
-    }
-    var ticket = seeded.tickets[0];
-    return tryRemoteHandoff(
-      {
-        id: ticket.id,
-        subject: ticket.subject,
-        status: ticket.status
-      },
-      {
-        pcConfirmedAt: gate.pcConfirmedAt,
-        initiatedFrom: gate.initiatedFrom
+    var provisional = {
+      id: shortId('TKT'),
+      subject: 'Prise en charge Atlas SECU',
+      status: 'ouvert'
+    };
+    return tryRemoteHandoff(provisional, {
+      pcConfirmedAt: gate.pcConfirmedAt,
+      initiatedFrom: gate.initiatedFrom
+    }).then(function (remote) {
+      if (!remote || !remote.ok) {
+        return {
+          ok: false,
+          reason: (remote && remote.reason) || 'http_error',
+          message:
+            (remote && remote.message) ||
+            'Prise en charge refusée — compte + abonnement Atlas SECU requis.',
+          state: current
+        };
       }
-    ).then(function (remote) {
       var overrides = {
-        mode: remote.mode || 'local',
+        mode: remote.mode || 'remote',
         supportSessionId:
           (remote.snapshot && remote.snapshot.supportSessionId) || null,
-        requestedAt: seeded.requestedAt
+        requestedAt: new Date().toISOString()
       };
       if (remote.snapshot) {
         if (remote.snapshot.tickets) overrides.tickets = remote.snapshot.tickets;
@@ -487,13 +574,14 @@
           overrides.requestedAt = remote.snapshot.requestedAt;
         if (remote.ticketId) overrides.ticketId = remote.ticketId;
       }
-      var next = seedAfterHandoff(seeded, overrides);
-      /* If API gave only a session id, keep soft twin rows but attach id. */
+      var next = seedAfterHandoff(current, overrides);
       if (overrides.supportSessionId && !overrides.tickets) {
         next.supportSessionId = overrides.supportSessionId;
         next.mode = overrides.mode;
       }
-      save(next);
+      if (!save(next)) {
+        return { ok: false, reason: 'storage', state: current };
+      }
       return { ok: true, state: next, already: false, mode: next.mode };
     });
   }
