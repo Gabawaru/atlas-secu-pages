@@ -245,33 +245,6 @@
     body.is-ready .hero-enter .hero-visual{animation:hero-rise .85s var(--ease) .18s forwards}
     @keyframes hero-rise{to{opacity:1;transform:none}}
 
-    /* —— Capacité bar (hidden at top / reload; visible after scroll, no session) —— */
-    #cap-bar{
-      position:fixed;left:0;right:0;bottom:0;z-index:1600;
-      display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
-      padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
-      background:rgba(251,254,254,.92);border-top:1px solid rgba(47,143,138,.22);
-      box-shadow:0 -10px 36px rgba(42,61,69,.08);backdrop-filter:blur(10px);
-      transform:translateY(110%);opacity:0;pointer-events:none;
-      transition:transform .45s var(--ease),opacity .35s var(--ease);
-    }
-    #cap-bar.is-visible{transform:none;opacity:1;pointer-events:auto}
-    body.is-dash #cap-bar,
-    body.is-vault-clear #cap-bar,
-    body.is-vault-center #cap-bar,
-    body.is-vault-auth #cap-bar,
-    body.is-vault-open #cap-bar,
-    body.is-vault-close #cap-bar{transform:translateY(110%);opacity:0;pointer-events:none}
-    .cap-bar-label{
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;
-      color:var(--muted);margin-right:6px;
-    }
-    .cap-bar-chip{
-      font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
-      padding:8px 12px;border:1px solid rgba(47,143,138,.28);background:#fff;color:var(--teal-deep);
-      cursor:pointer;font:inherit;
-    }
-    .cap-bar-chip:hover{border-color:var(--teal);background:var(--teal-soft)}
 
     /* —— Vault stage (login / logout motion) —— */
     #vault-stage{
@@ -345,20 +318,12 @@
     .vault-err{margin-top:12px;font-family:var(--mono);font-size:.75rem;color:var(--accent);min-height:1.2em}
 
 
-    .mobile-scan-note{
-      display:none;margin:0 0 20px;padding:14px 16px;border:1px solid rgba(47,143,138,.28);
-      background:rgba(255,255,255,.88);color:var(--ink-soft);font-size:.95rem;line-height:1.45;
+    .local-only{
+      margin:0 0 28px;padding:22px 20px;border:1px solid rgba(47,143,138,.28);
+      background:rgba(255,255,255,.88);
     }
-    .cap-panel{margin:0 0 28px;border:0}
-    .cap-panel > summary{list-style:none;cursor:default}
-    .cap-panel > summary::-webkit-details-marker{display:none}
-    .cap-panel-summary{display:none}
-    /* Override UA details:not([open]) hide so desktop always shows the grid */
-    .cap-panel > .cap-grid{display:grid}
-    .cap-panel-title{font-weight:700;letter-spacing:.04em}
-    .cap-panel-hint{
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
-    }
+    .local-only h2{margin:0 0 10px;font-size:1.15rem;letter-spacing:.02em}
+    .local-only p{margin:0 0 16px;color:var(--muted);max-width:52ch;line-height:1.5}
 
     /* —— Dashboard —— */
     #view-dash{
@@ -398,60 +363,6 @@
     }
     .dash-actions-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .dash-intro{margin:0 0 28px;color:var(--muted);max-width:48ch}
-    .cap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
-    @media (max-width:640px){.cap-grid{grid-template-columns:1fr}}
-    .cap-slot{position:relative;isolation:isolate}
-    .cap-aura{
-      position:absolute;inset:-14px;border-radius:18px;pointer-events:none;z-index:0;
-      background:
-        radial-gradient(circle at 30% 40%,rgba(47,143,138,.16),transparent 55%),
-        radial-gradient(circle at 70% 70%,rgba(120,170,190,.14),transparent 50%);
-      filter:blur(2px);
-      animation:aura-drift 5.5s ease-in-out infinite;
-    }
-    .cap-slot:nth-child(2) .cap-aura{animation-duration:6.2s;animation-delay:-1.2s}
-    .cap-slot:nth-child(3) .cap-aura{animation-duration:7s;animation-delay:-2.1s}
-    .cap-slot:nth-child(4) .cap-aura{animation-duration:5.8s;animation-delay:-.6s}
-    .cap-ring{
-      position:absolute;inset:-8px;border-radius:14px;pointer-events:none;z-index:0;
-      border:1px solid rgba(47,143,138,.18);
-      animation:ring-pulse 3.6s ease-in-out infinite;
-    }
-    .cap-slot:nth-child(2) .cap-ring{animation-delay:.4s}
-    .cap-slot:nth-child(3) .cap-ring{animation-delay:.8s}
-    .cap-slot:nth-child(4) .cap-ring{animation-delay:1.2s}
-    .cap-orbit{
-      position:absolute;inset:-18px;border-radius:50%;pointer-events:none;z-index:0;
-      border:1px dashed rgba(47,143,138,.2);
-      animation:orb-spin 18s linear infinite;
-      mask-image:radial-gradient(circle,transparent 58%,#000 62%);
-    }
-    .cap-slot:nth-child(even) .cap-orbit{animation-direction:reverse;animation-duration:22s}
-    @keyframes aura-drift{
-      0%,100%{transform:scale(1) translate(0,0);opacity:.85}
-      50%{transform:scale(1.06) translate(2%,-2%);opacity:1}
-    }
-    @keyframes ring-pulse{
-      0%,100%{transform:scale(1);opacity:.55}
-      50%{transform:scale(1.03);opacity:1}
-    }
-    @keyframes orb-spin{to{transform:rotate(360deg)}}
-    .cap-btn{
-      position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
-      width:100%;min-height:118px;padding:22px 20px;text-align:left;text-decoration:none;
-      background:rgba(255,255,255,.92);border:1.5px solid rgba(47,143,138,.28);border-radius:4px;
-      color:var(--ink);box-shadow:0 12px 32px rgba(42,61,69,.07);
-      transition:transform .22s var(--ease),border-color .22s,box-shadow .22s;
-    }
-    .cap-btn:hover{
-      transform:translateY(-3px);border-color:var(--teal);
-      box-shadow:0 16px 40px rgba(47,143,138,.16);
-    }
-    .cap-btn .code{
-      font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);
-    }
-    .cap-btn .label{font-weight:700;font-size:1.15rem;letter-spacing:.01em}
-    .cap-btn .hint{font-size:.88rem;color:var(--muted)}
 
     .pw-panel{
       margin-top:28px;padding:18px;background:var(--paper);border:1px solid var(--line);
@@ -522,19 +433,6 @@
 
     /* —— Mobile: readable phone layout, no horizontal scroll, ≥44px targets —— */
     @media (max-width:640px){
-      /* Anon cap bar (recon/scan/vuln/audit) is noise without the desktop app */
-      #cap-bar{display:none!important}
-      .mobile-scan-note{display:block}
-      .cap-panel{
-        margin:0 0 22px;border:1px solid rgba(200,216,222,.9);background:rgba(255,255,255,.82);
-      }
-      .cap-panel-summary{
-        display:flex;align-items:center;justify-content:space-between;gap:12px;
-        min-height:48px;padding:12px 14px;cursor:pointer;list-style:none;
-      }
-      .cap-panel:not([open]) > .cap-grid{display:none!important}
-      .cap-panel[open] .cap-panel-summary{border-bottom:1px solid rgba(200,216,222,.9)}
-      .cap-aura,.cap-ring,.cap-orbit{display:none}
       .pragma-links{display:none!important}
       .nav{
         padding:calc(12px + env(safe-area-inset-top,0px)) 16px 0;gap:12px;align-items:flex-start;
@@ -576,15 +474,6 @@
       .boot-inner{flex-direction:column;gap:12px}
       .boot-word{letter-spacing:.16em;font-size:clamp(1.35rem,7vw,1.8rem)}
 
-      #cap-bar{
-        gap:8px;justify-content:flex-start;
-        padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
-      }
-      .cap-bar-label{width:100%;margin:0 0 2px}
-      .cap-bar-chip{
-        flex:1 1 calc(50% - 8px);min-height:44px;padding:12px 10px;
-        text-align:center;display:inline-flex;align-items:center;justify-content:center;
-      }
 
       #vault-stage{
         padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
@@ -618,8 +507,7 @@
         display:flex;flex-direction:column;
       }
       .dash-intro{order:1;font-size:.95rem}
-      .mobile-scan-note{order:2}
-      #cap-panel{order:4}
+      #local-only{order:2}
       #support-tracking{order:3;margin-top:8px}
       #pw-panel{order:5}
       .dash-top{flex-direction:column;align-items:stretch;order:0;margin-bottom:20px}
@@ -634,10 +522,6 @@
       .pragma-links a{
         min-height:44px;display:inline-flex;align-items:center;padding:12px 14px;
       }
-      .cap-slot{overflow:hidden}
-      .cap-aura,.cap-ring{inset:-6px}
-      .cap-orbit{inset:-10px}
-      .cap-btn{min-height:112px;padding:18px 16px}
       .support-tracking{margin-top:32px;padding-top:22px}
       .support-tracking-head{flex-direction:column;align-items:stretch}
       .support-tracking-head .btn{width:100%;min-height:44px;justify-content:center}
@@ -651,7 +535,6 @@
 
     @media (max-width:380px){
       .nav-actions .btn.secondary{padding:12px 12px;font-size:.92rem}
-      .cap-bar-chip{flex:1 1 100%}
       .hero-brand{letter-spacing:.08em}
     }
 
@@ -770,15 +653,6 @@
     </div>
   </div>
 
-  <!-- Capacité bar: hidden on reload / at top without session; shown after scroll -->
-  <div id="cap-bar" aria-label="Capacités">
-    <span class="cap-bar-label">Capacités</span>
-    <button type="button" class="cap-bar-chip js-connect">Recon</button>
-    <button type="button" class="cap-bar-chip js-connect">Scan</button>
-    <button type="button" class="cap-bar-chip js-connect">Vuln</button>
-    <button type="button" class="cap-bar-chip js-connect">Audit</button>
-  </div>
-
   <!-- Vault stage: clear → recenter → credentials (ghost logo) → open / close -->
   <div id="vault-stage" aria-live="polite">
     <div class="vault-lockup" id="vault-lockup">
@@ -833,64 +707,24 @@
       </div>
 
       <p class="dash-intro">
-        Session active. Sur ordinateur, ouvrez Atlas Local : la cible URL se choisit là-bas,
-        et vous restez responsable de l’autorisation du scan. Sur mobile, utilisez le suivi support.
-      </p>
-      <p class="mobile-scan-note">
-        Les capacités recon / scan / vuln / audit s’ouvrent dans Atlas Local sur votre machine —
-        c’est là que vous choisissez l’URL. Téléchargez le setup, puis reconnectez-vous depuis le bureau.
+        Session active. Aucune action de scan n’est lancée depuis atlas-secu.com —
+        recon / scan / vuln / audit existent uniquement dans Atlas Local sur votre machine.
+        Vous choisissez la cible URL en local et restez responsable de l’autorisation.
       </p>
 
       <nav id="pragma-product-links" class="pragma-links" hidden aria-label="Produits Pragma"></nav>
 
-      <details class="cap-panel" id="cap-panel" open>
-        <summary class="cap-panel-summary">
-          <span class="cap-panel-title">Capacités Scanner</span>
-          <span class="cap-panel-hint">Bureau · Atlas Local</span>
-        </summary>
-      <div class="cap-grid">
-        <div class="cap-slot">
-          <div class="cap-aura" aria-hidden="true"></div>
-          <div class="cap-ring" aria-hidden="true"></div>
-          <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn js-roe-cap" data-roe-action="recon" href="/launch/?action=recon#scanner">
-            <span class="code">01 · recon</span>
-            <span class="label">Reconnaissance</span>
-            <span class="hint">Cartographie passive — cible choisie en local</span>
-          </a>
+      <section class="local-only" id="local-only" aria-labelledby="local-only-title">
+        <h2 id="local-only-title">Actions = Atlas Local uniquement</h2>
+        <p>
+          Pour des raisons de responsabilité, le site public ne propose aucun bouton
+          opérationnel (pas de Recon / Scan / Vuln / Audit, pas de lancement Policy Guard).
+          Téléchargez le client, lancez les actions chez vous.
+        </p>
+        <div class="hero-cta">
+          <a class="btn" href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a>
         </div>
-        <div class="cap-slot">
-          <div class="cap-aura" aria-hidden="true"></div>
-          <div class="cap-ring" aria-hidden="true"></div>
-          <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn js-roe-cap" data-roe-action="scan" href="/launch/?action=scan#scanner">
-            <span class="code">02 · scan</span>
-            <span class="label">Scan</span>
-            <span class="hint">Balayage — vous attestez l’autorisation</span>
-          </a>
-        </div>
-        <div class="cap-slot">
-          <div class="cap-aura" aria-hidden="true"></div>
-          <div class="cap-ring" aria-hidden="true"></div>
-          <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn js-roe-cap" data-roe-action="vuln" href="/launch/?action=vuln#scanner">
-            <span class="code">03 · vuln</span>
-            <span class="label">État vulnérabilité</span>
-            <span class="hint">Évaluation des faiblesses sur la cible locale</span>
-          </a>
-        </div>
-        <div class="cap-slot">
-          <div class="cap-aura" aria-hidden="true"></div>
-          <div class="cap-ring" aria-hidden="true"></div>
-          <div class="cap-orbit" aria-hidden="true"></div>
-          <a class="cap-btn js-roe-cap" data-roe-action="osint" href="/launch/?action=osint#scanner">
-            <span class="code">04 · audit</span>
-            <span class="label">Audit</span>
-            <span class="hint">Collecte OSINT sur la cible que vous choisissez</span>
-          </a>
-        </div>
-      </div>
-      </details>
+      </section>
 
       <section id="support-tracking" class="support-tracking" aria-labelledby="support-tracking-title">
         <div class="support-tracking-head">
@@ -984,7 +818,6 @@
   </div>
 
   <script src="/auth.js"></script>
-  <script src="/authorizedLaunch.js"></script>
   <script src="/supportTracking.js"></script>
   <script>
     (function () {
@@ -1018,7 +851,6 @@
 
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var bootEl = document.getElementById('boot-lockup');
-      var capBar = document.getElementById('cap-bar');
       var vaultAuth = document.getElementById('vault-auth');
       var loginForm = document.getElementById('login-form');
       var loginErr = document.getElementById('login-error');
@@ -1031,7 +863,7 @@
       var wasAwayFromTop = false;
       var replayArmed = false;
       var TOP_EPS = 8;
-      var FOLD_EPS = 72;
+      var FOLD_EPS = 72; /* below-fold blur only — no public action bar */
 
       function clearTimers() {
         if (vaultTimer) { clearTimeout(vaultTimer); vaultTimer = null; }
@@ -1044,34 +876,8 @@
         );
       }
 
-      function setCapBarVisible(on) {
-        if (!capBar) return;
-        if (on) capBar.classList.add('is-visible');
-        else capBar.classList.remove('is-visible');
-      }
-
-      function syncCapPanelForViewport() {
-        var panel = document.getElementById('cap-panel');
-        if (!panel) return;
-        var narrow = window.matchMedia && window.matchMedia('(max-width:640px)').matches;
-        if (narrow) panel.removeAttribute('open');
-        else panel.setAttribute('open', '');
-      }
-
-      function syncCapBar() {
-        syncCapPanelForViewport();
-        var session = AtlasAuth.getSession();
-        var atTop = window.scrollY <= TOP_EPS;
-        var vaulting = document.body.classList.contains('is-vault-clear') ||
-          document.body.classList.contains('is-vault-center') ||
-          document.body.classList.contains('is-vault-auth') ||
-          document.body.classList.contains('is-vault-open') ||
-          document.body.classList.contains('is-vault-close') ||
-          document.body.classList.contains('is-dash');
-        var narrow = window.matchMedia && window.matchMedia('(max-width:640px)').matches;
-        /* Hidden on phone (no local Scanner), at top, during vault/dash */
-        setCapBarVisible(!narrow && !session && !atTop && !vaulting && window.scrollY > FOLD_EPS);
-      }
+      /* Public site: no operational RoE action bar / Scanner deep-links. */
+      function syncCapBar() { /* no-op retained for call sites */ }
 
       function syncPragmaProductLinks(session) {
         var nav = document.getElementById('pragma-product-links');
@@ -1369,7 +1175,6 @@
         }
         syncPragmaProductLinks(session);
         vaultAuth.hidden = true;
-        setCapBarVisible(false);
         renderSupportTracking();
       }
 
@@ -1399,7 +1204,6 @@
           showDash(session);
           return;
         }
-        setCapBarVisible(false);
         clearBodyModes();
         document.body.classList.add('is-vault-clear');
         vaultAuth.hidden = true;
@@ -1441,7 +1245,6 @@
       /* Logout: pieces reassemble → vault closes → session clears */
       function runVaultLogout() {
         clearTimers();
-        setCapBarVisible(false);
         AtlasAuth.logout();
         syncPragmaProductLinks(null);
         pwPanel.hidden = true;
@@ -1584,42 +1387,7 @@
         pwForm.reset();
       });
 
-      /* Caps → AuthorizedLaunch.connectAuthorizedCapability — host optional (client chooses) */
-      document.querySelectorAll('.js-roe-cap').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-          if (e.defaultPrevented) return;
-          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          e.preventDefault();
-          var session = AtlasAuth.getSession();
-          if (!session) {
-            runVaultLogin();
-            return;
-          }
-          if (!window.AuthorizedLaunch || btn.getAttribute('aria-busy') === 'true') {
-            location.assign(btn.getAttribute('href'));
-            return;
-          }
-          var action = btn.getAttribute('data-roe-action');
-          var host = btn.getAttribute('data-roe-host') || '';
-          btn.setAttribute('aria-busy', 'true');
-          AuthorizedLaunch.connectAuthorizedCapability(action, host, {
-            timeoutMs: 1400
-          }).then(function (result) {
-            if (!result || !result.ok) {
-              location.assign(
-                AuthorizedLaunch.pagesLaunchHref(action, host)
-              );
-            }
-          }).catch(function () {
-            location.assign(btn.getAttribute('href'));
-          }).then(function () {
-            btn.removeAttribute('aria-busy');
-          });
-        });
-      });
-
       /* Boot + restore */
-      setCapBarVisible(false);
       initReveals();
       var existing = AtlasAuth.getSession();
       if (existing) {
