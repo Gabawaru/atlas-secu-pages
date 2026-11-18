@@ -135,7 +135,7 @@
 
       panel.hidden = false;
       sessionMeta.textContent =
-        'Session · ' + (session.firstName || session.email) + ' · RoE A';
+        'Session · ' + (session.firstName || session.email) + ' · Atlas SECU';
 
       var parsed = AuthorizedLaunch.parseAuthorizedLaunch(location.search);
       if (!parsed.ok) {
@@ -153,9 +153,7 @@
       intentBanner.innerHTML =
         '<strong>' +
         escapeHtml(intent.label) +
-        '</strong> — cible RoE <code>' +
-        escapeHtml(intent.host) +
-        '</code> · fragment <code>#scanner</code>';
+        '</strong> — ouverture Scanner local (<code>#scanner</code>)';
 
       var clientHref = AuthorizedLaunch.authorizedLaunchHref(
         intent.action,

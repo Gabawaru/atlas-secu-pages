@@ -93,7 +93,7 @@
         reason:
           'Cible « ' +
           hostRaw +
-          ' » hors RoE (*.pragma-serve.com, *.pragma-cloud.com, *.pragma.mc).'
+          ' » hors périmètre autorisé.'
       };
     }
     return {

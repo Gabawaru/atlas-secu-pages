@@ -20,6 +20,9 @@
     body{
       margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);line-height:1.55;
       font-family:var(--display);
+      padding-top:env(safe-area-inset-top,0px);
+      padding-left:env(safe-area-inset-left,0px);
+      padding-right:env(safe-area-inset-right,0px);
       background:
         radial-gradient(1100px 520px at 12% -8%,rgba(47,143,138,.16),transparent 60%),
         radial-gradient(900px 480px at 92% 8%,rgba(120,170,190,.18),transparent 55%),
@@ -341,6 +344,22 @@
     .vault-auth .actions .btn{flex:1;min-width:120px}
     .vault-err{margin-top:12px;font-family:var(--mono);font-size:.75rem;color:var(--accent);min-height:1.2em}
 
+
+    .mobile-scan-note{
+      display:none;margin:0 0 20px;padding:14px 16px;border:1px solid rgba(47,143,138,.28);
+      background:rgba(255,255,255,.88);color:var(--ink-soft);font-size:.95rem;line-height:1.45;
+    }
+    .cap-panel{margin:0 0 28px;border:0}
+    .cap-panel > summary{list-style:none;cursor:default}
+    .cap-panel > summary::-webkit-details-marker{display:none}
+    .cap-panel-summary{display:none}
+    /* Override UA details:not([open]) hide so desktop always shows the grid */
+    .cap-panel > .cap-grid{display:grid}
+    .cap-panel-title{font-weight:700;letter-spacing:.04em}
+    .cap-panel-hint{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    }
+
     /* —— Dashboard —— */
     #view-dash{
       position:fixed;inset:0;z-index:2000;display:none;overflow:auto;
@@ -503,8 +522,24 @@
 
     /* —— Mobile: readable phone layout, no horizontal scroll, ≥44px targets —— */
     @media (max-width:640px){
-      .nav{padding:16px 16px 0;gap:12px;align-items:flex-start}
-      .brand-lockup .name{letter-spacing:.16em;font-size:.7rem}
+      /* Anon cap bar (recon/scan/vuln/audit) is noise without the desktop app */
+      #cap-bar{display:none!important}
+      .mobile-scan-note{display:block}
+      .cap-panel{
+        margin:0 0 22px;border:1px solid rgba(200,216,222,.9);background:rgba(255,255,255,.82);
+      }
+      .cap-panel-summary{
+        display:flex;align-items:center;justify-content:space-between;gap:12px;
+        min-height:48px;padding:12px 14px;cursor:pointer;list-style:none;
+      }
+      .cap-panel:not([open]) > .cap-grid{display:none!important}
+      .cap-panel[open] .cap-panel-summary{border-bottom:1px solid rgba(200,216,222,.9)}
+      .cap-aura,.cap-ring,.cap-orbit{display:none}
+      .pragma-links{display:none!important}
+      .nav{
+        padding:calc(12px + env(safe-area-inset-top,0px)) 16px 0;gap:12px;align-items:flex-start;
+      }
+      .brand-lockup .name{letter-spacing:.12em;font-size:.68rem;max-width:11ch;line-height:1.2}
       .nav-actions{gap:8px;justify-content:flex-end}
       .linkish{
         min-height:44px;min-width:44px;padding:12px 14px;
@@ -513,23 +548,29 @@
       .btn,a.btn,button.btn{
         min-height:44px;padding:12px 18px;
       }
-      .hero{padding:28px 16px 40px;gap:20px}
-      .hero-brand{
-        font-size:clamp(2rem,12vw,2.8rem);letter-spacing:.12em;word-break:keep-all;
+      .hero{
+        padding:20px 16px 28px;gap:18px;min-height:auto;
+        padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
       }
-      .hero h1{font-size:1.15rem;max-width:none}
-      .hero .lede{font-size:1rem;max-width:none;margin-bottom:22px}
-      .hero-cta{flex-direction:column;align-items:stretch}
+      .hero-brand{
+        font-size:clamp(1.85rem,11vw,2.55rem);letter-spacing:.1em;word-break:keep-all;
+        margin-bottom:10px;
+      }
+      .hero h1{font-size:1.12rem;max-width:none;margin-bottom:10px}
+      .hero .lede{font-size:.98rem;max-width:none;margin-bottom:20px;line-height:1.5}
+      .hero-cta{flex-direction:column;align-items:stretch;gap:10px}
       .hero-cta .btn{width:100%}
-      .hero-visual{width:min(260px,72vw)}
-      .section{padding:48px 16px}
+      .hero-visual{width:min(200px,56vw);order:-1;opacity:.92}
+      .section{padding:40px 16px}
+      /* Keep first fold focused: download/login primary; defer long trust copy */
+      .below-fold .section:first-child{padding-top:28px}
+      .cta-band{padding:12px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+      .footer{padding:0 16px calc(28px + env(safe-area-inset-bottom,0px))}
       .section h2{max-width:none}
       .section .support{max-width:none}
       .trust-strip{grid-template-columns:1fr}
-      .cta-band{padding:16px 16px 96px}
       .cta-band-inner{padding:28px 18px}
       .footer{
-        padding:0 16px calc(96px + env(safe-area-inset-bottom,0px));
         flex-direction:column;align-items:flex-start;gap:10px;
       }
       .boot-inner{flex-direction:column;gap:12px}
@@ -572,10 +613,18 @@
       .vault-auth .actions{flex-direction:column}
       .vault-auth .actions .btn{min-width:0;width:100%}
 
-      .dash-wrap{padding:24px 16px calc(48px + env(safe-area-inset-bottom,0px))}
-      .dash-top{flex-direction:column;align-items:stretch}
-      .dash-brand .title{letter-spacing:.14em;font-size:1.15rem}
-      .dash-brand .sub{letter-spacing:.08em;line-height:1.4}
+      .dash-wrap{
+        padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px));
+        display:flex;flex-direction:column;
+      }
+      .dash-intro{order:1;font-size:.95rem}
+      .mobile-scan-note{order:2}
+      #cap-panel{order:4}
+      #support-tracking{order:3;margin-top:8px}
+      #pw-panel{order:5}
+      .dash-top{flex-direction:column;align-items:stretch;order:0;margin-bottom:20px}
+      .dash-brand .title{letter-spacing:.1em;font-size:1.05rem}
+      .dash-brand .sub{letter-spacing:.06em;line-height:1.4;font-size:.72rem}
       .dash-actions-bar{width:100%}
       .session-chip{
         width:100%;min-height:44px;border-radius:12px;flex-wrap:wrap;
@@ -768,7 +817,7 @@
           <span class="mark" data-mark></span>
           <div class="stack">
             <div class="title">Atlas SECU</div>
-            <div class="sub">Tableau de bord · capacités autorisées</div>
+            <div class="sub">Tableau de bord · session Atlas SECU</div>
           </div>
         </div>
         <div class="dash-actions-bar">
@@ -783,12 +832,21 @@
       </div>
 
       <p class="dash-intro">
-        Session active. Lancez une capacité RoE — deep-link Scanner prérempli
-        <code style="font-family:var(--mono);font-size:.9em">pragma-serve.com</code>.
+        Session active. Sur ordinateur, lancez une capacité vers Atlas Local.
+        Sur mobile, utilisez le suivi support — le Scanner s’ouvre depuis l’app bureau.
+      </p>
+      <p class="mobile-scan-note">
+        Les capacités recon / scan / vuln / audit nécessitent Atlas Local sur votre machine.
+        Téléchargez le setup, puis reconnectez-vous depuis le bureau.
       </p>
 
       <nav id="pragma-product-links" class="pragma-links" hidden aria-label="Produits Pragma"></nav>
 
+      <details class="cap-panel" id="cap-panel" open>
+        <summary class="cap-panel-summary">
+          <span class="cap-panel-title">Capacités Scanner</span>
+          <span class="cap-panel-hint">Bureau · Atlas Local</span>
+        </summary>
       <div class="cap-grid">
         <div class="cap-slot">
           <div class="cap-aura" aria-hidden="true"></div>
@@ -827,10 +885,11 @@
           <a class="cap-btn js-roe-cap" data-roe-action="osint" data-roe-host="pragma-serve.com" href="/launch/?action=osint&amp;host=pragma-serve.com#scanner">
             <span class="code">04 · audit</span>
             <span class="label">Audit</span>
-            <span class="hint">Collecte OSINT dans le RoE</span>
+            <span class="hint">Collecte OSINT autorisée</span>
           </a>
         </div>
       </div>
+      </details>
 
       <section id="support-tracking" class="support-tracking" aria-labelledby="support-tracking-title">
         <div class="support-tracking-head">
@@ -990,7 +1049,16 @@
         else capBar.classList.remove('is-visible');
       }
 
+      function syncCapPanelForViewport() {
+        var panel = document.getElementById('cap-panel');
+        if (!panel) return;
+        var narrow = window.matchMedia && window.matchMedia('(max-width:640px)').matches;
+        if (narrow) panel.removeAttribute('open');
+        else panel.setAttribute('open', '');
+      }
+
       function syncCapBar() {
+        syncCapPanelForViewport();
         var session = AtlasAuth.getSession();
         var atTop = window.scrollY <= TOP_EPS;
         var vaulting = document.body.classList.contains('is-vault-clear') ||
@@ -999,8 +1067,9 @@
           document.body.classList.contains('is-vault-open') ||
           document.body.classList.contains('is-vault-close') ||
           document.body.classList.contains('is-dash');
-        /* Hidden on reload (starts without is-visible), at top without session, during vault/dash */
-        setCapBarVisible(!session && !atTop && !vaulting && window.scrollY > FOLD_EPS);
+        var narrow = window.matchMedia && window.matchMedia('(max-width:640px)').matches;
+        /* Hidden on phone (no local Scanner), at top, during vault/dash */
+        setCapBarVisible(!narrow && !session && !atTop && !vaulting && window.scrollY > FOLD_EPS);
       }
 
       function syncPragmaProductLinks(session) {
@@ -1131,6 +1200,7 @@
       }
 
       var scrollTick = null;
+      window.addEventListener('resize', function () { syncCapBar(); }, { passive: true });
       window.addEventListener('scroll', function () {
         if (scrollTick) return;
         scrollTick = requestAnimationFrame(function () {
