@@ -249,7 +249,7 @@
         ok: false,
         reason: 'api_missing',
         message:
-          'API Atlas non configurée (ATLAS_API_BASE). Ouvrez le client Atlas SECU local.'
+          'Prise en charge indisponible sur ce site (serveur Atlas non configuré). Ouvrez Atlas Local, ou réessayez plus tard.'
       });
     }
     if (!token) {
@@ -466,7 +466,7 @@
         ok: false,
         reason: 'phone_blocked',
         message:
-          'Prise en charge téléphone bloquée tant que ATLAS_API_BASE n’est pas branché (confirm PC requis).'
+          'Prise en charge depuis un téléphone indisponible — ouvrez Atlas SECU sur un ordinateur pour confirmer.'
       };
     }
     var accepted = false;
@@ -594,7 +594,8 @@
 
   /**
    * Droit à l'effacement — retire une vulnérabilité (id ou fingerprint).
-   * Local toujours ; DELETE API si session opaque + ATLAS_API_BASE.
+   * Local toujours ; DELETE API si session opaque + serveur configuré.
+   * remoteOk / « distant » uniquement si HTTP 2xx — jamais de faux succès distant.
    */
   function removeVuln(vulnKey) {
     var key = String(vulnKey || '').trim();
@@ -603,7 +604,9 @@
       return Promise.resolve({
         ok: false,
         reason: 'missing_key',
-        state: current
+        state: current,
+        remote: false,
+        remoteOk: false
       });
     }
     var removed =
@@ -647,63 +650,95 @@
 
     var base = apiBase();
     var sid = current.supportSessionId;
-    if (!base || !sid || !removed) {
+    if (!removed) {
+      return Promise.resolve({
+        ok: true,
+        state: next,
+        removed: null,
+        remote: false,
+        remoteOk: false,
+        notice: 'Aucune ligne correspondante en local.'
+      });
+    }
+    if (!base || !sid) {
       return Promise.resolve({
         ok: true,
         state: next,
         removed: removed,
-        remote: false
+        remote: false,
+        remoteOk: false,
+        notice:
+          'Ligne retirée en local seulement (pas de session serveur ou serveur non configuré).'
       });
     }
     var t = withTimeout(2500);
+    var headers = sessionHeaders(sid);
+    var token = readApiToken();
+    if (token) headers.Authorization = 'Bearer ' + token;
     return fetch(
       base + '/v1/support/vulns/' + encodeURIComponent(key),
       {
         method: 'DELETE',
-        headers: sessionHeaders(sid),
+        headers: headers,
         signal: t.signal
       }
     )
       .then(function (res) {
         t.clear();
-        if (!res.ok) throw new Error('http');
+        if (!res.ok) {
+          return {
+            ok: true,
+            state: next,
+            removed: removed,
+            remote: true,
+            remoteOk: false,
+            notice:
+              'Retiré en local. Suppression serveur échouée (HTTP ' +
+              res.status +
+              ') — la copie distante peut encore exister.'
+          };
+        }
         return res.json().catch(function () {
           return {};
+        }).then(function (data) {
+          if (data && Array.isArray(data.vulns)) {
+            next.vulns = data.vulns.map(sanitizeVuln).filter(Boolean);
+            if (Array.isArray(data.tickets)) {
+              next.tickets = data.tickets.map(sanitizeTicket).filter(Boolean);
+            }
+            if (Array.isArray(data.progress)) {
+              next.progress = data.progress
+                .map(sanitizeProgress)
+                .filter(Boolean);
+            }
+            next.mode = 'remote';
+            if (!next.vulns.length && !next.tickets.length) {
+              next.handoffRequested = false;
+              next.supportSessionId = null;
+            }
+            save(next);
+          }
+          return {
+            ok: true,
+            state: next,
+            removed: removed,
+            remote: true,
+            remoteOk: true,
+            notice:
+              (data && data.notice) ||
+              'Vulnérabilité retirée du suivi support (local + serveur).'
+          };
         });
-      })
-      .then(function (data) {
-        if (data && Array.isArray(data.vulns)) {
-          next.vulns = data.vulns.map(sanitizeVuln).filter(Boolean);
-          if (Array.isArray(data.tickets)) {
-            next.tickets = data.tickets.map(sanitizeTicket).filter(Boolean);
-          }
-          if (Array.isArray(data.progress)) {
-            next.progress = data.progress
-              .map(sanitizeProgress)
-              .filter(Boolean);
-          }
-          next.mode = 'remote';
-          if (!next.vulns.length && !next.tickets.length) {
-            next.handoffRequested = false;
-            next.supportSessionId = null;
-          }
-          save(next);
-        }
-        return {
-          ok: true,
-          state: next,
-          removed: removed,
-          remote: true,
-          notice: data && data.notice
-        };
       })
       .catch(function () {
         return {
           ok: true,
           state: next,
           removed: removed,
-          remote: false,
-          notice: 'Retiré en local (API indisponible).'
+          remote: true,
+          remoteOk: false,
+          notice:
+            'Retiré en local. Serveur injoignable — la copie distante peut encore exister.'
         };
       });
   }

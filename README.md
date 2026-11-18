@@ -26,3 +26,13 @@ Legal pages are **draft product copy** (à valider conseil), linked from footer,
 Canonical light-teal tokens live in [`assets/atlas-tokens.css`](assets/atlas-tokens.css):
 palette (`--bg`, `--teal`, `--ink`, …), radii (`--radius` 2px buttons, `--radius-soft` 4px surfaces), fonts (Outfit / IBM Plex Mono), shadow, ease.
 Atlas Scanner (`Gabawaru/Atlas` client + atlas-v1 Scan UI) mirrors the same names so site and product feel one.
+
+## Auth / compte (ATL-642)
+
+- **No staff allowlist and no plaintext passwords** in the public JS bundle.
+- Register / login / YOOO / PEC use the Atlas API **Bearer** token when `window.ATLAS_API_BASE` is set (see [`config.runtime.js`](config.runtime.js) / [`config.runtime.example.js`](config.runtime.example.js)).
+- If the API base is unset, the UI shows a clear French message that compte / prise en charge are unavailable — **no fake success**.
+- Account wipe clears the Bearer locally always; remote `DELETE /v1/auth/account` is reported only on HTTP 2xx.
+- Self-serve path is public (Créer un compte / Connexion). Staff product links are not gated by a marketing allowlist.
+
+**Do not commit secrets** (passwords, JWT secrets, API keys). `ATLAS_API_BASE` is an origin URL only.
