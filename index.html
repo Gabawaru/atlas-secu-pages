@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Atlas — Pentest autorisé</title>
-  <meta name="description" content="Atlas — assistant de pentest autorisé. Téléchargement public, capacités RoE sous accréditation.">
+  <title>Atlas SECU — Pentest autorisé</title>
+  <meta name="description" content="Atlas SECU — assistant de pentest autorisé. Téléchargement public, scan local-first, prise en charge sur demande.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -63,7 +63,7 @@
     .boot-inner{display:flex;align-items:center;gap:18px}
     .boot-mark{width:72px;height:72px;opacity:0;transform:scale(.88) translateY(8px)}
     .boot-word{
-      font-weight:800;font-size:clamp(1.5rem,4vw,2.3rem);letter-spacing:.28em;
+      font-weight:800;font-size:clamp(1.35rem,3.6vw,2rem);letter-spacing:.16em;
       text-transform:uppercase;opacity:0;transform:translateX(24px);color:var(--ink);
     }
     body.is-booting .boot-mark{animation:boot-in .75s var(--ease) .05s forwards}
@@ -110,7 +110,7 @@
     .brand-lockup:hover{color:var(--teal-deep)}
     .brand-lockup .mark{width:40px;height:40px;flex-shrink:0}
     .brand-lockup .name{
-      font-weight:800;letter-spacing:.28em;font-size:.78rem;text-transform:uppercase;
+      font-weight:800;letter-spacing:.14em;font-size:.78rem;text-transform:uppercase;
     }
     .nav-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .linkish{
@@ -143,8 +143,8 @@
       .hero-visual{order:-1;justify-self:center}
     }
     .hero-brand{
-      margin:0 0 14px;font-weight:800;font-size:clamp(2.6rem,7vw,4.6rem);
-      letter-spacing:.18em;line-height:.95;text-transform:uppercase;
+      margin:0 0 14px;font-weight:800;font-size:clamp(2.2rem,5.5vw,3.8rem);
+      letter-spacing:.12em;line-height:.95;text-transform:uppercase;
     }
     .hero h1{
       margin:0 0 14px;font-size:clamp(1.25rem,2.4vw,1.7rem);font-weight:600;
@@ -619,18 +619,18 @@
 </head>
 <body class="is-booting">
   <div id="boot-lockup" class="boot-lockup" aria-hidden="true">
-    <div class="boot-inner" role="img" aria-label="Atlas">
+    <div class="boot-inner" role="img" aria-label="Atlas SECU">
       <div class="boot-mark" id="boot-mark"></div>
-      <span class="boot-word">ATLAS</span>
+      <span class="boot-word">ATLAS SECU</span>
     </div>
   </div>
 
   <!-- Marketing (anonymous) -->
   <div id="view-marketing" class="site">
     <header class="nav reveal">
-      <a class="brand-lockup" href="/" aria-label="Atlas">
+      <a class="brand-lockup" href="/" aria-label="Atlas SECU">
         <span class="mark" data-mark></span>
-        <span class="name">Atlas</span>
+        <span class="name">Atlas SECU</span>
       </a>
       <div class="nav-actions">
         <button type="button" class="linkish js-connect">Connexion</button>
@@ -640,11 +640,11 @@
 
     <section class="hero hero-enter">
       <div>
-        <p class="hero-brand">Atlas</p>
-        <h1>Pentest autorisé, périmètre verrouillé.</h1>
+        <p class="hero-brand">Atlas SECU</p>
+        <h1>Pentest autorisé, résultats locaux d’abord.</h1>
         <p class="lede">
           Assistant de pentest pour équipes accréditées. Téléchargement public —
-          capacités RoE uniquement après connexion.
+          scan et historique restent sur votre machine jusqu’à une demande de prise en charge.
         </p>
         <div class="hero-cta">
           <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
@@ -660,13 +660,13 @@
     <div class="below-fold" id="below-fold">
       <section class="section" data-reveal id="capacites">
         <div class="section-line"></div>
-        <p class="section-kicker reveal">Capacités</p>
-        <h2 class="reveal reveal-delay-1">Conçu pour l’autorisation, pas l’exploration libre.</h2>
-        <p class="support reveal reveal-delay-2">Une seule intention : exécuter ce qui est signé dans le RoE, rien d’autre.</p>
+        <p class="section-kicker reveal">Produit</p>
+        <h2 class="reveal reveal-delay-1">Local d’abord, prise en charge sur demande.</h2>
+        <p class="support reveal reveal-delay-2">Une seule intention : scanner chez vous, puis envoyer uniquement ce que vous choisissez de faire traiter.</p>
         <div class="feature-row">
-          <article class="feature reveal reveal-delay-1"><h3>RoE first</h3><p>Vous ne lancez que ce qui est autorisé. Hors autorisation = hors jeu.</p></article>
-          <article class="feature reveal reveal-delay-2"><h3>Deep-links Scanner</h3><p>Recon, scan, vulnérabilités, audit — ouverts sur l’URL que vous visez.</p></article>
-          <article class="feature reveal reveal-delay-3"><h3>Session accréditée</h3><p>Capacités réservées aux comptes Atlas après analyse d’accès.</p></article>
+          <article class="feature reveal reveal-delay-1"><h3>Scan local</h3><p>Résultats et historique restent sur la machine. Rien n’est envoyé tant que vous ne le demandez pas.</p></article>
+          <article class="feature reveal reveal-delay-2"><h3>Prise en charge</h3><p>Sélectionnez les problèmes à traiter, puis demandez un suivi support — uniquement à cette étape.</p></article>
+          <article class="feature reveal reveal-delay-3"><h3>Session accréditée</h3><p>Tableau de bord et outils réservés aux comptes Atlas SECU après connexion.</p></article>
         </div>
       </section>
 
@@ -674,7 +674,7 @@
         <div class="section-line"></div>
         <p class="section-kicker reveal">Confiance</p>
         <h2 class="reveal reveal-delay-1">Garanties visibles avant même de se connecter.</h2>
-        <p class="support reveal reveal-delay-2">Le téléchargement est public. Les capacités restent derrière l’accréditation.</p>
+        <p class="support reveal reveal-delay-2">Le téléchargement est public. Le tableau de bord reste derrière l’accréditation.</p>
         <div class="trust-strip">
           <div class="trust-item reveal reveal-delay-1">
             <div class="label">Download</div>
@@ -684,46 +684,26 @@
           <div class="trust-item reveal reveal-delay-2">
             <div class="label">Gate</div>
             <div class="value">Accès après connexion</div>
-            <p class="explain">Le tableau de bord et les capacités RoE n’apparaissent qu’après une session Atlas accréditée.</p>
+            <p class="explain">Le tableau de bord et le suivi support n’apparaissent qu’après une session Atlas SECU accréditée.</p>
           </div>
           <div class="trust-item reveal reveal-delay-3">
-            <div class="label">RoE</div>
-            <div class="value">Domaines Pragma autorisés</div>
-            <p class="explain">Policy Guard n’autorise que le périmètre RoE : <code style="font-family:var(--mono);font-size:.9em">*.pragma-serve.com</code>, <code style="font-family:var(--mono);font-size:.9em">*.pragma-cloud.com</code>, <code style="font-family:var(--mono);font-size:.9em">*.pragma.mc</code> — pas n’importe quelle URL.</p>
+            <div class="label">Local-first</div>
+            <div class="value">Données chez vous</div>
+            <p class="explain">Historique et résultats restent locaux jusqu’à une demande explicite de prise en charge.</p>
           </div>
           <div class="trust-item reveal reveal-delay-4">
             <div class="label">Brand</div>
-            <div class="value">Atlas</div>
-            <p class="explain">Le produit s’appelle Atlas : assistant de pentest autorisé, pas un scanner anonyme « free-for-all ».</p>
+            <div class="value">Atlas SECU</div>
+            <p class="explain">Le produit s’appelle Atlas SECU : assistant de pentest autorisé, pas un scanner anonyme « free-for-all ».</p>
           </div>
         </div>
-      </section>
-
-      <section class="section scope" data-reveal>
-        <div class="section-line"></div>
-        <p class="section-kicker reveal">Rules of Engagement</p>
-        <h2 class="reveal reveal-delay-1">Périmètre RoE</h2>
-        <p class="support reveal reveal-delay-2">
-          Atlas ne scanne que les <strong>domaines Pragma autorisés</strong>
-          (<code style="font-family:var(--mono);font-size:.9em">*.pragma-serve.com</code>,
-          <code style="font-family:var(--mono);font-size:.9em">*.pragma-cloud.com</code>,
-          <code style="font-family:var(--mono);font-size:.9em">*.pragma.mc</code>).
-          Hors RoE → refus Policy Guard. Avant un scan réel, l’opérateur doit cocher :
-          <strong>Je prends la responsabilité de ce scan s'il s'avère non autorisé.</strong>
-          Pas de Pragma Sign obligatoire. Sans cette acceptation, pas de lancement.
-        </p>
-        <p class="support" style="margin-bottom:0">
-          Les capacités restent réservées aux comptes autorisés.
-          <button type="button" class="linkish js-connect" style="padding:0;text-decoration:underline">Se connecter</button>
-          pour ouvrir le tableau de bord.
-        </p>
       </section>
 
       <div class="cta-band" data-reveal>
         <div class="cta-band-inner reveal">
           <div>
-            <h2>Prêt à déployer Atlas Local</h2>
-            <p>Installez le setup, connectez-vous, lancez uniquement ce que le RoE autorise.</p>
+            <h2>Prêt à déployer Atlas SECU Local</h2>
+            <p>Installez le setup, scannez en local, demandez une prise en charge seulement si besoin.</p>
           </div>
           <div class="hero-cta">
             <a class="btn" href="/Atlas-Setup.exe">Télécharger</a>
@@ -733,7 +713,7 @@
       </div>
 
       <footer class="footer">
-        <span>Atlas · atlas-secu.com</span>
+        <span>Atlas SECU · atlas-secu.com</span>
         <span>Pentest autorisé</span>
         <a class="exp-chat" href="/atlas-secure/experimental/">Accéder à la session expérimentale</a>
       </footer>
@@ -741,7 +721,7 @@
   </div>
 
   <!-- Capacité bar: hidden on reload / at top without session; shown after scroll -->
-  <div id="cap-bar" aria-label="Capacités RoE">
+  <div id="cap-bar" aria-label="Capacités">
     <span class="cap-bar-label">Capacités</span>
     <button type="button" class="cap-bar-chip js-connect">Recon</button>
     <button type="button" class="cap-bar-chip js-connect">Scan</button>
@@ -753,7 +733,7 @@
   <div id="vault-stage" aria-live="polite">
     <div class="vault-lockup" id="vault-lockup">
       <div class="vault-mark" data-mark></div>
-      <div class="vault-word" aria-label="Atlas">
+      <div class="vault-word" aria-label="Atlas SECU">
         <span class="vault-letter">A</span>
         <span class="vault-letter">T</span>
         <span class="vault-letter">L</span>
@@ -787,7 +767,7 @@
         <div class="dash-brand">
           <span class="mark" data-mark></span>
           <div class="stack">
-            <div class="title">Atlas</div>
+            <div class="title">Atlas SECU</div>
             <div class="sub">Tableau de bord · capacités autorisées</div>
           </div>
         </div>
