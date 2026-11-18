@@ -593,6 +593,122 @@
   }
 
   /**
+   * Droit à l'effacement — retire une vulnérabilité (id ou fingerprint).
+   * Local toujours ; DELETE API si session opaque + ATLAS_API_BASE.
+   */
+  function removeVuln(vulnKey) {
+    var key = String(vulnKey || '').trim();
+    var current = load();
+    if (!key) {
+      return Promise.resolve({
+        ok: false,
+        reason: 'missing_key',
+        state: current
+      });
+    }
+    var removed =
+      (current.vulns || []).find(function (v) {
+        return v.id === key || v.fingerprint === key;
+      }) || null;
+    var nextVulns = (current.vulns || []).filter(function (v) {
+      return v.id !== key && v.fingerprint !== key;
+    });
+    var orphanTicketIds = [];
+    if (removed && removed.ticketId) {
+      var still = nextVulns.some(function (v) {
+        return v.ticketId === removed.ticketId;
+      });
+      if (!still) orphanTicketIds.push(removed.ticketId);
+    }
+    var next = Object.assign({}, current, {
+      vulns: nextVulns,
+      tickets: orphanTicketIds.length
+        ? (current.tickets || []).filter(function (t) {
+            return orphanTicketIds.indexOf(t.id) === -1;
+          })
+        : current.tickets,
+      progress: orphanTicketIds.length
+        ? (current.progress || []).filter(function (p) {
+            return orphanTicketIds.indexOf(p.ticketId) === -1;
+          })
+        : current.progress
+    });
+    if (
+      next.tickets &&
+      next.tickets.length === 0 &&
+      next.vulns.length === 0
+    ) {
+      next.handoffRequested = false;
+      next.requestedAt = null;
+      next.supportSessionId = null;
+      next.mode = 'local';
+    }
+    save(next);
+
+    var base = apiBase();
+    var sid = current.supportSessionId;
+    if (!base || !sid || !removed) {
+      return Promise.resolve({
+        ok: true,
+        state: next,
+        removed: removed,
+        remote: false
+      });
+    }
+    var t = withTimeout(2500);
+    return fetch(
+      base + '/v1/support/vulns/' + encodeURIComponent(key),
+      {
+        method: 'DELETE',
+        headers: sessionHeaders(sid),
+        signal: t.signal
+      }
+    )
+      .then(function (res) {
+        t.clear();
+        if (!res.ok) throw new Error('http');
+        return res.json().catch(function () {
+          return {};
+        });
+      })
+      .then(function (data) {
+        if (data && Array.isArray(data.vulns)) {
+          next.vulns = data.vulns.map(sanitizeVuln).filter(Boolean);
+          if (Array.isArray(data.tickets)) {
+            next.tickets = data.tickets.map(sanitizeTicket).filter(Boolean);
+          }
+          if (Array.isArray(data.progress)) {
+            next.progress = data.progress
+              .map(sanitizeProgress)
+              .filter(Boolean);
+          }
+          next.mode = 'remote';
+          if (!next.vulns.length && !next.tickets.length) {
+            next.handoffRequested = false;
+            next.supportSessionId = null;
+          }
+          save(next);
+        }
+        return {
+          ok: true,
+          state: next,
+          removed: removed,
+          remote: true,
+          notice: data && data.notice
+        };
+      })
+      .catch(function () {
+        return {
+          ok: true,
+          state: next,
+          removed: removed,
+          remote: false,
+          notice: 'Retiré en local (API indisponible).'
+        };
+      });
+  }
+
+  /**
    * Opt-in ingest of scanner findings into support vulns (post-handoff only).
    * Requires opaque supportSessionId + ATLAS_API_BASE; otherwise merges local soft twin.
    * Payload: [{ id?, title, risk, fingerprint? }] — no PII.
@@ -690,6 +806,7 @@
     requestHandoff: requestHandoff,
     syncFromRemote: syncFromRemote,
     ingestVulns: ingestVulns,
+    removeVuln: removeVuln,
     reset: reset
   };
 })(typeof window !== 'undefined' ? window : this);
