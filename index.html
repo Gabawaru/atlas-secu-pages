@@ -344,6 +344,28 @@
     .vault-auth .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
     .vault-auth .actions .btn{flex:1;min-width:120px}
     .vault-err{margin-top:12px;font-family:var(--mono);font-size:.75rem;color:var(--accent);min-height:1.2em}
+    .vault-mode-toggle{display:flex;gap:8px;margin:0 0 14px}
+    .vault-mode-toggle button{
+      flex:1;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+      padding:8px 10px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;
+      border-radius:var(--radius);
+    }
+    .vault-mode-toggle button.is-active{
+      border-color:var(--teal);color:var(--teal-deep);background:var(--teal-soft);
+    }
+    .vault-hint{margin:10px 0 0;font-size:.82rem;color:var(--ink-soft);line-height:1.45}
+    .api-banner{
+      margin:0 0 20px;padding:12px 14px;border:1px solid rgba(196,90,58,.35);
+      background:rgba(196,90,58,.08);color:var(--ink);font-size:.9rem;line-height:1.45;
+      border-radius:var(--radius-soft);
+    }
+    .api-banner[hidden]{display:none}
+    .erase-toast{
+      position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:4000;
+      max-width:min(520px,92vw);padding:14px 16px;background:var(--paper);border:1px solid var(--line);
+      box-shadow:var(--shadow);font-size:.9rem;color:var(--ink);line-height:1.45;
+    }
+    .erase-toast[hidden]{display:none}
 
 
     .local-only{
@@ -608,6 +630,7 @@
         <span class="name">Atlas SECU</span>
       </a>
       <div class="nav-actions">
+        <button type="button" class="linkish js-register">Créer un compte</button>
         <button type="button" class="linkish js-connect">Connexion</button>
         <a class="btn secondary" href="/Atlas-Setup.exe">Télécharger</a>
       </div>
@@ -624,6 +647,7 @@
         </p>
         <div class="hero-cta">
           <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
+          <button type="button" class="btn ghost js-register">Créer un compte</button>
           <button type="button" class="btn ghost js-connect">Se connecter</button>
         </div>
       </div>
@@ -684,6 +708,7 @@
           </div>
           <div class="hero-cta">
             <a class="btn" href="/Atlas-Setup.exe">Télécharger</a>
+            <button type="button" class="btn ghost js-register">Créer un compte</button>
             <button type="button" class="btn ghost js-connect">Connexion</button>
           </div>
         </div>
@@ -715,23 +740,30 @@
       </div>
     </div>
     <div class="vault-auth" id="vault-auth" hidden>
-      <span class="scan-stamp">Classification · Restricted</span>
+      <span class="scan-stamp">Compte Atlas SECU</span>
       <p style="margin:0 0 4px;font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em">
-        Accréditation requise. Session journalisée.
+        Self-serve public · inscription ou connexion
       </p>
+      <div class="vault-mode-toggle" role="tablist" aria-label="Mode compte">
+        <button type="button" id="vault-mode-login" class="is-active" role="tab" aria-selected="true">Connexion</button>
+        <button type="button" id="vault-mode-register" role="tab" aria-selected="false">Créer un compte</button>
+      </div>
       <form id="login-form" autocomplete="on">
         <label for="login-email">Email</label>
-        <input id="login-email" name="email" type="email" required autocomplete="username" placeholder="vous@atlas-secu.com">
+        <input id="login-email" name="email" type="email" required autocomplete="username" placeholder="vous@entreprise.fr">
         <label for="login-password">Mot de passe</label>
-        <input id="login-password" name="password" type="password" required autocomplete="current-password">
+        <input id="login-password" name="password" type="password" required minlength="8" autocomplete="current-password">
         <div class="actions">
-          <button type="submit" class="btn">Se connecter</button>
+          <button type="submit" class="btn" id="vault-submit">Se connecter</button>
           <button type="button" class="btn ghost" id="login-cancel">Annuler</button>
         </div>
         <p id="login-error" class="vault-err" hidden></p>
+        <p id="vault-api-hint" class="vault-hint" hidden></p>
       </form>
     </div>
   </div>
+
+  <div id="erase-toast" class="erase-toast" hidden role="status" aria-live="polite"></div>
 
   <!-- Dashboard -->
   <div id="view-dash">
@@ -750,11 +782,12 @@
             <span class="who" id="dash-who">—</span>
             <span class="role" id="dash-role">—</span>
           </div>
-          <button type="button" class="linkish" id="open-pw">Mot de passe</button>
           <button type="button" class="btn danger" id="erase-account-btn">Supprimer mon compte…</button>
           <button type="button" class="btn ghost" id="logout-btn">Déconnexion</button>
         </div>
       </div>
+
+      <div id="api-unavailable-banner" class="api-banner" hidden role="status"></div>
 
       <p class="dash-intro">
         Session active. Aucune action de scan n’est lancée depuis atlas-secu.com —
@@ -929,22 +962,6 @@
         </div>
       </section>
 
-      <div id="pw-panel" class="pw-panel" hidden>
-        <h3>Changer le mot de passe</h3>
-        <form id="pw-form" autocomplete="off">
-          <label for="pw-current">Mot de passe actuel</label>
-          <input id="pw-current" type="password" required autocomplete="current-password">
-          <label for="pw-new">Nouveau mot de passe</label>
-          <input id="pw-new" type="password" required autocomplete="new-password">
-          <label for="pw-confirm">Confirmer</label>
-          <input id="pw-confirm" type="password" required autocomplete="new-password">
-          <div class="pw-actions">
-            <button type="submit" class="btn">Enregistrer</button>
-            <button type="button" class="btn secondary" id="pw-cancel">Fermer</button>
-          </div>
-          <p id="pw-msg" class="pw-msg" hidden></p>
-        </form>
-      </div>
     </div>
   </div>
 
@@ -956,6 +973,8 @@
   }
   </script>
   <script type="module" src="/assets/atlas-hero-mark.js"></script>
+  <!-- Optional runtime config (ops). Example: config.runtime.example.js — never commit secrets. -->
+  <script src="/config.runtime.js"></script>
   <script src="/auth.js"></script>
   <script src="/atlasSecuCommercial.js"></script>
   <script src="/supportTracking.js"></script>
@@ -994,16 +1013,84 @@
       var vaultAuth = document.getElementById('vault-auth');
       var loginForm = document.getElementById('login-form');
       var loginErr = document.getElementById('login-error');
+      var vaultApiHint = document.getElementById('vault-api-hint');
+      var vaultSubmit = document.getElementById('vault-submit');
+      var vaultModeLogin = document.getElementById('vault-mode-login');
+      var vaultModeRegister = document.getElementById('vault-mode-register');
       var dashWho = document.getElementById('dash-who');
-      var pwPanel = document.getElementById('pw-panel');
-      var pwForm = document.getElementById('pw-form');
-      var pwMsg = document.getElementById('pw-msg');
+      var eraseToast = document.getElementById('erase-toast');
+      var vaultMode = 'login'; /* login | register */
       var vaultTimer = null;
       var revealIO = null;
       var wasAwayFromTop = false;
       var replayArmed = false;
       var TOP_EPS = 8;
       var FOLD_EPS = 72; /* below-fold blur only — no public action bar */
+
+      function setVaultMode(mode) {
+        vaultMode = mode === 'register' ? 'register' : 'login';
+        if (vaultModeLogin) {
+          vaultModeLogin.classList.toggle('is-active', vaultMode === 'login');
+          vaultModeLogin.setAttribute('aria-selected', vaultMode === 'login' ? 'true' : 'false');
+        }
+        if (vaultModeRegister) {
+          vaultModeRegister.classList.toggle('is-active', vaultMode === 'register');
+          vaultModeRegister.setAttribute(
+            'aria-selected',
+            vaultMode === 'register' ? 'true' : 'false'
+          );
+        }
+        if (vaultSubmit) {
+          vaultSubmit.textContent =
+            vaultMode === 'register' ? 'Créer un compte' : 'Se connecter';
+        }
+        var pw = document.getElementById('login-password');
+        if (pw) {
+          pw.autocomplete =
+            vaultMode === 'register' ? 'new-password' : 'current-password';
+        }
+        syncVaultApiHint();
+      }
+
+      function syncVaultApiHint() {
+        if (!vaultApiHint) return;
+        if (AtlasAuth.isApiConfigured && AtlasAuth.isApiConfigured()) {
+          vaultApiHint.hidden = true;
+          vaultApiHint.textContent = '';
+          if (vaultSubmit) vaultSubmit.disabled = false;
+          return;
+        }
+        vaultApiHint.hidden = false;
+        vaultApiHint.textContent =
+          (AtlasAuth.unavailableMessage && AtlasAuth.unavailableMessage()) ||
+          AtlasAuth.UNAVAILABLE_FR ||
+          '';
+        if (vaultSubmit) vaultSubmit.disabled = true;
+      }
+
+      function syncApiUnavailableBanner() {
+        var el = document.getElementById('api-unavailable-banner');
+        if (!el) return;
+        if (AtlasAuth.isApiConfigured && AtlasAuth.isApiConfigured()) {
+          el.hidden = true;
+          el.textContent = '';
+          return;
+        }
+        el.hidden = false;
+        el.textContent =
+          (AtlasAuth.unavailableMessage && AtlasAuth.unavailableMessage()) ||
+          AtlasAuth.UNAVAILABLE_FR ||
+          '';
+      }
+
+      function showEraseToast(text) {
+        if (!eraseToast || !text) return;
+        eraseToast.hidden = false;
+        eraseToast.textContent = text;
+        setTimeout(function () {
+          eraseToast.hidden = true;
+        }, 8000);
+      }
 
       function clearTimers() {
         if (vaultTimer) { clearTimeout(vaultTimer); vaultTimer = null; }
@@ -1321,13 +1408,14 @@
         clearTimers();
         clearBodyModes();
         document.body.classList.add('is-dash');
-        dashWho.textContent = session.firstName || 'Utilisateur';
+        dashWho.textContent = session.firstName || session.email || 'Compte';
         var roleEl = document.getElementById('dash-role');
         if (roleEl) {
-          roleEl.textContent = AtlasAuth.roleChipLabel(session) || 'Session';
-          roleEl.title = (session.post || '') + ' · clearance ' + (session.clearance || '');
+          roleEl.textContent = AtlasAuth.roleChipLabel(session) || 'Compte';
+          roleEl.title = session.email || '';
         }
         syncPragmaProductLinks(session);
+        syncApiUnavailableBanner();
         vaultAuth.hidden = true;
         renderSupportTracking();
       }
@@ -1339,7 +1427,6 @@
         vaultAuth.hidden = true;
         loginErr.hidden = true;
         loginForm.reset();
-        pwPanel.hidden = true;
         syncCapBar();
       }
 
@@ -1350,14 +1437,17 @@
         }, 40);
       }
 
-      /* Login: clear → recenter logo → credentials (ghost) → vault open → session */
-      function runVaultLogin() {
+      /* Login / register: clear → recenter logo → credentials → vault open → session */
+      function runVaultAuth(mode) {
         clearTimers();
         var session = AtlasAuth.getSession();
         if (session) {
           showDash(session);
           return;
         }
+        setVaultMode(mode || 'login');
+        loginErr.hidden = true;
+        syncVaultApiHint();
         clearBodyModes();
         document.body.classList.add('is-vault-clear');
         vaultAuth.hidden = true;
@@ -1382,6 +1472,14 @@
         }, 450);
       }
 
+      function runVaultLogin() {
+        runVaultAuth('login');
+      }
+
+      function runVaultRegister() {
+        runVaultAuth('register');
+      }
+
       function openVaultToDash(session) {
         clearTimers();
         vaultAuth.hidden = true;
@@ -1400,8 +1498,8 @@
       function runVaultLogout() {
         clearTimers();
         AtlasAuth.logout();
+        if (AtlasAuth.clearToken) AtlasAuth.clearToken();
         syncPragmaProductLinks(null);
-        pwPanel.hidden = true;
 
         clearBodyModes();
         document.body.classList.add('is-vault-open');
@@ -1439,6 +1537,19 @@
       document.querySelectorAll('.js-connect').forEach(function (btn) {
         btn.addEventListener('click', runVaultLogin);
       });
+      document.querySelectorAll('.js-register').forEach(function (btn) {
+        btn.addEventListener('click', runVaultRegister);
+      });
+      if (vaultModeLogin) {
+        vaultModeLogin.addEventListener('click', function () {
+          setVaultMode('login');
+        });
+      }
+      if (vaultModeRegister) {
+        vaultModeRegister.addEventListener('click', function () {
+          setVaultMode('register');
+        });
+      }
 
       document.getElementById('login-cancel').addEventListener('click', function () {
         showMarketing();
@@ -1449,18 +1560,34 @@
       loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
         loginErr.hidden = true;
-        var result = AtlasAuth.login(
-          document.getElementById('login-email').value,
-          document.getElementById('login-password').value
-        );
-        if (!result.ok) {
-          if (result.reason === 'unauthorized_email') loginErr.textContent = 'Email non autorisé.';
-          else if (result.reason === 'bad_password') loginErr.textContent = 'Mot de passe incorrect.';
-          else loginErr.textContent = 'Connexion impossible (stockage navigateur).';
+        syncVaultApiHint();
+        if (!AtlasAuth.isApiConfigured || !AtlasAuth.isApiConfigured()) {
+          loginErr.textContent =
+            (AtlasAuth.unavailableMessage && AtlasAuth.unavailableMessage()) ||
+            'Compte indisponible (serveur non configuré).';
           loginErr.hidden = false;
           return;
         }
-        openVaultToDash(result.session);
+        var email = document.getElementById('login-email').value;
+        var password = document.getElementById('login-password').value;
+        if (vaultSubmit) vaultSubmit.disabled = true;
+        var action =
+          vaultMode === 'register'
+            ? AtlasAuth.register(email, password)
+            : AtlasAuth.login(email, password);
+        Promise.resolve(action).then(function (result) {
+          if (vaultSubmit) vaultSubmit.disabled = false;
+          if (!result || !result.ok) {
+            loginErr.textContent =
+              (result && result.message) ||
+              (vaultMode === 'register'
+                ? 'Inscription impossible.'
+                : 'Connexion impossible.');
+            loginErr.hidden = false;
+            return;
+          }
+          openVaultToDash(result.session);
+        });
       });
 
       document.getElementById('logout-btn').addEventListener('click', runVaultLogout);
@@ -1488,19 +1615,28 @@
       document.getElementById('erase-account-btn').addEventListener('click', function () {
         if (
           !confirmTypeDelete(
-            'Supprimer mon compte Atlas SECU (session locale + suivi support navigateur) ?'
+            'Supprimer mon compte Atlas SECU ?\n' +
+              '• Si le serveur est joignable : suppression du compte API (réponse 2xx requise).\n' +
+              '• Toujours : session locale, jeton API et suivi support navigateur.\n' +
+              'L’historique Atlas Local sur votre machine n’est pas touché.'
           )
         ) {
           return;
         }
-        var result = AtlasAuth.eraseLocalAccount
-          ? AtlasAuth.eraseLocalAccount()
-          : { ok: true, notice: 'Session effacée.' };
-        setSupportEraseMsg(
-          (result && result.notice) ||
-            'Session Atlas SECU et données locales effacées.'
-        );
-        runVaultLogout();
+        var btn = document.getElementById('erase-account-btn');
+        if (btn) btn.disabled = true;
+        var eraseFn = AtlasAuth.eraseAccount || AtlasAuth.eraseLocalAccount;
+        Promise.resolve(eraseFn ? eraseFn.call(AtlasAuth, 'DELETE') : { ok: true, notice: 'Session effacée.' })
+          .then(function (result) {
+            if (btn) btn.disabled = false;
+            var notice =
+              (result && result.notice) ||
+              (result && result.message) ||
+              'Session et jeton locaux effacés.';
+            setSupportEraseMsg(notice);
+            showEraseToast(notice);
+            runVaultLogout();
+          });
       });
 
       var supportWipeBtn = document.getElementById('support-wipe-btn');
@@ -1619,16 +1755,25 @@
             promo: (document.getElementById('atlas-secu-promo') || {}).value || ''
           };
         }
+        if (!AtlasSecuCommercial.isConfigured || !AtlasSecuCommercial.isConfigured()) {
+          setMeta(
+            (AtlasSecuCommercial.unavailableMessage &&
+              AtlasSecuCommercial.unavailableMessage()) ||
+              'compte / activation indisponibles (serveur non configuré)',
+            'blocked'
+          );
+        }
         if (form) {
           form.addEventListener('submit', function (e) {
             e.preventDefault();
             var f = fields();
             setMeta('création du compte…', 'pending');
-            AtlasSecuCommercial.register(f.email, f.password).then(function (r) {
+            AtlasAuth.register(f.email, f.password).then(function (r) {
               if (!r.ok) {
                 setMeta(r.message || 'échec inscription', 'blocked');
                 return;
               }
+              if (r.session) showDash(r.session);
               setMeta('compte créé — activez avec YOOO2026', 'ok');
             });
           });
@@ -1637,11 +1782,12 @@
           loginBtn.addEventListener('click', function () {
             var f = fields();
             setMeta('connexion…', 'pending');
-            AtlasSecuCommercial.login(f.email, f.password).then(function (r) {
+            AtlasAuth.login(f.email, f.password).then(function (r) {
               if (!r.ok) {
                 setMeta(r.message || 'échec connexion', 'blocked');
                 return;
               }
+              if (r.session) showDash(r.session);
               setMeta('connecté — activez Atlas SECU si besoin', 'ok');
             });
           });
@@ -1649,6 +1795,15 @@
         if (activateBtn) {
           activateBtn.addEventListener('click', function () {
             var f = fields();
+            if (!AtlasSecuCommercial.isConfigured || !AtlasSecuCommercial.isConfigured()) {
+              setMeta(
+                (AtlasSecuCommercial.unavailableMessage &&
+                  AtlasSecuCommercial.unavailableMessage()) ||
+                  'activation indisponible',
+                'blocked'
+              );
+              return;
+            }
             setMeta('activation…', 'pending');
             AtlasSecuCommercial.activatePromo(f.promo || 'YOOO2026').then(
               function (r) {
@@ -1671,48 +1826,6 @@
           });
         }
       })();
-
-      document.getElementById('open-pw').addEventListener('click', function () {
-        pwMsg.hidden = true;
-        pwForm.reset();
-        pwPanel.hidden = false;
-      });
-      document.getElementById('pw-cancel').addEventListener('click', function () {
-        pwPanel.hidden = true;
-        pwMsg.hidden = true;
-        pwForm.reset();
-      });
-      pwForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        pwMsg.hidden = true;
-        var cur = document.getElementById('pw-current').value;
-        var neu = document.getElementById('pw-new').value;
-        var conf = document.getElementById('pw-confirm').value;
-        if (neu !== conf) {
-          pwMsg.textContent = 'Confirmation différente.';
-          pwMsg.className = 'pw-msg err';
-          pwMsg.hidden = false;
-          return;
-        }
-        var result = AtlasAuth.changePassword(cur, neu);
-        if (!result.ok) {
-          var map = {
-            bad_password: 'Mot de passe actuel incorrect.',
-            empty_password: 'Nouveau mot de passe vide.',
-            same_password: 'Le nouveau mot de passe doit être différent.',
-            no_session: 'Session expirée — reconnectez-vous.',
-            storage: 'Stockage navigateur indisponible.'
-          };
-          pwMsg.textContent = map[result.reason] || 'Changement impossible.';
-          pwMsg.className = 'pw-msg err';
-          pwMsg.hidden = false;
-          return;
-        }
-        pwMsg.textContent = 'Mot de passe mis à jour (cet appareil).';
-        pwMsg.className = 'pw-msg ok';
-        pwMsg.hidden = false;
-        pwForm.reset();
-      });
 
       /* Boot + restore */
       initReveals();

@@ -1,190 +1,177 @@
 /**
- * Atlas — client-side allowlist gate (static Pages).
- * Session: sessionStorage key `atlas_secu_session` = JSON {
- *   email, firstName, post, clearance, systemRole, at
- * }.
- * Password overrides: localStorage key `atlas_secu_pw_overrides` = { [email]: password }.
- * Not cryptographic auth; soft gate for a static site.
+ * Atlas SECU — session navigateur (Pages).
  *
- * Two axes (see confidential-roles research):
- *   post      — ops / governance job title (Direction, Stagiaire, …)
- *   clearance — need-to-know band A–D (data capabilities, not social rank)
+ * Auth réelle via API Atlas (Bearer) quand `window.ATLAS_API_BASE` est défini.
+ * Aucun allowlist staff, aucun mot de passe en clair dans le bundle.
+ *
+ * Session: sessionStorage `atlas_secu_session` = JSON {
+ *   email, firstName, at, via: 'api'
+ * }.
+ * Bearer: sessionStorage / localStorage `atlas_api_token` (via AtlasSecuCommercial).
  */
 (function (global) {
   var SESSION_KEY = 'atlas_secu_session';
-  var PW_KEY = 'atlas_secu_pw_overrides';
-
-  /** Clearance rank for comparisons (A public → D governance). */
-  var CLEARANCE_RANK = { A: 1, B: 2, C: 3, D: 4 };
-
-  /**
-   * Allowlisted Atlas sessions.
-   * post / clearance from org research + hierarchie-acces (keep simple).
-   * systemRole: admin | operator | viewer | auditor (product capability, not org chart).
-   */
-  var AUTHORIZED_USERS = [
-    {
-      email: 'gabriel@atlas-secu.com',
-      firstName: 'Gabriel',
-      password: '0000',
-      post: 'Stagiaire',
-      clearance: 'B',
-      systemRole: 'operator'
-    },
-    {
-      email: 'benjamin@atlas-secu.com',
-      firstName: 'Benjamin',
-      password: '0000',
-      post: 'Direction',
-      clearance: 'D',
-      systemRole: 'admin'
-    },
-    {
-      email: 'romain@atlas-secu.com',
-      firstName: 'Romain',
-      password: '0000',
-      post: 'Direction',
-      clearance: 'D',
-      systemRole: 'admin'
-    }
-  ];
+  var UNAVAILABLE_FR =
+    'Compte et prise en charge indisponibles sur ce site pour le moment ' +
+    '(serveur Atlas non configuré). Téléchargez Atlas Local, ou réessayez plus tard.';
 
   function normalizeEmail(email) {
     return String(email || '').trim().toLowerCase();
   }
 
-  function loadOverrides() {
+  function commercial() {
+    return global.AtlasSecuCommercial || null;
+  }
+
+  function isApiConfigured() {
+    var c = commercial();
+    if (c && typeof c.isConfigured === 'function') return !!c.isConfigured();
+    var base = global.ATLAS_API_BASE;
+    return !!(base && typeof base === 'string' && base.trim());
+  }
+
+  function unavailableMessage() {
+    var c = commercial();
+    if (c && typeof c.unavailableMessage === 'function') {
+      return c.unavailableMessage();
+    }
+    return UNAVAILABLE_FR;
+  }
+
+  function getToken() {
+    var c = commercial();
+    if (c && typeof c.getToken === 'function') return c.getToken() || '';
     try {
-      var raw = localStorage.getItem(PW_KEY);
-      if (!raw) return {};
-      var parsed = JSON.parse(raw);
-      return parsed && typeof parsed === 'object' ? parsed : {};
+      return (
+        (sessionStorage.getItem('atlas_api_token') ||
+          localStorage.getItem('atlas_api_token') ||
+          '') + ''
+      ).trim();
     } catch (e) {
-      return {};
+      return '';
     }
   }
 
-  function saveOverrides(map) {
+  function clearToken() {
+    var c = commercial();
+    if (c && typeof c.setToken === 'function') {
+      c.setToken('');
+      return;
+    }
     try {
-      localStorage.setItem(PW_KEY, JSON.stringify(map));
-      return true;
+      sessionStorage.removeItem('atlas_api_token');
+      localStorage.removeItem('atlas_api_token');
     } catch (e) {
-      return false;
+      /* ignore */
     }
   }
 
-  function findUser(email) {
-    var n = normalizeEmail(email);
-    for (var i = 0; i < AUTHORIZED_USERS.length; i++) {
-      if (AUTHORIZED_USERS[i].email.toLowerCase() === n) return AUTHORIZED_USERS[i];
-    }
-    return null;
-  }
-
-  function effectivePassword(user) {
-    var overrides = loadOverrides();
-    var key = user.email.toLowerCase();
-    if (Object.prototype.hasOwnProperty.call(overrides, key)) {
-      return String(overrides[key]);
-    }
-    return String(user.password);
-  }
-
-  function passwordMatches(user, password) {
-    return String(password || '') === effectivePassword(user);
-  }
-
-  /** Resolve post + clearance for a session or email (hydrates from allowlist). */
-  function resolveRole(sessionOrEmail) {
-    var email = typeof sessionOrEmail === 'string'
-      ? sessionOrEmail
-      : (sessionOrEmail && sessionOrEmail.email);
-    var user = findUser(email);
-    if (!user) return null;
-    var fromSession = sessionOrEmail && typeof sessionOrEmail === 'object' ? sessionOrEmail : null;
+  function buildSession(email, displayName) {
+    var em = normalizeEmail(email);
+    var first =
+      (displayName && String(displayName).trim()) ||
+      (em ? em.split('@')[0] : 'Compte');
     return {
-      email: user.email,
-      firstName: (fromSession && fromSession.firstName) || user.firstName,
-      post: user.post || 'Ops',
-      clearance: user.clearance || 'B',
-      systemRole: user.systemRole || 'operator'
-    };
-  }
-
-  /** Compact chip label: "Direction · D" */
-  function roleChipLabel(sessionOrEmail) {
-    var role = resolveRole(sessionOrEmail);
-    if (!role) return '';
-    return role.post + ' · ' + role.clearance;
-  }
-
-  function clearanceRank(band) {
-    var key = String(band || '').toUpperCase();
-    return Object.prototype.hasOwnProperty.call(CLEARANCE_RANK, key) ? CLEARANCE_RANK[key] : 0;
-  }
-
-  /** True if session clearance is at least minBand (e.g. 'B'). */
-  function hasClearance(session, minBand) {
-    var role = resolveRole(session);
-    if (!role) return false;
-    return clearanceRank(role.clearance) >= clearanceRank(minBand);
-  }
-
-  function buildSession(user) {
-    return {
-      email: user.email,
-      firstName: user.firstName,
-      post: user.post || 'Ops',
-      clearance: user.clearance || 'B',
-      systemRole: user.systemRole || 'operator',
+      email: em,
+      firstName: first,
+      post: 'Client',
+      clearance: 'A',
+      systemRole: 'viewer',
+      via: 'api',
       at: Date.now()
     };
   }
 
-  function login(email, password) {
-    var user = findUser(email);
-    if (!user) return { ok: false, reason: 'unauthorized_email' };
-    if (!passwordMatches(user, password)) {
-      return { ok: false, reason: 'bad_password' };
-    }
-    var session = buildSession(user);
+  function persistSession(session) {
     try {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      return { ok: true, session: session };
     } catch (e) {
-      return { ok: false, reason: 'storage' };
+      return { ok: false, reason: 'storage', message: 'Stockage navigateur indisponible.' };
     }
-    return { ok: true, session: session, user: user };
-  }
-
-  function logout() {
-    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
   }
 
   /**
-   * Soft twin « supprimer mon compte » — Pages n'a pas de compte serveur.
-   * Efface session, override mot de passe local, et suivi support navigateur.
-   * L'allowlist statique AUTHORIZED_USERS n'est pas modifiable depuis le navigateur.
+   * Connexion API (Bearer). Promesse.
+   * Sans ATLAS_API_BASE → échec explicite FR (pas de faux succès).
    */
-  function eraseLocalAccount() {
-    var session = null;
-    try {
-      session = getSession();
-    } catch (e) {
-      session = null;
+  function login(email, password) {
+    if (!isApiConfigured()) {
+      return Promise.resolve({
+        ok: false,
+        reason: 'api_missing',
+        message: unavailableMessage()
+      });
     }
-    var email = session && session.email ? normalizeEmail(session.email) : null;
-    logout();
-    if (email) {
-      try {
-        var map = loadOverrides();
-        if (Object.prototype.hasOwnProperty.call(map, email)) {
-          delete map[email];
-          saveOverrides(map);
-        }
-      } catch (e) {
-        /* ignore */
+    var c = commercial();
+    if (!c || typeof c.login !== 'function') {
+      return Promise.resolve({
+        ok: false,
+        reason: 'api_missing',
+        message: unavailableMessage()
+      });
+    }
+    return c.login(email, password).then(function (r) {
+      if (!r || !r.ok) {
+        return {
+          ok: false,
+          reason: 'auth_failed',
+          message: (r && r.message) || 'Identifiants incorrects.'
+        };
       }
+      var session = buildSession(
+        email,
+        r.displayName || (r.user && r.user.displayName)
+      );
+      var saved = persistSession(session);
+      if (!saved.ok) return saved;
+      return { ok: true, session: saved.session, accessToken: r.accessToken };
+    });
+  }
+
+  /**
+   * Inscription API (Bearer). Promesse.
+   */
+  function register(email, password, displayName) {
+    if (!isApiConfigured()) {
+      return Promise.resolve({
+        ok: false,
+        reason: 'api_missing',
+        message: unavailableMessage()
+      });
     }
+    var c = commercial();
+    if (!c || typeof c.register !== 'function') {
+      return Promise.resolve({
+        ok: false,
+        reason: 'api_missing',
+        message: unavailableMessage()
+      });
+    }
+    return c.register(email, password, displayName).then(function (r) {
+      if (!r || !r.ok) {
+        return {
+          ok: false,
+          reason: 'auth_failed',
+          message: (r && r.message) || 'Inscription impossible.'
+        };
+      }
+      var session = buildSession(email, displayName || (r.user && r.user.displayName));
+      var saved = persistSession(session);
+      if (!saved.ok) return saved;
+      return { ok: true, session: saved.session, accessToken: r.accessToken };
+    });
+  }
+
+  function logout() {
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
+  function clearLocalSupportTracking() {
     try {
       if (
         global.AtlasSupportTracking &&
@@ -197,12 +184,97 @@
     } catch (e) {
       /* ignore */
     }
-    return {
-      ok: true,
-      notice:
-        'Session Atlas SECU et données locales effacées. Compte allowlist statique non supprimable depuis Pages.',
-      retained: ['AUTHORIZED_USERS (allowlist statique du site)']
-    };
+  }
+
+  /**
+   * Effacement honnête :
+   * - purge toujours le Bearer + session locale + suivi support navigateur ;
+   * - DELETE /v1/auth/account seulement si API configurée + token ;
+   * - « distant ok » / succès serveur uniquement si réponse 2xx.
+   */
+  function eraseAccount(confirmWord) {
+    var token = getToken();
+    var c = commercial();
+    var localCleared = false;
+
+    function wipeLocal() {
+      logout();
+      clearToken();
+      clearLocalSupportTracking();
+      localCleared = true;
+    }
+
+    if (!isApiConfigured()) {
+      wipeLocal();
+      return Promise.resolve({
+        ok: true,
+        remote: false,
+        remoteOk: false,
+        localCleared: true,
+        notice:
+          'Session et données locales effacées. Compte serveur non contacté : serveur Atlas non configuré sur ce site.'
+      });
+    }
+
+    if (!token) {
+      wipeLocal();
+      return Promise.resolve({
+        ok: true,
+        remote: false,
+        remoteOk: false,
+        localCleared: true,
+        notice:
+          'Session et données locales effacées. Aucun jeton API : rien n’a été demandé au serveur.'
+      });
+    }
+
+    if (!c || typeof c.deleteAccount !== 'function') {
+      wipeLocal();
+      return Promise.resolve({
+        ok: true,
+        remote: false,
+        remoteOk: false,
+        localCleared: true,
+        notice:
+          'Session et jeton locaux effacés. Suppression serveur indisponible (module commercial).'
+      });
+    }
+
+    return c.deleteAccount(confirmWord || 'DELETE').then(function (remote) {
+      /* Toujours purger le Bearer local après tentative — y compris si API refuse. */
+      wipeLocal();
+      if (remote && remote.ok) {
+        return {
+          ok: true,
+          remote: true,
+          remoteOk: true,
+          localCleared: true,
+          notice:
+            (remote.notice || 'Compte serveur supprimé.') +
+            ' Session et jeton locaux effacés.',
+          retained: remote.retained
+        };
+      }
+      return {
+        ok: false,
+        remote: true,
+        remoteOk: false,
+        localCleared: true,
+        reason: (remote && remote.reason) || 'http_error',
+        message:
+          (remote && remote.message) ||
+          'Échec suppression serveur. Session et jeton locaux ont quand même été effacés.',
+        notice:
+          'Échec suppression serveur (' +
+          ((remote && remote.message) || 'erreur') +
+          '). Session et jeton locaux effacés — le compte API peut encore exister.'
+      };
+    });
+  }
+
+  /** @deprecated use eraseAccount — kept for callers; always clears bearer. */
+  function eraseLocalAccount() {
+    return eraseAccount('DELETE');
   }
 
   function getSession() {
@@ -210,18 +282,24 @@
       var raw = sessionStorage.getItem(SESSION_KEY);
       if (!raw) return null;
       var parsed = JSON.parse(raw);
-      if (!parsed || !parsed.email || !findUser(parsed.email)) {
+      if (!parsed || !parsed.email) {
         logout();
         return null;
       }
-      var role = resolveRole(parsed);
-      if (role) {
-        parsed.firstName = role.firstName;
-        parsed.post = role.post;
-        parsed.clearance = role.clearance;
-        parsed.systemRole = role.systemRole;
+      /* Session Pages = compte API. Sans jeton, on ne prétend pas être connecté. */
+      if (!getToken()) {
+        logout();
+        return null;
       }
-      return parsed;
+      return {
+        email: normalizeEmail(parsed.email),
+        firstName: parsed.firstName || parsed.email.split('@')[0] || 'Compte',
+        post: parsed.post || 'Client',
+        clearance: parsed.clearance || 'A',
+        systemRole: parsed.systemRole || 'viewer',
+        via: parsed.via || 'api',
+        at: parsed.at || Date.now()
+      };
     } catch (e) {
       logout();
       return null;
@@ -237,54 +315,63 @@
     return s;
   }
 
+  function resolveRole(sessionOrEmail) {
+    var session =
+      typeof sessionOrEmail === 'string' ? getSession() : sessionOrEmail;
+    if (!session || !session.email) return null;
+    return {
+      email: session.email,
+      firstName: session.firstName || 'Compte',
+      post: session.post || 'Client',
+      clearance: session.clearance || 'A',
+      systemRole: session.systemRole || 'viewer'
+    };
+  }
+
+  function roleChipLabel(sessionOrEmail) {
+    var role = resolveRole(sessionOrEmail || getSession());
+    if (!role) return '';
+    return 'Compte';
+  }
+
   /**
-   * Product links PragmaServe / PragmaCloud / PragmaUC:
-   * accredited session with clearance ≥ B (Gabriel / Benjamin / Romain).
-   * Never anonymous marketing.
+   * Liens produits Pragma : plus de gate marketing staff.
+   * Ops staff = surface admin séparée — pas l’allowlist publique.
    */
-  function canSeePragmaProductLinks(session) {
-    return hasClearance(session || getSession(), 'B');
+  function canSeePragmaProductLinks() {
+    return false;
   }
 
-  /** Persist password override for this browser (localStorage). */
-  function setPassword(email, newPassword) {
-    var user = findUser(email);
-    if (!user) return { ok: false, reason: 'unauthorized_email' };
-    if (newPassword === undefined || newPassword === null || String(newPassword) === '') {
-      return { ok: false, reason: 'empty_password' };
-    }
-    var map = loadOverrides();
-    map[user.email.toLowerCase()] = String(newPassword);
-    if (!saveOverrides(map)) return { ok: false, reason: 'storage' };
-    user.password = String(newPassword);
-    return { ok: true, email: user.email };
+  function hasClearance() {
+    return false;
   }
 
-  /** Change password for the signed-in user (checks current). */
-  function changePassword(currentPassword, newPassword) {
-    var session = getSession();
-    if (!session) return { ok: false, reason: 'no_session' };
-    var user = findUser(session.email);
-    if (!user) return { ok: false, reason: 'unauthorized_email' };
-    if (!passwordMatches(user, currentPassword)) {
-      return { ok: false, reason: 'bad_password' };
-    }
-    if (newPassword === undefined || newPassword === null || String(newPassword) === '') {
-      return { ok: false, reason: 'empty_password' };
-    }
-    if (String(newPassword) === String(currentPassword)) {
-      return { ok: false, reason: 'same_password' };
-    }
-    return setPassword(user.email, newPassword);
+  /**
+   * Changement de mot de passe local retiré (plus d’overrides / allowlist).
+   * Pas d’endpoint Pages pour change-password — utiliser le client / support.
+   */
+  function changePassword() {
+    return {
+      ok: false,
+      reason: 'unsupported',
+      message:
+        'Changement de mot de passe indisponible sur le site. Utilisez Atlas Local ou le support.'
+    };
+  }
+
+  function setPassword() {
+    return changePassword();
   }
 
   global.AtlasAuth = {
     SESSION_KEY: SESSION_KEY,
-    PW_KEY: PW_KEY,
-    CLEARANCE_RANK: CLEARANCE_RANK,
-    AUTHORIZED_USERS: AUTHORIZED_USERS,
+    UNAVAILABLE_FR: UNAVAILABLE_FR,
+    isApiConfigured: isApiConfigured,
+    unavailableMessage: unavailableMessage,
     login: login,
+    register: register,
     logout: logout,
+    eraseAccount: eraseAccount,
     eraseLocalAccount: eraseLocalAccount,
     getSession: getSession,
     requireSession: requireSession,
@@ -295,6 +382,7 @@
     setPassword: setPassword,
     changePassword: changePassword,
     normalizeEmail: normalizeEmail,
-    findUser: findUser
+    getToken: getToken,
+    clearToken: clearToken
   };
 })(window);
