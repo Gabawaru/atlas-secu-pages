@@ -155,6 +155,7 @@ function proceduralEarthTexture() {
  *   autoRotateSpeed?: number,
  *   onSignificantDrag?: (deg: number) => void,
  *   significantDragDeg?: number,
+ *   touchBoost?: boolean,
  * }} [options]
  * @returns {object}
  */
@@ -282,8 +283,13 @@ export function mountAtlasHeroMark(host, options) {
     }
   );
 
+  const touchBoost = !!opts.touchBoost ||
+    (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth < 960);
+  const dragSens = touchBoost ? 0.0088 : 0.0055;
+
   function onPointerDown(e) {
     if (!dragEnabled) return;
+    if (e.cancelable) e.preventDefault();
     drag.active = true;
     drag.px = e.clientX;
     drag.py = e.clientY;
@@ -293,17 +299,17 @@ export function mountAtlasHeroMark(host, options) {
   }
   function onPointerMove(e) {
     if (!drag.active || !globe || !dragEnabled) return;
+    if (e.cancelable) e.preventDefault();
     const dx = e.clientX - drag.px;
     const dy = e.clientY - drag.py;
     drag.px = e.clientX;
     drag.py = e.clientY;
-    const sens = 0.0055;
-    const dyaw = dx * sens;
+    const dyaw = dx * dragSens;
     globe.rotation.y += dyaw;
-    globe.rotation.x += dy * sens;
+    globe.rotation.x += dy * dragSens;
     globe.rotation.x = Math.max(-1.2, Math.min(1.2, globe.rotation.x));
     drag.velX = dyaw;
-    drag.velY = dy * sens;
+    drag.velY = dy * dragSens;
     accumulatedYaw += Math.abs(dyaw);
     sessionDragYaw += Math.abs(dyaw);
     const deg = (sessionDragYaw * 180) / Math.PI;
@@ -320,8 +326,8 @@ export function mountAtlasHeroMark(host, options) {
     try { renderer.domElement.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
   }
 
-  renderer.domElement.addEventListener('pointerdown', onPointerDown);
-  renderer.domElement.addEventListener('pointermove', onPointerMove);
+  renderer.domElement.addEventListener('pointerdown', onPointerDown, { passive: false });
+  renderer.domElement.addEventListener('pointermove', onPointerMove, { passive: false });
   renderer.domElement.addEventListener('pointerup', onPointerUp);
   renderer.domElement.addEventListener('pointercancel', onPointerUp);
   renderer.domElement.addEventListener('pointerleave', onPointerUp);

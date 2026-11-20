@@ -1,0 +1,2162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ATLAS — test hero ritual</title>
+  <meta name="description" content="Page de test — séquence hero ATLAS (ritual). La vitrine publique reste /.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/atlas-tokens.css">
+  <style>
+    *{box-sizing:border-box}
+    html{
+      scroll-behavior:smooth;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+      overflow-x:hidden;
+    }
+    body{
+      margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);line-height:1.55;
+      font-family:var(--display);
+      padding-top:env(safe-area-inset-top,0px);
+      padding-left:env(safe-area-inset-left,0px);
+      padding-right:env(safe-area-inset-right,0px);
+      background:
+        radial-gradient(1100px 520px at 12% -8%,rgba(47,143,138,.16),transparent 60%),
+        radial-gradient(900px 480px at 92% 8%,rgba(120,170,190,.18),transparent 55%),
+        linear-gradient(180deg,#fbfefe 0%,var(--bg) 45%,var(--bg-soft) 100%);
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.32;
+      background-image:
+        linear-gradient(rgba(47,143,138,.045) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(47,143,138,.045) 1px,transparent 1px);
+      background-size:48px 48px;
+      mask-image:radial-gradient(ellipse at 50% 28%,#000 18%,transparent 72%);
+    }
+    a{color:var(--teal-deep)}
+    [hidden]{display:none!important}
+
+    /* —— Logo (pre-v3): abstract triangle mark + vault piece groups —— */
+    .mark-svg{display:block;width:100%;height:100%;overflow:visible}
+    .mark-svg .frame{stroke:#2a3d45;stroke-width:7;fill:none;stroke-linejoin:round}
+    .mark-svg .inner{stroke:#2a3d45;stroke-width:6;fill:none;stroke-linejoin:round}
+    .mark-svg .orbit{stroke:var(--teal);stroke-width:2.2;fill:none;opacity:.9;
+      transform-origin:60px 62px;animation:orbit-spin 9s linear infinite}
+    .mark-svg .orbit.alt{animation-duration:13s;animation-direction:reverse;opacity:.65}
+    .mark-svg .link{stroke:var(--teal);stroke-width:2;fill:none;opacity:.85}
+    .mark-svg .node{fill:var(--teal);transform-box:fill-box;transform-origin:center;
+      animation:node-pulse 2.4s ease-in-out infinite}
+    .mark-svg .node.n2{animation-delay:.4s}
+    .mark-svg .node.n3{animation-delay:.8s}
+    .vault-piece{transform-box:fill-box;transform-origin:center;transition:transform .7s var(--ease),opacity .55s var(--ease)}
+    @keyframes orbit-spin{to{transform:rotate(360deg)}}
+    @keyframes node-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.28);opacity:.75}}
+
+    /* —— Boot —— */
+    .boot-lockup{
+      position:fixed;inset:0;z-index:4000;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(180deg,#fbfefe,#eef6f7);pointer-events:none;
+      transition:opacity .55s var(--ease),visibility .55s var(--ease);
+    }
+    .boot-lockup.is-done{opacity:0;visibility:hidden}
+    .boot-inner{display:flex;align-items:center;gap:18px}
+    .boot-mark{width:72px;height:72px;opacity:0;transform:scale(.88) translateY(8px)}
+    .boot-word{
+      font-weight:800;font-size:clamp(1.35rem,3.6vw,2rem);letter-spacing:.16em;
+      text-transform:uppercase;opacity:0;transform:translateX(24px);color:var(--ink);
+    }
+    body.is-booting .boot-mark{animation:boot-in .75s var(--ease) .05s forwards}
+    body.is-booting .boot-word{animation:boot-in .7s var(--ease) .22s forwards}
+    @keyframes boot-in{to{opacity:1;transform:none}}
+
+    .site{position:relative;z-index:1}
+    body.is-booting .site{opacity:0}
+    body.is-ready .site{animation:site-in .65s var(--ease) forwards}
+    @keyframes site-in{from{opacity:0}to{opacity:1}}
+
+    /* —— Marketing shell —— */
+    #view-marketing{
+      transform-origin:50% 0%;
+      transition:opacity .55s var(--ease),filter .55s var(--ease),visibility .55s var(--ease);
+    }
+    body.is-vault-clear #view-marketing,
+    body.is-vault-center #view-marketing,
+    body.is-vault-auth #view-marketing,
+    body.is-vault-open #view-marketing,
+    body.is-vault-close #view-marketing,
+    body.is-dash #view-marketing{
+      opacity:0;pointer-events:none;visibility:hidden;filter:blur(4px);
+    }
+
+    /* Below-fold blur (first visit + every top replay) */
+    .below-fold{
+      filter:blur(14px);opacity:.42;transform:translateY(12px);
+      transition:filter .9s var(--ease),opacity .9s var(--ease),transform .9s var(--ease);
+      pointer-events:none;
+    }
+    body.is-past-fold .below-fold{
+      filter:none;opacity:1;transform:none;pointer-events:auto;
+    }
+
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      max-width:1120px;margin:0 auto;padding:22px 24px 0;
+    }
+    .brand-lockup{
+      display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);
+      transition:color .2s;
+    }
+    .brand-lockup:hover{color:var(--teal-deep)}
+    .brand-lockup .mark{width:40px;height:40px;flex-shrink:0}
+    .brand-lockup .name{
+      font-weight:800;letter-spacing:.14em;font-size:.78rem;text-transform:uppercase;
+    }
+    .nav-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .linkish{
+      background:none;border:0;padding:8px 10px;font:inherit;cursor:pointer;
+      color:var(--ink-soft);letter-spacing:.04em;
+    }
+    .linkish:hover{color:var(--teal-deep)}
+
+    .btn,a.btn,button.btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:13px 20px;border-radius:var(--radius);border:1.5px solid var(--teal-deep);
+      background:var(--teal);color:#fff;text-decoration:none;font:inherit;font-weight:600;
+      letter-spacing:.03em;cursor:pointer;
+      transition:transform .2s var(--ease),background .2s,box-shadow .2s;
+      box-shadow:0 8px 24px rgba(47,143,138,.22);
+    }
+    .btn:hover{background:var(--teal-deep);transform:translateY(-2px)}
+    .btn.secondary{background:var(--paper);color:var(--teal-deep);box-shadow:0 6px 18px rgba(42,61,69,.06)}
+    .btn.secondary:hover{background:#f3faf9}
+    .btn.ghost{background:transparent;color:var(--ink-soft);border-color:var(--line);box-shadow:none}
+    .btn.ghost:hover{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-soft)}
+    .btn.danger{background:transparent;color:#8b3a3a;border-color:rgba(139,58,58,.35);box-shadow:none}
+    .btn.danger:hover{border-color:#8b3a3a;background:rgba(139,58,58,.06)}
+    .support-erase-msg{margin:.35rem 0 0;font-size:.9rem;color:var(--ink-soft)}
+
+    .hero{
+      max-width:1120px;margin:0 auto;padding:clamp(48px,10vh,96px) 24px 64px;
+      display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;
+      min-height:min(82vh,780px);
+    }
+    @media (max-width:860px){
+      .hero{grid-template-columns:1fr;gap:32px;min-height:auto}
+      .hero-visual{order:-1;justify-self:center}
+    }
+    .hero-brand{
+      margin:0 0 14px;font-weight:800;font-size:clamp(2.2rem,5.5vw,3.8rem);
+      letter-spacing:.12em;line-height:.95;text-transform:uppercase;
+    }
+    .hero h1{
+      margin:0 0 14px;font-size:clamp(1.25rem,2.4vw,1.7rem);font-weight:600;
+      color:var(--ink-soft);max-width:22ch;line-height:1.25;
+    }
+    .hero .lede{margin:0 0 28px;max-width:42ch;color:var(--muted);font-size:1.05rem}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:12px}
+    .hero-visual{
+      position:relative;width:min(420px,100%);aspect-ratio:1;
+      display:grid;place-items:center;
+      /* Room below globe for drag hint */
+      padding-bottom:1.1rem;box-sizing:border-box;
+    }
+    /* Soft atmosphere behind interactive mark (not a control) */
+    .hero-orb{
+      position:absolute;inset:4% 8% 10%;border-radius:50%;pointer-events:none;
+      background:
+        radial-gradient(circle at 35% 28%,rgba(255,255,255,.92),transparent 55%),
+        radial-gradient(circle at 70% 72%,rgba(47,143,138,.16),transparent 60%);
+      border:1px solid rgba(47,143,138,.14);
+      animation:orb-breathe 6.5s ease-in-out infinite;
+    }
+    .hero-orb::after{
+      content:"";position:absolute;inset:-12%;border-radius:50%;pointer-events:none;
+      border:1px dashed rgba(47,143,138,.18);animation:orb-spin 28s linear infinite;
+    }
+    @keyframes orb-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+    @keyframes orb-spin{to{transform:rotate(360deg)}}
+    .hero-visual .mark{width:88%;height:88%;position:relative;z-index:1}
+    #atlas-hero-mark{
+      position:relative;z-index:1;width:100%;height:100%;
+      touch-action:none;cursor:grab;user-select:none;
+    }
+    #atlas-hero-mark:active{cursor:grabbing}
+    #atlas-hero-mark canvas{display:block;width:100%;height:100%}
+    .hero-drag-hint{
+      position:absolute;z-index:2;left:50%;bottom:0;transform:translateX(-50%);
+      margin:0;padding:0;font-family:var(--mono);font-size:.62rem;font-weight:500;
+      letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+      pointer-events:none;opacity:.72;white-space:nowrap;
+    }
+
+    /* —— Hero ritual v2 —— */
+    body.is-ritual-scroll-lock{
+      position:fixed;left:0;right:0;width:100%;overflow:hidden;
+      overscroll-behavior:none;touch-action:none;
+    }
+    body.is-ritual-scroll-lock #atlas-hero-mark,
+    body.is-ritual-scroll-lock #atlas-hero-mark canvas{
+      touch-action:none;
+    }
+    body.is-ritual-scroll-lock .ritual-cta,
+    body.is-ritual-scroll-lock .ritual-cta .btn{
+      touch-action:manipulation;
+    }
+    #atlas-hero{
+      position:relative;
+    }
+    #atlas-hero-ritual{
+      pointer-events:none;
+      position:absolute;inset:0;z-index:5;
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+      padding:0 24px 8%;
+    }
+    #atlas-hero-ritual[hidden]{display:none!important}
+    #atlas-hero-ritual .ritual-cta{pointer-events:auto}
+    .ritual-hint{
+      position:absolute;left:50%;bottom:6%;transform:translateX(-50%);
+      margin:0;font-family:var(--mono);font-size:clamp(.62rem,.9vw,.72rem);font-weight:500;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+      white-space:nowrap;animation:ritual-pulse 2.2s ease-in-out infinite;
+    }
+    .ritual-hint.is-fading{animation:none;transition:opacity .4s var(--ease);opacity:0}
+    @keyframes ritual-pulse{
+      0%,100%{opacity:.55}50%{opacity:1}
+    }
+    .ritual-orbit-copy{
+      position:absolute;left:50%;top:50%;
+      margin:0;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--ink);pointer-events:none;will-change:transform,opacity;
+      white-space:nowrap;
+    }
+    .ritual-orbit-copy[data-ritual="brand-orbit"]{
+      font-size:clamp(1.1rem,2.4vw,1.6rem);font-weight:800;letter-spacing:.18em;
+    }
+    .ritual-orbit-copy[data-ritual="slogan-orbit"]{
+      font-size:clamp(.78rem,1.5vw,1rem);font-weight:600;letter-spacing:.04em;
+      text-transform:none;color:var(--ink-soft);max-width:28ch;white-space:normal;text-align:center;
+    }
+    /* Idle: slogan + hint sit under the circle, not on the Earth face */
+    body.is-ritual-idle #atlas-hero-ritual{
+      position:relative;inset:auto;width:min(380px,72vw);
+      justify-content:flex-start;align-items:center;
+      padding:12px 0 0;gap:10px;min-height:0;
+    }
+    body.is-ritual-idle .ritual-orbit-copy[data-ritual="slogan-orbit"]{
+      position:relative;left:auto;top:auto;bottom:auto;transform:none;
+      margin:0;max-width:34ch;order:1;
+    }
+    body.is-ritual-idle .ritual-hint{
+      position:relative;left:auto;bottom:auto;transform:none;order:2;
+    }
+    /* Idle: globe alone in the circle — brand is not overlaid on Earth */
+    body.is-ritual-idle .ritual-orbit-copy[data-ritual="brand-orbit"]{
+      display:none;
+    }
+    body.is-ritual-idle .hero{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;
+    }
+    body.is-ritual-idle .hero-visual{margin:0;order:1}
+    body.is-ritual-idle #atlas-hero-ritual{order:2}
+    body.is-ritual-idle #hero-copy{order:0;height:0;overflow:hidden;margin:0;padding:0}
+    .ritual-letter-a{
+      position:absolute;left:50%;top:50%;
+      font-weight:800;font-size:clamp(4.5rem,14vw,8.5rem);line-height:.85;
+      letter-spacing:0;color:var(--ink);pointer-events:none;
+      text-shadow:0 12px 40px rgba(42,61,69,.18);
+      will-change:transform,opacity;
+      font-family:var(--display);
+    }
+    .ritual-letter-a.is-impact{transform:translate(-50%,-50%) scale(1.18)!important;
+      transition:transform .18s var(--ease)}
+    .ritual-wordmark{
+      display:flex;align-items:baseline;justify-content:center;gap:0;
+      font-weight:800;font-size:clamp(2.4rem,7vw,4.2rem);
+      letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+      line-height:1;margin:0 0 14px;pointer-events:none;
+    }
+    .ritual-wordmark [data-ritual-letter]{
+      display:inline-block;opacity:0;transform:translateX(-0.4em);
+    }
+    .ritual-wordmark [data-ritual-letter].is-in{opacity:1;transform:none}
+    .ritual-slogan-final{
+      margin:0 0 22px;max-width:36ch;text-align:center;
+      color:var(--ink-soft);font-size:clamp(1rem,2vw,1.2rem);font-weight:500;
+      line-height:1.35;opacity:0;
+    }
+    .ritual-slogan-final.is-in{opacity:1}
+    .ritual-cta{
+      display:flex;flex-wrap:wrap;gap:12px;justify-content:center;
+      margin:0 0 22px;opacity:0;pointer-events:auto;
+    }
+    .ritual-cta.is-in{opacity:1}
+    .ritual-explain{
+      max-width:48ch;text-align:center;color:var(--muted);
+      font-size:.98rem;line-height:1.55;margin:0;opacity:0;
+    }
+    .ritual-explain.is-in{opacity:1}
+    .ritual-explain p{margin:0 0 .65em}
+    .ritual-explain p:last-child{margin:0}
+
+    /* Ritual layout: center globe, hide marketing chrome until end */
+    body.is-ritual-idle #view-marketing .nav,
+    body.is-ritual-playing #view-marketing .nav,
+    body.is-ritual-idle #hero-copy,
+    body.is-ritual-playing #hero-copy,
+    body.is-ritual-idle #below-fold,
+    body.is-ritual-playing #below-fold{
+      opacity:0;visibility:hidden;pointer-events:none;
+    }
+    body.is-ritual-idle .hero,
+    body.is-ritual-playing .hero{
+      grid-template-columns:1fr;justify-items:center;align-content:center;
+      min-height:100vh;min-height:100dvh;
+      padding:clamp(16px,4vh,40px) 24px;
+      box-sizing:border-box;
+    }
+    body.is-ritual-idle .hero-visual,
+    body.is-ritual-playing .hero-visual{
+      order:0;width:min(380px,72vw);
+    }
+    body.is-ritual-expanding .hero,
+    body.is-ritual-fullscreen .hero{
+      position:fixed;inset:0;z-index:50;max-width:none;width:100%;height:100%;
+      margin:0;padding:0;display:grid;place-items:center;
+      background:
+        radial-gradient(900px 520px at 50% 42%,rgba(47,143,138,.12),transparent 62%),
+        linear-gradient(180deg,#f7fbfc 0%,var(--bg) 55%,var(--bg-soft) 100%);
+    }
+    body.is-ritual-expanding .hero-visual,
+    body.is-ritual-fullscreen .hero-visual{
+      max-width:none;margin:0;padding:0;place-self:center;
+      aspect-ratio:1;transition:none;
+    }
+    body.is-ritual-fullscreen .hero-visual{
+      width:min(92vmin,860px);height:min(92vmin,860px);
+    }
+    body.is-ritual-expanding .hero-orb,
+    body.is-ritual-fullscreen .hero-orb{inset:3%;opacity:.5}
+    body.is-ritual-expanding #atlas-hero-ritual,
+    body.is-ritual-fullscreen #atlas-hero-ritual{
+      position:fixed;inset:0;z-index:60;
+      justify-content:center;padding:clamp(24px,6vh,64px) 24px;
+    }
+    body.is-ritual-wordmark #atlas-hero-ritual,
+    body.is-ritual-done #atlas-hero-ritual.is-end{
+      justify-content:center;gap:0;
+      background:linear-gradient(180deg,transparent 0%,rgba(247,251,252,.55) 42%,rgba(247,251,252,.88) 100%);
+    }
+    body.is-ritual-done .hero{
+      position:relative;inset:auto;z-index:auto;
+      grid-template-columns:1.05fr .95fr;max-width:1120px;margin:0 auto;
+      padding:clamp(48px,10vh,96px) 24px 64px;min-height:min(82vh,780px);
+      background:transparent;
+    }
+    body.is-ritual-done .hero-visual{width:min(380px,100%);order:0}
+    body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end{
+      position:relative;inset:auto;z-index:2;
+      grid-column:1;grid-row:1;align-self:center;justify-self:start;
+      width:100%;max-width:36rem;padding:0;background:none;
+      align-items:flex-start;justify-content:center;
+    }
+    body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-wordmark{justify-content:flex-start;margin-bottom:12px}
+    body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-slogan-final,
+    body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-explain{text-align:left}
+    body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-cta{justify-content:flex-start}
+    body.is-ritual-done:not(.is-ritual-skipped) #hero-copy{
+      display:none; /* wordmark+explain live in ritual end panel */
+    }
+    body.is-ritual-done #view-marketing .nav.is-ritual-revealed,
+    body.is-ritual-done #below-fold.is-ritual-revealed{
+      opacity:1;visibility:visible;pointer-events:auto;
+      transition:opacity .7s var(--ease),visibility .7s var(--ease);
+    }
+    body.is-ritual-skipped #hero-copy{
+      display:block;opacity:1;visibility:visible;pointer-events:auto;
+    }
+    body.is-ritual-skipped #atlas-hero-ritual{display:none!important}
+    body.is-ritual-skipped .hero{
+      position:relative;inset:auto;z-index:auto;
+      grid-template-columns:1.15fr .85fr;max-width:1120px;margin:0 auto;
+      padding:clamp(48px,10vh,96px) 24px 64px;min-height:min(82vh,780px);
+      background:transparent;
+    }
+    @media (max-width:860px){
+      body.is-ritual-idle .hero,
+      body.is-ritual-playing .hero{
+        min-height:100svh;min-height:100dvh;
+        padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));
+        overflow:hidden;width:100%;max-width:100vw;
+      }
+      body.is-ritual-idle .hero-visual,
+      body.is-ritual-playing .hero-visual{
+        width:min(300px,78vw);
+      }
+      body.is-ritual-idle #atlas-hero-ritual{
+        width:min(300px,86vw);padding-top:10px;gap:8px;
+      }
+      body.is-ritual-idle .ritual-orbit-copy[data-ritual="slogan-orbit"]{
+        max-width:28ch;font-size:.92rem;line-height:1.35;padding:0 4px;
+      }
+      .ritual-hint{
+        font-size:.56rem;letter-spacing:.08em;white-space:normal;text-align:center;
+        max-width:88vw;line-height:1.4;padding:0 8px;
+      }
+      .ritual-letter-a{
+        font-size:clamp(3.2rem,22vw,5.5rem);
+      }
+      .ritual-wordmark{
+        font-size:clamp(1.85rem,11vw,2.6rem);letter-spacing:.12em;
+        margin:0 0 12px;max-width:100%;overflow:hidden;
+      }
+      .ritual-slogan-final{
+        margin:0 0 16px;max-width:32ch;font-size:1.02rem;padding:0 8px;
+      }
+      .ritual-cta{
+        flex-direction:column;align-items:stretch;width:min(100%,320px);
+        gap:10px;margin:0 0 16px;padding:0 8px;box-sizing:border-box;
+      }
+      .ritual-cta .btn{
+        width:100%;min-height:48px;justify-content:center;
+      }
+      .ritual-explain{
+        max-width:36ch;font-size:.92rem;line-height:1.5;padding:0 12px;
+        box-sizing:border-box;
+      }
+      body.is-ritual-expanding .hero,
+      body.is-ritual-fullscreen .hero{
+        overflow:hidden;max-width:100vw;
+      }
+      body.is-ritual-fullscreen .hero-visual{
+        width:min(92vmin,100vw - 16px);height:min(92vmin,100vw - 16px);
+      }
+      body.is-ritual-expanding #atlas-hero-ritual,
+      body.is-ritual-fullscreen #atlas-hero-ritual,
+      body.is-ritual-wordmark #atlas-hero-ritual{
+        padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(20px + env(safe-area-inset-bottom,0px));
+        overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;
+        max-width:100vw;box-sizing:border-box;
+      }
+      body.is-ritual-wordmark #atlas-hero-ritual{
+        justify-content:flex-end;gap:0;
+        background:linear-gradient(180deg,transparent 0%,rgba(247,251,252,.72) 28%,rgba(247,251,252,.94) 100%);
+      }
+      body.is-ritual-done .hero{
+        grid-template-columns:1fr;
+        padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));
+        min-height:auto;overflow:visible;max-width:100%;
+      }
+      body.is-ritual-done .hero-visual{
+        width:min(280px,74vw);order:-1;justify-self:center;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end{
+        grid-column:1;grid-row:2;justify-self:center;align-items:center;
+        width:100%;max-width:100%;padding:8px 0 0;box-sizing:border-box;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-wordmark,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-wordmark{
+        justify-content:center;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-slogan-final,
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-explain,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-slogan-final,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-explain{
+        text-align:center;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-cta,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-cta{
+        justify-content:center;width:100%;max-width:320px;
+      }
+      body.is-ritual-skipped .hero{
+        grid-template-columns:1fr;
+        padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));
+        min-height:auto;
+      }
+    }
+
+    .section{max-width:1120px;margin:0 auto;padding:64px 24px}
+    .section + .section{border-top:1px solid rgba(200,216,222,.7)}
+    .section-kicker{
+      margin:0 0 10px;font-family:var(--mono);font-size:.68rem;font-weight:600;
+      letter-spacing:.2em;text-transform:uppercase;color:var(--teal);
+    }
+    .section h2{
+      margin:0 0 12px;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;
+      letter-spacing:-.02em;max-width:18ch;
+    }
+    .section .support{margin:0 0 32px;color:var(--muted);max-width:52ch}
+    .section-line{
+      height:2px;width:0;background:linear-gradient(90deg,var(--teal),transparent);
+      margin:0 0 24px;transition:width 1s var(--ease);
+    }
+    .section.is-in .section-line{width:min(180px,40%)}
+    .feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+    @media (max-width:800px){.feature-row{grid-template-columns:1fr}}
+    .feature{padding-top:8px;border-top:2px solid var(--teal-mid)}
+    .feature h3{margin:14px 0 8px;font-size:1.05rem}
+    .feature p{margin:0;color:var(--muted)}
+    .trust-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    @media (max-width:800px){.trust-strip{grid-template-columns:1fr 1fr}}
+    .trust-item{padding:16px;background:rgba(255,255,255,.72);border:1px solid rgba(200,216,222,.9)}
+    .trust-item .label{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+    .trust-item .value{font-weight:700;font-size:.98rem;margin-bottom:6px}
+    .trust-item .explain{margin:0;font-size:.88rem;font-weight:400;color:var(--muted);line-height:1.45}
+    .scope code{font-family:var(--mono);font-size:.86em;background:var(--teal-soft);padding:2px 6px;color:var(--teal-deep)}
+    .pragma-links{
+      display:none;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 24px;
+    }
+    body.is-dash .pragma-links.is-visible{display:flex}
+    .pragma-links a{
+      font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--teal-deep);text-decoration:none;padding:8px 12px;
+      border:1px solid rgba(47,143,138,.28);background:rgba(255,255,255,.9);
+    }
+    .pragma-links a:hover{border-color:var(--teal);background:var(--teal-soft)}
+    .cta-band{max-width:1120px;margin:0 auto;padding:24px 24px 72px}
+    .cta-band-inner{
+      padding:40px 32px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(234,243,245,.92));
+      border:1px solid rgba(47,143,138,.22);box-shadow:var(--shadow);
+      display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+    }
+    .cta-band h2{margin:0 0 8px;font-size:1.45rem}
+    .cta-band p{margin:0;color:var(--muted);max-width:42ch}
+    .footer{
+      max-width:1120px;margin:0 auto;padding:0 24px 40px;
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;
+      font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;
+    }
+    .footer .exp-chat{
+      text-transform:none;letter-spacing:.01em;font-family:var(--display);font-size:.85rem;
+      font-weight:500;opacity:.9;text-decoration:none;color:var(--teal-deep);
+      border-bottom:1px solid transparent;padding-bottom:1px;
+    }
+    .footer .exp-chat:hover{border-bottom-color:var(--teal-mid)}
+    .footer .footer-legal{display:inline-flex;align-items:center;gap:8px}
+    .footer .footer-legal a{
+      color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;
+    }
+    .footer .footer-legal a:hover{color:var(--teal-deep);border-bottom-color:var(--teal-mid)}
+    .legal-inline{
+      margin:.55rem 0 0;font-size:.88rem;color:var(--muted);line-height:1.45;max-width:48ch;
+    }
+    .legal-inline a{color:var(--teal-deep)}
+
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
+    .reveal.is-in{opacity:1;transform:none}
+    .reveal-delay-1{transition-delay:.08s}
+    .reveal-delay-2{transition-delay:.16s}
+    .reveal-delay-3{transition-delay:.24s}
+    .hero-enter .hero-brand,.hero-enter .hero h1,.hero-enter .lede,.hero-enter .hero-cta,.hero-enter .hero-visual{
+      opacity:0;transform:translateY(20px);
+    }
+    body.is-ready .hero-enter .hero-brand{animation:hero-rise .7s var(--ease) .05s forwards}
+    body.is-ready .hero-enter .hero h1{animation:hero-rise .7s var(--ease) .16s forwards}
+    body.is-ready .hero-enter .lede{animation:hero-rise .7s var(--ease) .26s forwards}
+    body.is-ready .hero-enter .hero-cta{animation:hero-rise .7s var(--ease) .36s forwards}
+    body.is-ready .hero-enter .hero-visual{animation:hero-rise .85s var(--ease) .18s forwards}
+    @keyframes hero-rise{to{opacity:1;transform:none}}
+
+
+    /* —— Vault stage (login / logout motion) —— */
+    #vault-stage{
+      position:fixed;inset:0;z-index:2800;display:none;align-items:center;justify-content:center;
+      flex-direction:column;gap:0;padding:24px;
+      background:
+        radial-gradient(800px 400px at 50% 42%,rgba(47,143,138,.1),transparent 60%),
+        linear-gradient(180deg,#f7fbfc,#e8f2f4);
+    }
+    body.is-vault-clear #vault-stage,
+    body.is-vault-center #vault-stage,
+    body.is-vault-auth #vault-stage,
+    body.is-vault-open #vault-stage,
+    body.is-vault-close #vault-stage{display:flex}
+    .vault-lockup{
+      display:flex;align-items:center;gap:18px;z-index:1;
+      transition:opacity .5s var(--ease),transform .7s var(--ease),filter .5s var(--ease);
+    }
+    .vault-lockup .vault-mark{width:88px;height:88px;flex-shrink:0}
+    .vault-word{
+      display:flex;gap:.08em;font-weight:800;font-size:clamp(1.8rem,5vw,2.8rem);
+      letter-spacing:.28em;text-transform:uppercase;color:var(--ink);
+    }
+    .vault-letter{
+      display:inline-block;transition:transform .75s var(--ease),opacity .55s var(--ease);
+    }
+    body.is-vault-auth .vault-lockup{
+      position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(1.15);
+      opacity:.14;filter:blur(.2px);pointer-events:none;
+    }
+    body.is-vault-open .vault-arc-l{transform:translate(-28px,-10px) rotate(-18deg)}
+    body.is-vault-open .vault-arc-r{transform:translate(28px,-10px) rotate(18deg)}
+    body.is-vault-open .vault-core{transform:scale(1.35);opacity:.35}
+    body.is-vault-open .vault-letter:nth-child(1){transform:translate(-42px,-18px) rotate(-8deg)}
+    body.is-vault-open .vault-letter:nth-child(2){transform:translate(-18px,22px) rotate(6deg)}
+    body.is-vault-open .vault-letter:nth-child(3){transform:translate(0,-26px)}
+    body.is-vault-open .vault-letter:nth-child(4){transform:translate(18px,20px) rotate(-5deg)}
+    body.is-vault-open .vault-letter:nth-child(5){transform:translate(44px,-14px) rotate(9deg)}
+    body.is-vault-open .vault-lockup{opacity:.2;filter:blur(1px)}
+
+    body.is-vault-close .vault-arc-l,
+    body.is-vault-close .vault-arc-r,
+    body.is-vault-close .vault-core,
+    body.is-vault-close .vault-letter{transform:none;opacity:1}
+    body.is-vault-close .vault-lockup{opacity:1;filter:none;transform:none;position:relative;left:auto;top:auto}
+
+    .vault-auth{
+      position:relative;z-index:2;width:min(440px,100%);
+      background:rgba(255,255,255,.94);border:1px solid rgba(47,143,138,.28);
+      box-shadow:var(--shadow);padding:28px 26px 22px;
+      opacity:0;transform:translateY(16px);pointer-events:none;
+      transition:opacity .55s var(--ease),transform .55s var(--ease);
+    }
+    body.is-vault-auth .vault-auth{opacity:1;transform:none;pointer-events:auto}
+    .vault-auth .scan-stamp{
+      display:inline-block;margin-bottom:10px;padding:4px 8px;border:1px solid var(--accent);
+      color:var(--accent);background:var(--accent-soft);font-family:var(--mono);font-size:.62rem;
+      letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+    }
+    .vault-auth label{
+      display:block;margin-top:12px;font-family:var(--mono);font-size:.68rem;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    }
+    .vault-auth input{
+      width:100%;margin-top:6px;padding:12px;border:1px solid var(--line);border-radius:var(--radius);
+      background:#fbfefe;color:var(--ink);font-family:var(--mono);font-size:.9rem;outline:none;
+    }
+    .vault-auth input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+    .vault-auth .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .vault-auth .actions .btn{flex:1;min-width:120px}
+    .vault-err{margin-top:12px;font-family:var(--mono);font-size:.75rem;color:var(--accent);min-height:1.2em}
+    .vault-mode-toggle{display:flex;gap:8px;margin:0 0 14px}
+    .vault-mode-toggle button{
+      flex:1;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+      padding:8px 10px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;
+      border-radius:var(--radius);
+    }
+    .vault-mode-toggle button.is-active{
+      border-color:var(--teal);color:var(--teal-deep);background:var(--teal-soft);
+    }
+    .vault-hint{margin:10px 0 0;font-size:.82rem;color:var(--ink-soft);line-height:1.45}
+    .api-banner{
+      margin:0 0 20px;padding:12px 14px;border:1px solid rgba(196,90,58,.35);
+      background:rgba(196,90,58,.08);color:var(--ink);font-size:.9rem;line-height:1.45;
+      border-radius:var(--radius-soft);
+    }
+    .api-banner[hidden]{display:none}
+    .erase-toast{
+      position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:4000;
+      max-width:min(520px,92vw);padding:14px 16px;background:var(--paper);border:1px solid var(--line);
+      box-shadow:var(--shadow);font-size:.9rem;color:var(--ink);line-height:1.45;
+    }
+    .erase-toast[hidden]{display:none}
+
+
+    .local-only{
+      margin:0 0 28px;padding:22px 20px;border:1px solid rgba(47,143,138,.28);
+      background:rgba(255,255,255,.88);
+    }
+    .local-only h2{margin:0 0 10px;font-size:1.15rem;letter-spacing:.02em}
+    .local-only p{margin:0 0 16px;color:var(--muted);max-width:52ch;line-height:1.5}
+
+    /* —— Dashboard —— */
+    #view-dash{
+      position:fixed;inset:0;z-index:2000;display:none;overflow:auto;
+      background:
+        radial-gradient(900px 480px at 50% -10%,rgba(47,143,138,.14),transparent 55%),
+        linear-gradient(180deg,#fbfefe,var(--bg-soft));
+    }
+    body.is-dash #view-dash{display:block;animation:dash-in .7s var(--ease)}
+    @keyframes dash-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+    .dash-wrap{max-width:960px;margin:0 auto;padding:36px 24px 64px}
+    .dash-top{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      margin-bottom:36px;
+    }
+    .dash-brand{display:flex;align-items:flex-start;gap:14px}
+    .dash-brand .mark{width:56px;height:56px;flex-shrink:0}
+    .dash-brand .stack{display:flex;flex-direction:column;gap:4px}
+    .dash-brand .title{
+      font-weight:800;font-size:1.35rem;letter-spacing:.22em;text-transform:uppercase;line-height:1.1;
+    }
+    .dash-brand .sub{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .session-chip{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:8px 12px 8px 8px;background:rgba(255,255,255,.9);
+      border:1px solid rgba(47,143,138,.22);border-radius:999px;
+      box-shadow:0 8px 24px rgba(42,61,69,.06);
+    }
+    .session-chip .dot{
+      width:8px;height:8px;border-radius:50%;background:var(--ok);
+      box-shadow:0 0 0 4px var(--ok-soft);flex-shrink:0;margin-left:4px;
+    }
+    .session-chip .who{font-weight:600;font-size:.9rem;color:var(--ink)}
+    .session-chip .role{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);padding:3px 8px;background:var(--teal-soft);border-radius:999px;
+    }
+    .dash-actions-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .dash-intro{margin:0 0 28px;color:var(--muted);max-width:48ch}
+
+    .pw-panel{
+      margin-top:28px;padding:18px;background:var(--paper);border:1px solid var(--line);
+      max-width:420px;box-shadow:var(--shadow);
+    }
+    .pw-panel h3{
+      margin:0 0 10px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--muted);
+    }
+    .pw-panel label{
+      display:block;margin-top:10px;font-family:var(--mono);font-size:.62rem;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    }
+    .pw-panel input{
+      width:100%;max-width:320px;margin-top:5px;padding:10px 12px;border:1px solid var(--line);
+      background:#fbfefe;font-family:var(--mono);font-size:.85rem;outline:none;
+    }
+    .pw-panel input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+    .pw-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .pw-msg{margin-top:10px;font-family:var(--mono);font-size:.72rem}
+    .pw-msg.ok{color:var(--ok)}
+    .pw-msg.err{color:var(--accent)}
+
+    /* —— Support tracking (empty until prise en charge) —— */
+    .support-tracking{
+      margin-top:40px;padding-top:28px;border-top:1px solid rgba(200,216,222,.9);
+    }
+    .support-tracking-head{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .support-tracking-head h2{
+      margin:0 0 6px;font-size:1.15rem;font-weight:700;letter-spacing:-.01em;
+    }
+    .support-tracking-head .lede{
+      margin:0;color:var(--muted);max-width:46ch;font-size:.95rem;
+    }
+    .support-tracking-meta{
+      margin:0 0 18px;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--muted);
+    }
+    .support-tracking-meta[data-state="active"]{color:var(--teal-deep)}
+    .support-tracking-meta[data-state="ok"]{color:var(--teal-deep)}
+    .support-tracking-meta[data-state="blocked"]{color:var(--accent)}
+    .support-tracking-meta[data-state="pending"]{color:var(--ink-soft)}
+    .atlas-secu-form{
+      display:grid;gap:12px;max-width:420px;margin:12px 0 8px;
+    }
+    .atlas-secu-form label{
+      display:grid;gap:6px;font-size:.92rem;color:var(--ink-soft);
+    }
+    .atlas-secu-form input{
+      min-height:44px;padding:10px 12px;border:1px solid var(--line);
+      border-radius:2px;background:var(--paper);color:var(--ink);font:inherit;
+    }
+    .atlas-secu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+    .support-block{margin-bottom:22px}
+    .support-block h3{
+      margin:0 0 8px;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--teal);
+    }
+    .support-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .support-table{
+      width:100%;border-collapse:collapse;font-size:.9rem;background:rgba(255,255,255,.72);
+    }
+    .support-table th,.support-table td{
+      text-align:left;padding:10px 12px;border-bottom:1px solid rgba(200,216,222,.85);
+      vertical-align:top;
+    }
+    .support-table th{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--muted);font-weight:600;background:rgba(244,248,250,.9);
+    }
+    .support-table td.mono{font-family:var(--mono);font-size:.82rem;letter-spacing:.02em}
+    .support-table .empty-row td{
+      color:var(--muted);font-style:italic;padding:14px 12px;
+    }
+    .support-pct{
+      display:inline-block;min-width:3.2em;font-family:var(--mono);font-size:.82rem;
+      color:var(--teal-deep);
+    }
+
+    /* —— Mobile: readable phone layout, no horizontal scroll, ≥44px targets —— */
+    @media (max-width:640px){
+      .pragma-links{display:none!important}
+      .nav{
+        padding:calc(12px + env(safe-area-inset-top,0px)) 16px 0;gap:12px;align-items:flex-start;
+      }
+      .brand-lockup .name{letter-spacing:.12em;font-size:.68rem;max-width:11ch;line-height:1.2}
+      .nav-actions{gap:8px;justify-content:flex-end}
+      .linkish{
+        min-height:44px;min-width:44px;padding:12px 14px;
+        display:inline-flex;align-items:center;
+      }
+      .btn,a.btn,button.btn{
+        min-height:44px;padding:12px 18px;
+      }
+      .hero{
+        padding:20px 16px 28px;gap:18px;min-height:auto;
+        padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
+      }
+      .hero-brand{
+        font-size:clamp(1.85rem,11vw,2.55rem);letter-spacing:.1em;word-break:keep-all;
+        margin-bottom:10px;
+      }
+      .hero h1{font-size:1.12rem;max-width:none;margin-bottom:10px}
+      .hero .lede{font-size:.98rem;max-width:none;margin-bottom:20px;line-height:1.5}
+      .hero-cta{flex-direction:column;align-items:stretch;gap:10px}
+      .hero-cta .btn{width:100%}
+      .hero-visual{width:min(280px,74vw);aspect-ratio:1;order:-1;opacity:.95}
+      .hero-drag-hint{font-size:.55rem;letter-spacing:.08em}
+      .section{padding:40px 16px}
+      /* Keep first fold focused: download/login primary; defer long trust copy */
+      .below-fold .section:first-child{padding-top:28px}
+      .cta-band{padding:12px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+      .footer{padding:0 16px calc(28px + env(safe-area-inset-bottom,0px))}
+      .section h2{max-width:none}
+      .section .support{max-width:none}
+      .trust-strip{grid-template-columns:1fr}
+      .cta-band-inner{padding:28px 18px}
+      .footer{
+        flex-direction:column;align-items:flex-start;gap:10px;
+      }
+      .boot-inner{flex-direction:column;gap:12px}
+      .boot-word{letter-spacing:.16em;font-size:clamp(1.35rem,7vw,1.8rem)}
+
+
+      #vault-stage{
+        padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+        overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;
+      }
+      .vault-lockup{flex-direction:column;gap:10px;max-width:100%}
+      .vault-lockup .vault-mark{width:72px;height:72px}
+      .vault-word{
+        letter-spacing:.14em;font-size:clamp(1.45rem,7.5vw,1.9rem);
+        justify-content:center;max-width:100%;
+      }
+      body.is-vault-auth .vault-lockup{
+        top:28%;transform:translate(-50%,-50%) scale(1.05);
+      }
+      body.is-vault-open .vault-arc-l{transform:translate(-14px,-6px) rotate(-12deg)}
+      body.is-vault-open .vault-arc-r{transform:translate(14px,-6px) rotate(12deg)}
+      body.is-vault-open .vault-letter:nth-child(1){transform:translate(-18px,-10px) rotate(-6deg)}
+      body.is-vault-open .vault-letter:nth-child(2){transform:translate(-8px,12px) rotate(4deg)}
+      body.is-vault-open .vault-letter:nth-child(3){transform:translate(0,-14px)}
+      body.is-vault-open .vault-letter:nth-child(4){transform:translate(8px,12px) rotate(-4deg)}
+      body.is-vault-open .vault-letter:nth-child(5){transform:translate(18px,-8px) rotate(6deg)}
+      .vault-auth{width:100%;padding:22px 18px 18px;margin-top:8px}
+      .vault-auth input{
+        font-size:16px;min-height:44px;padding:12px 14px;
+      }
+      .vault-auth .actions{flex-direction:column}
+      .vault-auth .actions .btn{min-width:0;width:100%}
+
+      .dash-wrap{
+        padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px));
+        display:flex;flex-direction:column;
+      }
+      .dash-intro{order:1;font-size:.95rem}
+      #local-only{order:2}
+      #support-tracking{order:3;margin-top:8px}
+      #pw-panel{order:5}
+      .dash-top{flex-direction:column;align-items:stretch;order:0;margin-bottom:20px}
+      .dash-brand .title{letter-spacing:.1em;font-size:1.05rem}
+      .dash-brand .sub{letter-spacing:.06em;line-height:1.4;font-size:.72rem}
+      .dash-actions-bar{width:100%}
+      .session-chip{
+        width:100%;min-height:44px;border-radius:12px;flex-wrap:wrap;
+        box-sizing:border-box;
+      }
+      .dash-actions-bar .btn,.dash-actions-bar .linkish{flex:1 1 auto;justify-content:center}
+      .pragma-links a{
+        min-height:44px;display:inline-flex;align-items:center;padding:12px 14px;
+      }
+      .support-tracking{margin-top:32px;padding-top:22px}
+      .support-tracking-head{flex-direction:column;align-items:stretch}
+      .support-tracking-head .btn{width:100%;min-height:44px;justify-content:center}
+      .support-table th,.support-table td{padding:10px 8px;font-size:.85rem}
+      .pw-panel{max-width:none}
+      .pw-panel input{
+        max-width:none;width:100%;font-size:16px;min-height:44px;padding:12px 14px;
+      }
+      .pw-actions .btn,.pw-actions .linkish{min-height:44px}
+    }
+
+    @media (max-width:380px){
+      .nav-actions .btn.secondary{padding:12px 12px;font-size:.92rem}
+      .hero-brand{letter-spacing:.08em}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation:none!important;transition:none!important}
+      .reveal,.boot-mark,.boot-word,.hero-enter .hero-brand,.hero-enter .hero h1,
+      .hero-enter .lede,.hero-enter .hero-cta,.hero-enter .hero-visual,.site{opacity:1;transform:none}
+      .boot-lockup,.boot-lockup.is-done{opacity:0;visibility:hidden}
+      .section-line{width:min(180px,40%)}
+      .below-fold{filter:none;opacity:1;transform:none;pointer-events:auto}
+      .ritual-hint{animation:none!important;opacity:.85}
+      body.is-ritual-done #view-marketing .nav,
+      body.is-ritual-done #below-fold{opacity:1;visibility:visible;pointer-events:auto}
+    }
+  </style>
+</head>
+<body class="is-booting">
+  <div id="boot-lockup" class="boot-lockup" aria-hidden="true">
+    <div class="boot-inner" role="img" aria-label="ATLAS">
+      <div class="boot-mark" id="boot-mark"></div>
+      <span class="boot-word">ATLAS</span>
+    </div>
+  </div>
+
+  <!-- Marketing (anonymous) -->
+  <div id="view-marketing" class="site">
+    <header class="nav reveal">
+      <a class="brand-lockup" href="/" aria-label="ATLAS">
+        <span class="mark" data-mark></span>
+        <span class="name">ATLAS</span>
+      </a>
+      <div class="nav-actions">
+        <button type="button" class="linkish js-register">Créer un compte</button>
+        <button type="button" class="linkish js-connect">Connexion</button>
+        <a class="btn secondary" href="/Atlas-Setup.exe">Télécharger</a>
+      </div>
+    </header>
+
+    <section class="hero hero-enter" id="atlas-hero">
+      <div id="hero-copy">
+        <p class="hero-brand">ATLAS</p>
+        <h1>Pentest autorisé, cible choisie chez vous.</h1>
+        <p class="lede">
+          Assistant de pentest pour équipes accréditées. Vous choisissez l’URL à scanner
+          dans Atlas Local — vous êtes responsable de l’autorisation. Résultats et historique
+          restent sur votre machine jusqu’à une demande de prise en charge.
+        </p>
+        <div class="hero-cta">
+          <a class="btn" href="/Atlas-Setup.exe">Télécharger la dernière version</a>
+          <button type="button" class="btn ghost js-register">Créer un compte</button>
+          <button type="button" class="btn ghost js-connect">Se connecter</button>
+        </div>
+      </div>
+      <div id="atlas-hero-ritual" hidden>
+        <p class="ritual-hint" data-ritual="hint">Bienvenue — faites tourner le globe</p>
+        <p class="ritual-orbit-copy" data-ritual="brand-orbit" aria-hidden="true">ATLAS</p>
+        <p class="ritual-orbit-copy" data-ritual="slogan-orbit" aria-hidden="true">Pentest autorisé, cible choisie chez vous.</p>
+        <div class="ritual-letter-a" data-ritual="letter-a" aria-hidden="true">A</div>
+        <div class="ritual-wordmark" data-ritual="wordmark" aria-label="ATLAS" hidden>
+          <span data-ritual-letter="A0">A</span><span data-ritual-letter="T">T</span><span data-ritual-letter="L">L</span><span data-ritual-letter="A1">A</span><span data-ritual-letter="S">S</span>
+        </div>
+        <p class="ritual-slogan-final" data-ritual="slogan-final" hidden>Pentest autorisé, cible choisie chez vous.</p>
+        <div class="ritual-cta" data-ritual="cta" hidden>
+          <button type="button" class="btn js-connect">Connexion</button>
+          <button type="button" class="btn secondary js-register">Créer un compte</button>
+        </div>
+        <div class="ritual-explain" data-ritual="explain" hidden>
+          <p>ATLAS est un assistant de pentest pour équipes accréditées. Vous choisissez l’URL à scanner dans Atlas Local — vous êtes responsable de l’autorisation.</p>
+          <p>Résultats et historique restent sur votre machine jusqu’à une demande de prise en charge. SECU est l’abonnement qui couvre résolution et support.</p>
+        </div>
+      </div>
+      <div class="hero-visual" id="hero-visual" role="img" aria-label="ATLAS — globe terrestre interactif">
+        <div class="hero-orb" aria-hidden="true"></div>
+        <div id="atlas-hero-mark"></div>
+      </div>
+    </section>
+
+    <div class="below-fold" id="below-fold">
+      <section class="section" data-reveal id="capacites">
+        <div class="section-line"></div>
+        <p class="section-kicker reveal">Produit</p>
+        <h2 class="reveal reveal-delay-1">Local d’abord, responsabilité côté client.</h2>
+        <p class="support reveal reveal-delay-2">Vous choisissez la cible dans Atlas Local. Atlas SECU n’impose pas une liste publique de domaines : l’opérateur atteste que le scan est autorisé.</p>
+        <div class="feature-row">
+          <article class="feature reveal reveal-delay-1"><h3>Cible locale</h3><p>L’URL à scanner est saisie sur votre machine. Rien n’est imposé par le site public.</p></article>
+          <article class="feature reveal reveal-delay-2"><h3>Responsabilité client</h3><p>Avant un scan réel, vous confirmez que vous êtes autorisé à cibler cette URL. Hors autorisation = hors jeu.</p></article>
+          <article class="feature reveal reveal-delay-3"><h3>Prise en charge</h3><p>Résultats locaux d’abord ; envoi support uniquement pour les problèmes que vous choisissez de faire traiter.</p></article>
+        </div>
+      </section>
+
+      <section class="section" data-reveal>
+        <div class="section-line"></div>
+        <p class="section-kicker reveal">Confiance</p>
+        <h2 class="reveal reveal-delay-1">Garanties visibles avant même de se connecter.</h2>
+        <p class="support reveal reveal-delay-2">Le téléchargement est public. L’usage reste un pentest autorisé — la cible et l’attestation sont côté client.</p>
+        <div class="trust-strip">
+          <div class="trust-item reveal reveal-delay-1">
+            <div class="label">Download</div>
+            <div class="value">Téléchargement public</div>
+            <p class="explain">Tout le monde peut télécharger <code style="font-family:var(--mono);font-size:.9em">Atlas-Setup.exe</code> sans compte ni connexion.</p>
+          </div>
+          <div class="trust-item reveal reveal-delay-2">
+            <div class="label">Target</div>
+            <div class="value">URL choisie en local</div>
+            <p class="explain">Vous saisissez la cible dans Atlas Local. Le site public ne publie pas de liste de domaines à scanner.</p>
+          </div>
+          <div class="trust-item reveal reveal-delay-3">
+            <div class="label">Attestation</div>
+            <div class="value">Responsabilité client</div>
+            <p class="explain">Vous confirmez être autorisé à scanner l’URL choisie. Atlas SECU n’est pas un scanner anonyme « free-for-all ».</p>
+          </div>
+          <div class="trust-item reveal reveal-delay-4">
+            <div class="label">Local-first</div>
+            <div class="value">Données chez vous</div>
+            <p class="explain">Historique et résultats restent locaux jusqu’à une demande explicite de prise en charge.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="cta-band" data-reveal>
+        <div class="cta-band-inner reveal">
+          <div>
+            <h2>Prêt à déployer Atlas SECU Local</h2>
+            <p>Installez le setup, choisissez votre cible en local, attestez l’autorisation, demandez une prise en charge seulement si besoin.</p>
+          </div>
+          <div class="hero-cta">
+            <a class="btn" href="/Atlas-Setup.exe">Télécharger</a>
+            <button type="button" class="btn ghost js-register">Créer un compte</button>
+            <button type="button" class="btn ghost js-connect">Connexion</button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <span>ATLAS · atlas-secu.com</span>
+        <span class="footer-legal">
+          <a href="/cgu.html">CGU</a>
+          <span aria-hidden="true">·</span>
+          <a href="/confidentialite.html">Confidentialité</a>
+        </span>
+        <span>Pentest autorisé</span>
+        <a class="exp-chat" href="/atlas-secure/experimental/">Accéder à la session expérimentale</a>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Vault stage: clear → recenter → credentials (ghost logo) → open / close -->
+  <div id="vault-stage" aria-live="polite">
+    <div class="vault-lockup" id="vault-lockup">
+      <div class="vault-mark" data-mark></div>
+      <div class="vault-word" aria-label="ATLAS">
+        <span class="vault-letter">A</span>
+        <span class="vault-letter">T</span>
+        <span class="vault-letter">L</span>
+        <span class="vault-letter">A</span>
+        <span class="vault-letter">S</span>
+      </div>
+    </div>
+    <div class="vault-auth" id="vault-auth" hidden>
+      <span class="scan-stamp">Compte Atlas SECU</span>
+      <p style="margin:0 0 4px;font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em">
+        Self-serve public · inscription ou connexion
+      </p>
+      <div class="vault-mode-toggle" role="tablist" aria-label="Mode compte">
+        <button type="button" id="vault-mode-login" class="is-active" role="tab" aria-selected="true">Connexion</button>
+        <button type="button" id="vault-mode-register" role="tab" aria-selected="false">Créer un compte</button>
+      </div>
+      <form id="login-form" autocomplete="on">
+        <label for="login-email">Email</label>
+        <input id="login-email" name="email" type="email" required autocomplete="username" placeholder="vous@entreprise.fr">
+        <label for="login-password">Mot de passe</label>
+        <input id="login-password" name="password" type="password" required minlength="8" autocomplete="current-password">
+        <div class="actions">
+          <button type="submit" class="btn" id="vault-submit">Se connecter</button>
+          <button type="button" class="btn ghost" id="login-cancel">Annuler</button>
+        </div>
+        <p id="login-error" class="vault-err" hidden></p>
+        <p id="vault-api-hint" class="vault-hint" hidden></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="erase-toast" class="erase-toast" hidden role="status" aria-live="polite"></div>
+
+  <!-- Dashboard -->
+  <div id="view-dash">
+    <div class="dash-wrap">
+      <div class="dash-top">
+        <div class="dash-brand">
+          <span class="mark" data-mark></span>
+          <div class="stack">
+            <div class="title">Atlas SECU</div>
+            <div class="sub">Tableau de bord · session Atlas SECU</div>
+          </div>
+        </div>
+        <div class="dash-actions-bar">
+          <div class="session-chip" role="status" aria-live="polite">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="who" id="dash-who">—</span>
+            <span class="role" id="dash-role">—</span>
+          </div>
+          <button type="button" class="btn danger" id="erase-account-btn">Supprimer mon compte…</button>
+          <button type="button" class="btn ghost" id="logout-btn">Déconnexion</button>
+        </div>
+      </div>
+
+      <div id="api-unavailable-banner" class="api-banner" hidden role="status"></div>
+
+      <p class="dash-intro">
+        Session active. Aucune action de scan n’est lancée depuis atlas-secu.com —
+        recon / scan / vuln / audit existent uniquement dans Atlas Local sur votre machine.
+        Vous choisissez la cible URL en local et restez responsable de l’autorisation.
+        Suppression de compte&nbsp;:
+        <a href="/confidentialite.html#compte" target="_blank" rel="noopener">Politique de confidentialité</a>
+        ·
+        <a href="/cgu.html" target="_blank" rel="noopener">CGU</a>.
+      </p>
+
+      <nav id="pragma-product-links" class="pragma-links" hidden aria-label="Produits Pragma"></nav>
+
+      <section class="local-only" id="local-only" aria-labelledby="local-only-title">
+        <h2 id="local-only-title">Actions = Atlas Local uniquement</h2>
+        <p>
+          Pour des raisons de responsabilité, le site public ne propose aucun bouton
+          opérationnel (pas de Recon / Scan / Vuln / Audit, pas de lancement Policy Guard).
+          Téléchargez le client, lancez les actions chez vous.
+        </p>
+        <div class="hero-cta">
+          <a class="btn" href="/Atlas-Setup.exe">Télécharger Atlas-Setup.exe</a>
+        </div>
+      </section>
+
+      <section
+        id="atlas-secu-commercial"
+        class="support-tracking atlas-secu-commercial"
+        aria-labelledby="atlas-secu-commercial-title"
+      >
+        <div class="support-tracking-head">
+          <div>
+            <h2 id="atlas-secu-commercial-title">Atlas SECU</h2>
+            <p class="lede" id="atlas-secu-price-label">
+              En beta test avec …… <strong>0 €</strong>
+            </p>
+            <p class="lede">
+              Créez un compte, activez avec le code promo, puis demandez une prise en
+              charge. Le scan local reste gratuit.
+            </p>
+          </div>
+        </div>
+        <form id="atlas-secu-account-form" class="atlas-secu-form">
+          <label>
+            Email
+            <input type="email" id="atlas-secu-email" required autocomplete="username" />
+          </label>
+          <label>
+            Mot de passe
+            <input
+              type="password"
+              id="atlas-secu-password"
+              required
+              minlength="8"
+              autocomplete="new-password"
+            />
+          </label>
+          <label>
+            Code promo
+            <input
+              type="text"
+              id="atlas-secu-promo"
+              value="YOOO2026"
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </label>
+          <div class="atlas-secu-actions">
+            <button type="submit" class="btn" id="atlas-secu-register-btn">
+              Créer un compte
+            </button>
+            <button type="button" class="btn ghost" id="atlas-secu-login-btn">
+              Connexion
+            </button>
+            <button type="button" class="btn" id="atlas-secu-activate-btn">
+              Activer Atlas SECU
+            </button>
+          </div>
+          <p class="legal-inline">
+            En créant un compte, vous acceptez les
+            <a href="/cgu.html" target="_blank" rel="noopener">CGU</a>
+            et la
+            <a href="/confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a>
+            (brouillon produit — à valider conseil).
+          </p>
+        </form>
+        <p class="support-tracking-meta" id="atlas-secu-commercial-meta" data-state="idle">
+          État · compte puis abonnement requis avant prise en charge
+        </p>
+      </section>
+
+      <section id="support-tracking" class="support-tracking" aria-labelledby="support-tracking-title">
+        <div class="support-tracking-head">
+          <div>
+            <h2 id="support-tracking-title">Suivi support</h2>
+            <p class="lede">
+              Tickets, vulnérabilités signalées et progression — vides tant qu’aucune
+              prise en charge n’est demandée. Compte + Atlas SECU actifs requis pour
+              l’envoi serveur.
+            </p>
+          </div>
+          <button type="button" class="btn" id="support-handoff-btn">
+            Demander une prise en charge
+          </button>
+          <button type="button" class="btn ghost" id="support-wipe-btn" hidden>
+            Effacer le suivi local…
+          </button>
+        </div>
+        <p class="legal-inline">
+          PEC = opt-in sur éléments sélectionnés.
+          <a href="/confidentialite.html#pec" target="_blank" rel="noopener">Confidentialité — PEC</a>
+          ·
+          <a href="/cgu.html" target="_blank" rel="noopener">CGU</a>
+        </p>
+        <p class="support-tracking-meta" id="support-tracking-meta" data-state="idle">
+          État · aucune prise en charge
+        </p>
+        <p class="support-erase-msg" id="support-erase-msg" hidden role="status"></p>
+
+        <div class="support-block">
+          <h3>Tickets</h3>
+          <div class="support-table-wrap">
+            <table class="support-table" id="support-table-tickets">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Sujet</th>
+                  <th scope="col">Statut</th>
+                  <th scope="col">Maj</th>
+                </tr>
+              </thead>
+              <tbody id="support-tbody-tickets"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="support-block">
+          <h3>Vulnérabilités signalées</h3>
+          <div class="support-table-wrap">
+            <table class="support-table" id="support-table-vulns">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Titre</th>
+                  <th scope="col">Risque</th>
+                  <th scope="col">Ticket</th>
+                  <th scope="col">Statut</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="support-tbody-vulns"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="support-block">
+          <h3>Progression</h3>
+          <div class="support-table-wrap">
+            <table class="support-table" id="support-table-progress">
+              <thead>
+                <tr>
+                  <th scope="col">Ticket</th>
+                  <th scope="col">Étape</th>
+                  <th scope="col">Avancement</th>
+                  <th scope="col">Note</th>
+                  <th scope="col">Maj</th>
+                </tr>
+              </thead>
+              <tbody id="support-tbody-progress"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="/assets/atlas-hero-ritual.js?v=atlas-hero-ritual-mobile-once-2026-11-20"></script>
+  <!-- Optional runtime config (ops). Example: config.runtime.example.js — never commit secrets. -->
+  <script src="/config.runtime.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/atlasSecuCommercial.js"></script>
+  <script src="/supportTracking.js"></script>
+  <script>
+    (function () {
+      /* Pre-v3 abstract triangle mark — vault-piece groups keep login/logout motion */
+      var MARK_SVG =
+        '<svg class="mark-svg" viewBox="0 0 120 120" aria-hidden="true">' +
+        '<g class="vault-piece vault-arc-l">' +
+        '<path class="frame" d="M60 14 L102 98 H18 Z"/>' +
+        '</g>' +
+        '<g class="vault-piece vault-arc-r">' +
+        '<ellipse class="orbit" cx="60" cy="62" rx="34" ry="22"/>' +
+        '<ellipse class="orbit alt" cx="60" cy="62" rx="22" ry="34"/>' +
+        '</g>' +
+        '<g class="vault-piece vault-core">' +
+        '<path class="inner" d="M60 48 L84 90 H36 Z"/>' +
+        '<path class="link" d="M42 58 L78 58 L60 88 Z"/>' +
+        '<circle class="node n1" cx="42" cy="58" r="4.2"/>' +
+        '<circle class="node n2" cx="78" cy="58" r="4.2"/>' +
+        '<circle class="node n3" cx="60" cy="88" r="4.2"/>' +
+        '</g>' +
+        '</svg>';
+
+      function injectMarks() {
+        document.querySelectorAll('[data-mark]').forEach(function (el) {
+          el.innerHTML = MARK_SVG;
+        });
+        var boot = document.getElementById('boot-mark');
+        if (boot) boot.innerHTML = MARK_SVG;
+      }
+      injectMarks();
+
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var bootEl = document.getElementById('boot-lockup');
+      var vaultAuth = document.getElementById('vault-auth');
+      var loginForm = document.getElementById('login-form');
+      var loginErr = document.getElementById('login-error');
+      var vaultApiHint = document.getElementById('vault-api-hint');
+      var vaultSubmit = document.getElementById('vault-submit');
+      var vaultModeLogin = document.getElementById('vault-mode-login');
+      var vaultModeRegister = document.getElementById('vault-mode-register');
+      var dashWho = document.getElementById('dash-who');
+      var eraseToast = document.getElementById('erase-toast');
+      var vaultMode = 'login'; /* login | register */
+      var vaultTimer = null;
+      var revealIO = null;
+      var wasAwayFromTop = false;
+      var replayArmed = false;
+      var TOP_EPS = 8;
+      var FOLD_EPS = 72; /* below-fold blur only — no public action bar */
+
+      function setVaultMode(mode) {
+        vaultMode = mode === 'register' ? 'register' : 'login';
+        if (vaultModeLogin) {
+          vaultModeLogin.classList.toggle('is-active', vaultMode === 'login');
+          vaultModeLogin.setAttribute('aria-selected', vaultMode === 'login' ? 'true' : 'false');
+        }
+        if (vaultModeRegister) {
+          vaultModeRegister.classList.toggle('is-active', vaultMode === 'register');
+          vaultModeRegister.setAttribute(
+            'aria-selected',
+            vaultMode === 'register' ? 'true' : 'false'
+          );
+        }
+        if (vaultSubmit) {
+          vaultSubmit.textContent =
+            vaultMode === 'register' ? 'Créer un compte' : 'Se connecter';
+        }
+        var pw = document.getElementById('login-password');
+        if (pw) {
+          pw.autocomplete =
+            vaultMode === 'register' ? 'new-password' : 'current-password';
+        }
+        syncVaultApiHint();
+      }
+
+      function syncVaultApiHint() {
+        if (!vaultApiHint) return;
+        if (AtlasAuth.isApiConfigured && AtlasAuth.isApiConfigured()) {
+          vaultApiHint.hidden = true;
+          vaultApiHint.textContent = '';
+          if (vaultSubmit) vaultSubmit.disabled = false;
+          return;
+        }
+        vaultApiHint.hidden = false;
+        vaultApiHint.textContent =
+          (AtlasAuth.unavailableMessage && AtlasAuth.unavailableMessage()) ||
+          AtlasAuth.UNAVAILABLE_FR ||
+          '';
+        if (vaultSubmit) vaultSubmit.disabled = true;
+      }
+
+      function syncApiUnavailableBanner() {
+        var el = document.getElementById('api-unavailable-banner');
+        if (!el) return;
+        if (AtlasAuth.isApiConfigured && AtlasAuth.isApiConfigured()) {
+          el.hidden = true;
+          el.textContent = '';
+          return;
+        }
+        el.hidden = false;
+        el.textContent =
+          (AtlasAuth.unavailableMessage && AtlasAuth.unavailableMessage()) ||
+          AtlasAuth.UNAVAILABLE_FR ||
+          '';
+      }
+
+      function showEraseToast(text) {
+        if (!eraseToast || !text) return;
+        eraseToast.hidden = false;
+        eraseToast.textContent = text;
+        setTimeout(function () {
+          eraseToast.hidden = true;
+        }, 8000);
+      }
+
+      function clearTimers() {
+        if (vaultTimer) { clearTimeout(vaultTimer); vaultTimer = null; }
+      }
+
+      function clearBodyModes() {
+        document.body.classList.remove(
+          'is-vault-clear', 'is-vault-center', 'is-vault-auth',
+          'is-vault-open', 'is-vault-close', 'is-dash'
+        );
+      }
+
+      /* Public site: no operational RoE action bar / Scanner deep-links. */
+      function syncCapBar() { /* no-op retained for call sites */ }
+
+      function syncPragmaProductLinks(session) {
+        var nav = document.getElementById('pragma-product-links');
+        if (!nav) return;
+        var allow = AtlasAuth.canSeePragmaProductLinks(session);
+        nav.innerHTML = '';
+        if (!allow) {
+          nav.hidden = true;
+          nav.classList.remove('is-visible');
+          return;
+        }
+        var items = [
+          { href: 'https://pragma-serve.com', label: 'PragmaServe' },
+          { href: 'https://pragma-cloud.com', label: 'PragmaCloud' },
+          { href: 'https://pragma.mc', label: 'PragmaUC' }
+        ];
+        items.forEach(function (item) {
+          var a = document.createElement('a');
+          a.href = item.href;
+          a.rel = 'noopener noreferrer';
+          a.target = '_blank';
+          a.textContent = item.label;
+          nav.appendChild(a);
+        });
+        nav.hidden = false;
+        nav.classList.add('is-visible');
+      }
+
+      function disconnectReveals() {
+        if (revealIO) {
+          revealIO.disconnect();
+          revealIO = null;
+        }
+      }
+
+      function initReveals() {
+        disconnectReveals();
+        var nodes = document.querySelectorAll('.reveal, [data-reveal]');
+        nodes.forEach(function (el) { el.classList.remove('is-in'); });
+        if (reduceMotion || !('IntersectionObserver' in window)) {
+          nodes.forEach(function (el) { el.classList.add('is-in'); });
+          return;
+        }
+        revealIO = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            entry.target.querySelectorAll('.reveal').forEach(function (k) { k.classList.add('is-in'); });
+            revealIO.unobserve(entry.target);
+          });
+        }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
+        nodes.forEach(function (el) { revealIO.observe(el); });
+      }
+
+      function finishBoot() {
+        document.body.classList.remove('is-booting');
+        document.body.classList.add('is-ready');
+        if (bootEl) bootEl.classList.add('is-done');
+      }
+
+      function runBootIntro(then) {
+        document.body.classList.remove('is-ready', 'is-past-fold');
+        document.body.classList.add('is-booting');
+        if (bootEl) bootEl.classList.remove('is-done');
+        /* Reset hero entrance animations */
+        var heroBits = document.querySelectorAll(
+          '.hero-enter .hero-brand, .hero-enter .hero h1, .hero-enter .lede, .hero-enter .hero-cta, .hero-enter .hero-visual'
+        );
+        heroBits.forEach(function (el) {
+          el.style.animation = 'none';
+          void el.offsetWidth;
+          el.style.animation = '';
+        });
+        initReveals();
+        if (reduceMotion) {
+          finishBoot();
+          document.body.classList.add('is-past-fold');
+          if (then) then();
+          return;
+        }
+        setTimeout(function () {
+          finishBoot();
+          if (then) then();
+        }, 1400);
+      }
+
+      function updateFoldBlur() {
+        if (document.body.classList.contains('is-dash') ||
+            document.body.classList.contains('is-vault-clear') ||
+            document.body.classList.contains('is-vault-center') ||
+            document.body.classList.contains('is-vault-auth') ||
+            document.body.classList.contains('is-vault-open') ||
+            document.body.classList.contains('is-vault-close')) {
+          return;
+        }
+        if (window.scrollY > FOLD_EPS) document.body.classList.add('is-past-fold');
+        else document.body.classList.remove('is-past-fold');
+      }
+
+      /* Every return to top → full first-visit replay (blur + complete intro) */
+      function maybeReplayArrival() {
+        if (AtlasAuth.getSession()) return;
+        if (document.body.classList.contains('is-vault-clear') ||
+            document.body.classList.contains('is-vault-center') ||
+            document.body.classList.contains('is-vault-auth') ||
+            document.body.classList.contains('is-vault-open') ||
+            document.body.classList.contains('is-vault-close') ||
+            document.body.classList.contains('is-dash')) return;
+
+        var atTop = window.scrollY <= TOP_EPS;
+        if (!atTop) {
+          wasAwayFromTop = true;
+          replayArmed = true;
+          updateFoldBlur();
+          syncCapBar();
+          return;
+        }
+        updateFoldBlur();
+        syncCapBar();
+        if (!wasAwayFromTop || !replayArmed) return;
+        wasAwayFromTop = false;
+        replayArmed = false;
+        runBootIntro(function () {
+          updateFoldBlur();
+          syncCapBar();
+        });
+      }
+
+      var scrollTick = null;
+      window.addEventListener('resize', function () { syncCapBar(); }, { passive: true });
+      window.addEventListener('scroll', function () {
+        if (scrollTick) return;
+        scrollTick = requestAnimationFrame(function () {
+          scrollTick = null;
+          maybeReplayArrival();
+        });
+      }, { passive: true });
+
+      function formatSupportDate(iso) {
+        if (!iso) return '—';
+        try {
+          var d = new Date(iso);
+          if (isNaN(d.getTime())) return '—';
+          return d.toLocaleString('fr-FR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
+        } catch (e) {
+          return '—';
+        }
+      }
+
+      function setSupportEmpty(tbody, cols, message) {
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        var tr = document.createElement('tr');
+        tr.className = 'empty-row';
+        var td = document.createElement('td');
+        td.colSpan = cols;
+        td.textContent = message;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      function paintSupportTracking(state) {
+        var meta = document.getElementById('support-tracking-meta');
+        var btn = document.getElementById('support-handoff-btn');
+        var tTickets = document.getElementById('support-tbody-tickets');
+        var tVulns = document.getElementById('support-tbody-vulns');
+        var tProgress = document.getElementById('support-tbody-progress');
+        var emptyMsg = 'Aucune entrée — demandez une prise en charge.';
+
+        if (!state || !state.handoffRequested) {
+          if (meta) {
+            meta.textContent = 'État · aucune prise en charge';
+            meta.setAttribute('data-state', 'idle');
+          }
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Demander une prise en charge';
+          }
+          setSupportEmpty(tTickets, 4, emptyMsg);
+          setSupportEmpty(tVulns, 6, emptyMsg);
+          setSupportEmpty(tProgress, 5, emptyMsg);
+          var wipeIdle = document.getElementById('support-wipe-btn');
+          if (wipeIdle) wipeIdle.hidden = true;
+          return;
+        }
+
+        if (meta) {
+          var sid = state.supportSessionId
+            ? ' · sync ' + String(state.supportSessionId).slice(0, 8)
+            : '';
+          meta.textContent =
+            'État · prise en charge · ' +
+            (state.mode || 'local') +
+            sid +
+            (state.requestedAt ? ' · ' + formatSupportDate(state.requestedAt) : '');
+          meta.setAttribute('data-state', 'active');
+        }
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Prise en charge demandée';
+        }
+        var wipeBtn = document.getElementById('support-wipe-btn');
+        if (wipeBtn) wipeBtn.hidden = false;
+
+        /* Tickets — IDs / sujets / statuts only (no session PII) */
+        if (tTickets) {
+          tTickets.innerHTML = '';
+          if (!state.tickets.length) {
+            setSupportEmpty(tTickets, 4, 'Aucun ticket.');
+          } else {
+            state.tickets.forEach(function (t) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td class="mono"></td><td></td><td></td><td class="mono"></td>';
+              tr.cells[0].textContent = t.id || '—';
+              tr.cells[1].textContent = t.subject || '—';
+              tr.cells[2].textContent = t.status || '—';
+              tr.cells[3].textContent = formatSupportDate(t.updatedAt);
+              tTickets.appendChild(tr);
+            });
+          }
+        }
+
+        if (tVulns) {
+          tVulns.innerHTML = '';
+          if (!state.vulns.length) {
+            setSupportEmpty(tVulns, 6, 'Aucune vulnérabilité signalée.');
+          } else {
+            state.vulns.forEach(function (v) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td class="mono"></td><td></td><td></td><td class="mono"></td><td></td><td></td>';
+              tr.cells[0].textContent = v.id || '—';
+              tr.cells[1].textContent = v.title || '—';
+              tr.cells[2].textContent = v.risk || '—';
+              tr.cells[3].textContent = v.ticketId || '—';
+              tr.cells[4].textContent = v.status || '—';
+              var del = document.createElement('button');
+              del.type = 'button';
+              del.className = 'btn danger';
+              del.textContent = 'Supprimer…';
+              del.setAttribute(
+                'data-erase-vuln',
+                v.fingerprint || v.id || ''
+              );
+              del.setAttribute('aria-label', 'Supprimer ' + (v.id || 'ligne'));
+              tr.cells[5].appendChild(del);
+              tVulns.appendChild(tr);
+            });
+          }
+        }
+
+        if (tProgress) {
+          tProgress.innerHTML = '';
+          if (!state.progress.length) {
+            setSupportEmpty(tProgress, 5, 'Aucune progression.');
+          } else {
+            state.progress.forEach(function (p) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td class="mono"></td><td></td><td></td><td></td><td class="mono"></td>';
+              tr.cells[0].textContent = p.ticketId || '—';
+              tr.cells[1].textContent = p.label || '—';
+              var pct = typeof p.pct === 'number' ? p.pct : 0;
+              tr.cells[2].innerHTML = '<span class="support-pct"></span>';
+              tr.cells[2].querySelector('.support-pct').textContent = pct + ' %';
+              tr.cells[3].textContent = p.note || '—';
+              tr.cells[4].textContent = formatSupportDate(p.updatedAt);
+              tProgress.appendChild(tr);
+            });
+          }
+        }
+      }
+
+      function renderSupportTracking() {
+        if (!window.AtlasSupportTracking) {
+          var tTickets = document.getElementById('support-tbody-tickets');
+          var tVulns = document.getElementById('support-tbody-vulns');
+          var tProgress = document.getElementById('support-tbody-progress');
+          setSupportEmpty(tTickets, 4, 'Module suivi indisponible.');
+          setSupportEmpty(tVulns, 6, 'Module suivi indisponible.');
+          setSupportEmpty(tProgress, 5, 'Module suivi indisponible.');
+          return;
+        }
+        paintSupportTracking(AtlasSupportTracking.getState());
+        /* Multi-device: refresh from opaque support session when API base set */
+        if (
+          typeof AtlasSupportTracking.syncFromRemote === 'function' &&
+          AtlasSupportTracking.isHandoffRequested()
+        ) {
+          AtlasSupportTracking.syncFromRemote().then(function (r) {
+            if (r && r.synced) paintSupportTracking(r.state);
+          });
+        }
+      }
+
+      function showDash(session) {
+        clearTimers();
+        clearBodyModes();
+        document.body.classList.add('is-dash');
+        dashWho.textContent = session.firstName || session.email || 'Compte';
+        var roleEl = document.getElementById('dash-role');
+        if (roleEl) {
+          roleEl.textContent = AtlasAuth.roleChipLabel(session) || 'Compte';
+          roleEl.title = session.email || '';
+        }
+        syncPragmaProductLinks(session);
+        syncApiUnavailableBanner();
+        vaultAuth.hidden = true;
+        renderSupportTracking();
+      }
+
+      function showMarketing() {
+        clearTimers();
+        clearBodyModes();
+        syncPragmaProductLinks(null);
+        vaultAuth.hidden = true;
+        loginErr.hidden = true;
+        loginForm.reset();
+        syncCapBar();
+      }
+
+      function focusEmail() {
+        setTimeout(function () {
+          var em = document.getElementById('login-email');
+          if (em) em.focus();
+        }, 40);
+      }
+
+      /* Login / register: clear → recenter logo → credentials → vault open → session */
+      function runVaultAuth(mode) {
+        clearTimers();
+        var session = AtlasAuth.getSession();
+        if (session) {
+          showDash(session);
+          return;
+        }
+        setVaultMode(mode || 'login');
+        loginErr.hidden = true;
+        syncVaultApiHint();
+        clearBodyModes();
+        document.body.classList.add('is-vault-clear');
+        vaultAuth.hidden = true;
+
+        if (reduceMotion) {
+          document.body.classList.remove('is-vault-clear');
+          document.body.classList.add('is-vault-auth');
+          vaultAuth.hidden = false;
+          focusEmail();
+          return;
+        }
+
+        vaultTimer = setTimeout(function () {
+          document.body.classList.remove('is-vault-clear');
+          document.body.classList.add('is-vault-center');
+          vaultTimer = setTimeout(function () {
+            document.body.classList.remove('is-vault-center');
+            document.body.classList.add('is-vault-auth');
+            vaultAuth.hidden = false;
+            focusEmail();
+          }, 700);
+        }, 450);
+      }
+
+      function runVaultLogin() {
+        runVaultAuth('login');
+      }
+
+      function runVaultRegister() {
+        runVaultAuth('register');
+      }
+
+      function openVaultToDash(session) {
+        clearTimers();
+        vaultAuth.hidden = true;
+        document.body.classList.remove('is-vault-auth');
+        document.body.classList.add('is-vault-open');
+        if (reduceMotion) {
+          showDash(session);
+          return;
+        }
+        vaultTimer = setTimeout(function () {
+          showDash(session);
+        }, 900);
+      }
+
+      /* Logout: pieces reassemble → vault closes → session clears */
+      function runVaultLogout() {
+        clearTimers();
+        AtlasAuth.logout();
+        if (AtlasAuth.clearToken) AtlasAuth.clearToken();
+        syncPragmaProductLinks(null);
+
+        clearBodyModes();
+        document.body.classList.add('is-vault-open');
+        vaultAuth.hidden = true;
+
+        if (reduceMotion) {
+          showMarketing();
+          wasAwayFromTop = false;
+          replayArmed = false;
+          runBootIntro(function () {
+            updateFoldBlur();
+            syncCapBar();
+          });
+          return;
+        }
+
+        /* Force open pose, then close */
+        void document.body.offsetWidth;
+        vaultTimer = setTimeout(function () {
+          document.body.classList.remove('is-vault-open');
+          document.body.classList.add('is-vault-close');
+          vaultTimer = setTimeout(function () {
+            showMarketing();
+            wasAwayFromTop = false;
+            replayArmed = false;
+            window.scrollTo(0, 0);
+            runBootIntro(function () {
+              updateFoldBlur();
+              syncCapBar();
+            });
+          }, 700);
+        }, 80);
+      }
+
+      document.querySelectorAll('.js-connect').forEach(function (btn) {
+        btn.addEventListener('click', runVaultLogin);
+      });
+      document.querySelectorAll('.js-register').forEach(function (btn) {
+        btn.addEventListener('click', runVaultRegister);
+      });
+      if (vaultModeLogin) {
+        vaultModeLogin.addEventListener('click', function () {
+          setVaultMode('login');
+        });
+      }
+      if (vaultModeRegister) {
+        vaultModeRegister.addEventListener('click', function () {
+          setVaultMode('register');
+        });
+      }
+
+      document.getElementById('login-cancel').addEventListener('click', function () {
+        showMarketing();
+        updateFoldBlur();
+        syncCapBar();
+      });
+
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        loginErr.hidden = true;
+        syncVaultApiHint();
+        if (!AtlasAuth.isApiConfigured || !AtlasAuth.isApiConfigured()) {
+          loginErr.textContent =
+            (AtlasAuth.unavailableMessage && AtlasAuth.unavailableMessage()) ||
+            'Compte indisponible (serveur non configuré).';
+          loginErr.hidden = false;
+          return;
+        }
+        var email = document.getElementById('login-email').value;
+        var password = document.getElementById('login-password').value;
+        if (vaultSubmit) vaultSubmit.disabled = true;
+        var action =
+          vaultMode === 'register'
+            ? AtlasAuth.register(email, password)
+            : AtlasAuth.login(email, password);
+        Promise.resolve(action).then(function (result) {
+          if (vaultSubmit) vaultSubmit.disabled = false;
+          if (!result || !result.ok) {
+            loginErr.textContent =
+              (result && result.message) ||
+              (vaultMode === 'register'
+                ? 'Inscription impossible.'
+                : 'Connexion impossible.');
+            loginErr.hidden = false;
+            return;
+          }
+          openVaultToDash(result.session);
+        });
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', runVaultLogout);
+
+      function setSupportEraseMsg(text) {
+        var el = document.getElementById('support-erase-msg');
+        if (!el) return;
+        if (!text) {
+          el.hidden = true;
+          el.textContent = '';
+          return;
+        }
+        el.hidden = false;
+        el.textContent = text;
+      }
+
+      function confirmTypeDelete(message) {
+        var typed = window.prompt(
+          message + '\n\nTapez DELETE pour confirmer.',
+          ''
+        );
+        return typed === 'DELETE';
+      }
+
+      document.getElementById('erase-account-btn').addEventListener('click', function () {
+        if (
+          !confirmTypeDelete(
+            'Supprimer mon compte Atlas SECU ?\n' +
+              '• Si le serveur est joignable : suppression du compte API (réponse 2xx requise).\n' +
+              '• Toujours : session locale, jeton API et suivi support navigateur.\n' +
+              'L’historique Atlas Local sur votre machine n’est pas touché.'
+          )
+        ) {
+          return;
+        }
+        var btn = document.getElementById('erase-account-btn');
+        if (btn) btn.disabled = true;
+        var eraseFn = AtlasAuth.eraseAccount || AtlasAuth.eraseLocalAccount;
+        Promise.resolve(eraseFn ? eraseFn.call(AtlasAuth, 'DELETE') : { ok: true, notice: 'Session effacée.' })
+          .then(function (result) {
+            if (btn) btn.disabled = false;
+            var notice =
+              (result && result.notice) ||
+              (result && result.message) ||
+              'Session et jeton locaux effacés.';
+            setSupportEraseMsg(notice);
+            showEraseToast(notice);
+            runVaultLogout();
+          });
+      });
+
+      var supportWipeBtn = document.getElementById('support-wipe-btn');
+      if (supportWipeBtn) {
+        supportWipeBtn.addEventListener('click', function () {
+          if (
+            !confirmTypeDelete(
+              'Effacer le suivi support local Atlas SECU (navigateur uniquement) ?'
+            )
+          ) {
+            return;
+          }
+          if (window.AtlasSupportTracking) {
+            paintSupportTracking(AtlasSupportTracking.reset());
+          }
+          setSupportEraseMsg(
+            'Suivi support local effacé (atlas.support-tracking.v1).'
+          );
+        });
+      }
+
+      var supportSection = document.getElementById('support-tracking');
+      if (supportSection) {
+        supportSection.addEventListener('click', function (ev) {
+          var t = ev.target;
+          if (!t || !t.getAttribute) return;
+          var key = t.getAttribute('data-erase-vuln');
+          if (!key) return;
+          if (
+            !confirmTypeDelete(
+              'Supprimer cette vulnérabilité du suivi support Atlas SECU ?'
+            )
+          ) {
+            return;
+          }
+          t.disabled = true;
+          if (
+            !window.AtlasSupportTracking ||
+            typeof AtlasSupportTracking.removeVuln !== 'function'
+          ) {
+            return;
+          }
+          AtlasSupportTracking.removeVuln(key).then(function (result) {
+            paintSupportTracking(
+              (result && result.state) || AtlasSupportTracking.getState()
+            );
+            setSupportEraseMsg(
+              (result && result.notice) ||
+                (result && result.removed
+                  ? 'Ligne retirée du suivi support.'
+                  : 'Aucune ligne correspondante.')
+            );
+          });
+        });
+      }
+
+      var handoffBtn = document.getElementById('support-handoff-btn');
+      if (handoffBtn) {
+        handoffBtn.addEventListener('click', function () {
+          if (!window.AtlasSupportTracking) return;
+          if (AtlasSupportTracking.isHandoffRequested()) {
+            renderSupportTracking();
+            return;
+          }
+          handoffBtn.disabled = true;
+          handoffBtn.textContent = 'Demande en cours…';
+          AtlasSupportTracking.requestHandoff().then(function (result) {
+            if (!result || !result.ok) {
+              handoffBtn.disabled = false;
+              handoffBtn.textContent = 'Demander une prise en charge';
+              var meta = document.getElementById('support-tracking-meta');
+              if (meta) {
+                var reason = result && result.reason;
+                var msg =
+                  (result && result.message) ||
+                  (reason === 'phone_blocked'
+                    ? 'Téléphone bloqué — ouvrez Atlas SECU sur PC (D5).'
+                    : reason === 'auth_required' || reason === 'subscription_required'
+                      ? 'Compte + Atlas SECU (YOOO2026) requis avant prise en charge.'
+                      : reason === 'c1_cancelled'
+                        ? 'Demande annulée.'
+                        : 'Stockage navigateur indisponible');
+                meta.textContent = 'État · ' + msg;
+                meta.setAttribute(
+                  'data-state',
+                  reason === 'phone_blocked' ||
+                    reason === 'auth_required' ||
+                    reason === 'subscription_required'
+                    ? 'blocked'
+                    : 'idle'
+                );
+              }
+              return;
+            }
+            renderSupportTracking();
+          });
+        });
+      }
+
+      (function wireAtlasSecuCommercial() {
+        if (!window.AtlasSecuCommercial) return;
+        var form = document.getElementById('atlas-secu-account-form');
+        var meta = document.getElementById('atlas-secu-commercial-meta');
+        var loginBtn = document.getElementById('atlas-secu-login-btn');
+        var activateBtn = document.getElementById('atlas-secu-activate-btn');
+        function setMeta(text, state) {
+          if (!meta) return;
+          meta.textContent = 'État · ' + text;
+          meta.setAttribute('data-state', state || 'idle');
+        }
+        function fields() {
+          return {
+            email: (document.getElementById('atlas-secu-email') || {}).value || '',
+            password:
+              (document.getElementById('atlas-secu-password') || {}).value || '',
+            promo: (document.getElementById('atlas-secu-promo') || {}).value || ''
+          };
+        }
+        if (!AtlasSecuCommercial.isConfigured || !AtlasSecuCommercial.isConfigured()) {
+          setMeta(
+            (AtlasSecuCommercial.unavailableMessage &&
+              AtlasSecuCommercial.unavailableMessage()) ||
+              'compte / activation indisponibles (serveur non configuré)',
+            'blocked'
+          );
+        }
+        if (form) {
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var f = fields();
+            setMeta('création du compte…', 'pending');
+            AtlasAuth.register(f.email, f.password).then(function (r) {
+              if (!r.ok) {
+                setMeta(r.message || 'échec inscription', 'blocked');
+                return;
+              }
+              if (r.session) showDash(r.session);
+              setMeta('compte créé — activez avec YOOO2026', 'ok');
+            });
+          });
+        }
+        if (loginBtn) {
+          loginBtn.addEventListener('click', function () {
+            var f = fields();
+            setMeta('connexion…', 'pending');
+            AtlasAuth.login(f.email, f.password).then(function (r) {
+              if (!r.ok) {
+                setMeta(r.message || 'échec connexion', 'blocked');
+                return;
+              }
+              if (r.session) showDash(r.session);
+              setMeta('connecté — activez Atlas SECU si besoin', 'ok');
+            });
+          });
+        }
+        if (activateBtn) {
+          activateBtn.addEventListener('click', function () {
+            var f = fields();
+            if (!AtlasSecuCommercial.isConfigured || !AtlasSecuCommercial.isConfigured()) {
+              setMeta(
+                (AtlasSecuCommercial.unavailableMessage &&
+                  AtlasSecuCommercial.unavailableMessage()) ||
+                  'activation indisponible',
+                'blocked'
+              );
+              return;
+            }
+            setMeta('activation…', 'pending');
+            AtlasSecuCommercial.activatePromo(f.promo || 'YOOO2026').then(
+              function (r) {
+                if (!r.ok) {
+                  setMeta(r.message || 'échec activation', 'blocked');
+                  return;
+                }
+                setMeta(r.notice || 'Atlas SECU actif (beta 0 €)', 'ok');
+              }
+            );
+          });
+        }
+        if (AtlasSecuCommercial.getToken()) {
+          AtlasSecuCommercial.status().then(function (st) {
+            if (st && st.commerciallyActive) {
+              setMeta('Atlas SECU actif — prise en charge débloquée', 'ok');
+            } else if (AtlasSecuCommercial.getToken()) {
+              setMeta('connecté — activez avec YOOO2026 (0 €)', 'idle');
+            }
+          });
+        }
+      })();
+
+      /* Boot + restore */
+      initReveals();
+      var existing = AtlasAuth.getSession();
+      if (existing) {
+        if (bootEl) bootEl.classList.add('is-done');
+        document.body.classList.remove('is-booting');
+        document.body.classList.add('is-ready');
+        showDash(existing);
+      } else if (reduceMotion) {
+        finishBoot();
+        updateFoldBlur();
+        syncCapBar();
+      } else {
+        setTimeout(function () {
+          finishBoot();
+          updateFoldBlur();
+          syncCapBar();
+        }, 1400);
+      }
+    })();
+  </script>
+</body>
+</html>

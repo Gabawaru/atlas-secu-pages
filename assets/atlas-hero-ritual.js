@@ -1,12 +1,14 @@
 /**
  * ATLAS hero ritual v2 — beat sequence around the interactive globe.
  * Spec: docs/atlas-hero-sequence-prompt-2026-11-20.md
- * Session key: atlas-hero-ritual-v2
+ * Once-only key (localStorage): atlas-hero-ritual-v2
+ * Replay: localStorage.removeItem('atlas-hero-ritual-v2'); location.reload()
  */
 import { mountAtlasHeroMark } from './atlas-hero-mark.js';
 
-const SESSION_KEY = 'atlas-hero-ritual-v2';
-const TRIGGER_DEG = 10;
+const STORAGE_KEY = 'atlas-hero-ritual-v2';
+const TRIGGER_DEG_DESKTOP = 10;
+const TRIGGER_DEG_MOBILE = 8;
 
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -42,26 +44,55 @@ function timings() {
   };
 }
 
-function sessionDone() {
+function migrateLegacySessionFlag() {
   try {
-    return sessionStorage.getItem(SESSION_KEY) === '1';
+    if (localStorage.getItem(STORAGE_KEY) === '1') return;
+    if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+      localStorage.setItem(STORAGE_KEY, '1');
+      sessionStorage.removeItem(STORAGE_KEY);
+    }
+  } catch (_) { /* ignore */ }
+}
+
+function ritualDone() {
+  migrateLegacySessionFlag();
+  try {
+    return localStorage.getItem(STORAGE_KEY) === '1';
   } catch (_) {
     return false;
   }
 }
 
-function markSessionDone() {
+function markRitualDone() {
   try {
-    sessionStorage.setItem(SESSION_KEY, '1');
+    localStorage.setItem(STORAGE_KEY, '1');
+  } catch (_) { /* ignore */ }
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
   } catch (_) { /* ignore */ }
 }
 
 /**
- * Public skip helper for QA: sessionStorage.setItem('atlas-hero-ritual-v2','1'); location.reload()
+ * Public skip helper for QA:
+ *   localStorage.setItem('atlas-hero-ritual-v2','1'); location.reload()
+ * Replay:
+ *   localStorage.removeItem('atlas-hero-ritual-v2'); location.reload()
  */
 export function skipAtlasHeroRitual() {
-  markSessionDone();
+  markRitualDone();
 }
+
+function allowRitualTouchTarget(target) {
+  if (!target || !target.closest) return false;
+  return !!(
+    target.closest('#atlas-hero-mark') ||
+    target.closest('.ritual-cta') ||
+    target.closest('button') ||
+    target.closest('a')
+  );
+}
+
+let touchScrollBlocker = null;
 
 function setScrollLock(on) {
   if (on) {
@@ -69,10 +100,21 @@ function setScrollLock(on) {
     document.documentElement.style.setProperty('--ritual-scroll-y', String(y));
     document.body.classList.add('is-ritual-scroll-lock');
     document.body.style.top = '-' + y + 'px';
+    if (!touchScrollBlocker) {
+      touchScrollBlocker = function (e) {
+        if (allowRitualTouchTarget(e.target)) return;
+        e.preventDefault();
+      };
+      document.addEventListener('touchmove', touchScrollBlocker, { passive: false });
+    }
   } else {
     const y = parseInt(document.documentElement.style.getPropertyValue('--ritual-scroll-y') || '0', 10) || 0;
     document.body.classList.remove('is-ritual-scroll-lock');
     document.body.style.top = '';
+    if (touchScrollBlocker) {
+      document.removeEventListener('touchmove', touchScrollBlocker);
+      touchScrollBlocker = null;
+    }
     window.scrollTo(0, y);
   }
 }
@@ -138,7 +180,10 @@ export function mountAtlasHeroRitual(cfg) {
   const markHost = cfg.markHost;
   const stage = cfg.stage;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const doneAlready = sessionDone();
+  const doneAlready = ritualDone();
+  const mobile = isMobile();
+  const triggerDeg = mobile ? TRIGGER_DEG_MOBILE : TRIGGER_DEG_DESKTOP;
+  const aSlideFrom = mobile ? -28 : -42;
 
   const els = {
     hint: stage.querySelector('[data-ritual="hint"]'),
@@ -199,6 +244,8 @@ export function mountAtlasHeroRitual(cfg) {
   }
 
   if (reduceMotion || doneAlready) {
+    /* Persist once-only even for reduced-motion first visit (durable skip). */
+    if (reduceMotion) markRitualDone();
     const globe = mountAtlasHeroMark(markHost, { autoRotate: true });
     document.body.classList.add('is-ritual-done', 'is-ritual-skipped');
     showEndState(true);
@@ -244,7 +291,8 @@ export function mountAtlasHeroRitual(cfg) {
 
   const globe = mountAtlasHeroMark(markHost, {
     autoRotate: false,
-    significantDragDeg: TRIGGER_DEG,
+    significantDragDeg: triggerDeg,
+    touchBoost: mobile,
     onSignificantDrag: function () {
       if (phase !== 'idle') return;
       beginRitual();
@@ -466,12 +514,12 @@ export function mountAtlasHeroRitual(cfg) {
 
     if (aLetter) {
       aLetter.classList.add('is-sliding');
-      aLetter.style.transform = 'translateX(-42vw)';
+      aLetter.style.transform = 'translateX(' + aSlideFrom + 'vw)';
       aLetter.style.opacity = '0';
       void aLetter.offsetWidth;
       await animateValue(0, 1, T.aSlideMs, easeOutCubic, function (t) {
         aLetter.style.opacity = String(t);
-        aLetter.style.transform = 'translateX(' + lerp(-42, 0, t) + 'vw)';
+        aLetter.style.transform = 'translateX(' + lerp(aSlideFrom, 0, t) + 'vw)';
       });
       aLetter.style.transform = '';
       aLetter.classList.add('is-in');
@@ -537,7 +585,7 @@ export function mountAtlasHeroRitual(cfg) {
     await wait(T.unlockMs * 0.4);
 
     /* Reveal rest of site + unlock scroll; settle globe scale slightly */
-    markSessionDone();
+    markRitualDone();
     phase = 'done';
     globe.setDragEnabled(true);
     globe.setAutoRotateSpeed(0.0032);
@@ -578,7 +626,8 @@ export function mountAtlasHeroRitual(cfg) {
     },
     controller: globe,
     replay: function () {
-      try { sessionStorage.removeItem(SESSION_KEY); } catch (_) { /* ignore */ }
+      try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* ignore */ }
+      try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) { /* ignore */ }
       location.reload();
     }
   };
@@ -588,6 +637,18 @@ if (typeof document !== 'undefined') {
   const markHost = document.getElementById('atlas-hero-mark');
   const stage = document.getElementById('atlas-hero-ritual');
   if (markHost && stage) {
-    mountAtlasHeroRitual({ markHost: markHost, stage: stage });
+    const api = mountAtlasHeroRitual({ markHost: markHost, stage: stage });
+    try {
+      window.__atlasHeroRitual = {
+        replay: function () {
+          if (api && typeof api.replay === 'function') api.replay();
+          else {
+            try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* ignore */ }
+            location.reload();
+          }
+        },
+        skip: skipAtlasHeroRitual
+      };
+    } catch (_) { /* ignore */ }
   }
 }
