@@ -17,7 +17,7 @@ Deploy = merge / push to `main`.
 
 ## Hero mark (ATLAS)
 
-Landing brand wordmark is **ATLAS**. The hero visual is a static kneeling cyber-pro figure holding a textured Earth globe. The globe auto-rotates; drag (mouse/touch) spins it any direction while the character stays fixed. Network nodes/arcs sit on the globe surface. Loads Three.js from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`.
+Landing brand wordmark is **ATLAS**. The hero visual is a static classical kneeling Atlas (beard, curly hair) in dark tailored armor/suit, carrying a textured Earth globe on the shoulders — engraving silhouette, not a stick figure. The globe auto-rotates; drag (mouse/touch) spins it any direction while the character stays fixed. Network nodes/arcs sit on the globe surface. Loads Three.js from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`.
 
 Legal pages are **draft product copy** (à valider conseil), linked from footer, register, PEC, and account delete surfaces.
 
