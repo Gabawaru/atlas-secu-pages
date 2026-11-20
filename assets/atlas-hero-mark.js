@@ -1,9 +1,9 @@
 /**
  * ATLAS hero mark — hybrid:
- *   • Character = static 2D engraving PNG (classical kneeling Atlas + armor overlay)
+ *   • Character = static 2D engraving PNG (kneeling Atlas in cybersec suit)
  *   • Globe = interactive Three.js Earth (auto-rotate + drag; nodes/arcs)
  *
- * Gab 2026-11-20: not obligated to use a 3D body. Match engraving ref.
+ * Gab 2026-11-20: 2D engraving body (not procedural 3D). No debug overlay lines.
  * Character never animates. Earth texture: /assets/earth-atmos.jpg
  */
 import * as THREE from 'three';
