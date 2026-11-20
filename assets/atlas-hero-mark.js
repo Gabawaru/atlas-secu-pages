@@ -1,19 +1,17 @@
 /**
- * ATLAS hero mark — hybrid:
- *   • Character = static 2D engraving PNG (suited Atlas, full-head mask + nested-△ logo)
- *   • Globe = interactive Three.js Earth (auto-rotate + drag; nodes/arcs)
+ * ATLAS hero mark — interactive Three.js Earth only
+ *   (auto-rotate + drag; teal nodes/arcs). No engraving figure / mask.
  *
- * Gab 2026-11-20: 2D engraving body (not procedural 3D). Nested-△ on mask kept.
- * Plate/camera scaled so full figure + globe fit the hero frame.
- * Character never animates. Earth texture: /assets/earth-atmos.jpg
+ * Gab 2026-11-20: character removed from hero; landing marque stays ATLAS.
+ * Earth texture: /assets/earth-atmos.jpg
  */
 import * as THREE from 'three';
 
 const TEAL = 0x2f8f8a;
 const GLOBE_R = 1.0;
-/** Matches engraved globe size on the circular plate (~half the plate). */
-const GLOBE_SCENE_SCALE = 0.46;
-const FIGURE_URL = '/assets/atlas-figure-engraving.png';
+/** Fits the circular hero orb with breathing room for drag. */
+const GLOBE_SCENE_SCALE = 1.12;
+
 function latLonToVec(latDeg, lonDeg, radius) {
   const lat = (latDeg * Math.PI) / 180;
   const lon = (lonDeg * Math.PI) / 180;
@@ -153,9 +151,8 @@ export function mountAtlasHeroMark(host) {
   const height = function () { return Math.max(1, host.clientHeight); };
 
   const scene = new THREE.Scene();
-  /* Wider FOV + pulled back so full plate (globe + feet) fits hero frame */
-  const camera = new THREE.PerspectiveCamera(40, width() / height(), 0.1, 40);
-  camera.position.set(0, 0, 6.7);
+  const camera = new THREE.PerspectiveCamera(36, width() / height(), 0.1, 40);
+  camera.position.set(0, 0.05, 4.35);
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({
@@ -184,43 +181,10 @@ export function mountAtlasHeroMark(host) {
   scene.add(fill);
 
   const mark = new THREE.Group();
-
-  // —— 2D engraving figure (static) ——
-  /* Smaller plate so globe crown + kneeling feet stay inside hero-visual */
-  const plateSize = 1.98;
-  const figureMat = new THREE.MeshBasicMaterial({
-    transparent: true,
-    depthWrite: false,
-    opacity: 1
-  });
-  const figureMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(plateSize, plateSize),
-    figureMat
-  );
-  figureMesh.position.set(0, 0, 0);
-  figureMesh.name = 'atlas-engraving';
-  mark.add(figureMesh);
-
-  const texLoader = new THREE.TextureLoader();
-  texLoader.setCrossOrigin('anonymous');
-  texLoader.load(
-    FIGURE_URL,
-    function (tex) {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-      figureMat.map = tex;
-      figureMat.needsUpdate = true;
-    }
-  );
-
-  /*
-   * Interactive globe covers the engraved globe on the plate.
-   * Engraved sphere sits in the upper half of the circular plate.
-   * Keep z modest so perspective doesn't inflate the globe past the plate.
-   */
   const globeAnchor = new THREE.Group();
-  globeAnchor.position.set(0.006, plateSize * 0.145, 0.12);
+  globeAnchor.position.set(0, 0, 0);
   mark.add(globeAnchor);
+  scene.add(mark);
 
   let globe = null;
   let disposed = false;
@@ -235,6 +199,9 @@ export function mountAtlasHeroMark(host) {
     resumeAt: 0
   };
   const AUTO = reduceMotion ? 0 : 0.0032;
+
+  const texLoader = new THREE.TextureLoader();
+  texLoader.setCrossOrigin('anonymous');
 
   function attachGlobe(texture) {
     if (disposed) {
@@ -300,8 +267,6 @@ export function mountAtlasHeroMark(host) {
   const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(onResize) : null;
   if (ro) ro.observe(host);
   else window.addEventListener('resize', onResize);
-
-  scene.add(mark);
 
   function tick(now) {
     if (disposed) return;

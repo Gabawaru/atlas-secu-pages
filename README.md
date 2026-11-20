@@ -10,7 +10,7 @@ Static GitHub Pages site for **ATLAS** (`https://atlas-secu.com`).
 | Pages source | `main` / `/` |
 | Binary | `/Atlas-Setup.exe` |
 | Design tokens | `/assets/atlas-tokens.css` (shared with Atlas Scanner) |
-| Hero mark | Three.js interactive Earth + static cyber-pro (`/assets/atlas-hero-mark.js`) |
+| Hero mark | Three.js interactive Earth only (`/assets/atlas-hero-mark.js`) |
 | CGU | [`/cgu.html`](cgu.html) (brouillon produit) |
 | Confidentialité | [`/confidentialite.html`](confidentialite.html) (brouillon produit) |
 
@@ -18,7 +18,7 @@ Deploy = merge / push to `main`.
 
 ## Hero mark (ATLAS)
 
-Landing brand wordmark is **ATLAS**. The hero visual is a **2D engraving-style** kneeling Atlas in a dark cybersec suit with a full-head mask bearing the nested-triangle logo — not a 3D stick/robot body. An interactive **3D** Earth globe sits on his shoulders (auto-rotate + drag; nodes/arcs). Three.js loads from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`. Figure art: `/assets/atlas-figure-engraving.png`.
+Landing brand wordmark is **ATLAS**. The hero visual is an interactive **3D** Earth globe only (auto-rotate + drag; teal nodes/arcs) — no engraving figure or mask. Three.js loads from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`.
 
 Legal pages are **draft product copy** (à valider conseil), linked from footer, register, PEC, and account delete surfaces.
 
