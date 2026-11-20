@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ATLAS — Session expérimentale</title>
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Démo ATLAS — session expérimentale fictive. Données inventées. Pas un client réel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/atlas-tokens.css">
+  <style>
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+    body{
+      margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);line-height:1.55;
+      font-family:var(--display);
+      padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);
+      background:
+        radial-gradient(1100px 520px at 10% -10%,rgba(47,143,138,.14),transparent 58%),
+        radial-gradient(900px 480px at 96% 4%,rgba(120,170,190,.14),transparent 55%),
+        linear-gradient(180deg,#fbfefe 0%,var(--bg) 48%,var(--bg-soft) 100%);
+    }
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.26;
+      background-image:
+        linear-gradient(rgba(47,143,138,.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(47,143,138,.04) 1px,transparent 1px);
+      background-size:48px 48px;
+      mask-image:radial-gradient(ellipse at 50% 18%,#000 14%,transparent 70%);
+    }
+    a{color:var(--teal-deep)}
+    [hidden]{display:none!important}
+
+    .shell{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 18px 72px}
+
+    .demo-banner{
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;
+      margin:0 0 18px;padding:10px 14px;
+      border:1px dashed var(--teal-mid);border-radius:var(--radius-soft);
+      background:rgba(255,255,255,.72);backdrop-filter:blur(6px);
+    }
+    .demo-banner strong{
+      font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-deep);
+    }
+    .demo-banner span{font-size:.86rem;color:var(--ink-soft)}
+    .back{
+      font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--muted);text-decoration:none;
+    }
+    .back:hover{color:var(--teal-deep)}
+
+    .top{
+      display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+      gap:16px;margin-bottom:22px;
+    }
+    .brand-row{display:flex;align-items:center;gap:12px}
+    .mark{width:42px;height:42px;flex:0 0 auto}
+    .mark svg{display:block;width:100%;height:100%;overflow:visible}
+    .mark .frame,.mark .inner{stroke:var(--ink);fill:none;stroke-linejoin:round}
+    .mark .frame{stroke-width:7}
+    .mark .inner{stroke-width:6}
+    .mark .orbit{stroke:var(--teal);stroke-width:2.2;fill:none;opacity:.9;transform-origin:60px 62px;animation:orbit 10s linear infinite}
+    .mark .orbit.alt{animation-duration:14s;animation-direction:reverse;opacity:.6}
+    .mark .link{stroke:var(--teal);stroke-width:2;fill:none;opacity:.85}
+    .mark .node{fill:var(--teal)}
+    @keyframes orbit{to{transform:rotate(360deg)}}
+    .brand-text h1{
+      margin:0;font-size:clamp(1.35rem,3vw,1.85rem);font-weight:800;
+      letter-spacing:.16em;text-transform:uppercase;
+    }
+    .brand-text p{margin:4px 0 0;color:var(--ink-soft);font-size:.92rem;max-width:46ch}
+    .pill{
+      font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+      padding:7px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);
+      background:rgba(255,255,255,.75);
+    }
+    .pill.ok{border-color:rgba(45,122,79,.35);color:var(--ok);background:var(--ok-soft)}
+
+    .org{
+      display:grid;gap:14px;margin-bottom:22px;
+      padding:18px 18px 16px;border:1px solid var(--line);border-radius:var(--radius-soft);
+      background:linear-gradient(180deg,#fbfefe,var(--paper));box-shadow:var(--shadow);
+    }
+    @media (min-width:720px){.org{grid-template-columns:1.4fr .8fr;align-items:end}}
+    .org .kicker{
+      font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;
+    }
+    .org h2{margin:0;font-size:1.2rem;font-weight:700}
+    .org p{margin:8px 0 0;color:var(--ink-soft);font-size:.93rem}
+    .org-meta{
+      display:grid;gap:8px;font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);
+    }
+    .org-meta div{display:flex;justify-content:space-between;gap:12px;padding:8px 10px;background:var(--bg-soft);border-radius:var(--radius)}
+    .org-meta dt{color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .org-meta dd{margin:0;color:var(--ink);font-weight:500}
+
+    .compare{
+      display:grid;gap:12px;margin-bottom:22px;
+    }
+    @media (min-width:760px){.compare{grid-template-columns:1fr 1fr}}
+    .lane{
+      padding:18px;border:1px solid var(--line);border-radius:var(--radius-soft);
+      background:rgba(255,255,255,.82);
+    }
+    .lane.paid{
+      border-color:var(--teal-mid);
+      background:linear-gradient(180deg,rgba(47,143,138,.08),rgba(255,255,255,.92));
+    }
+    .lane h3{
+      margin:0 0 6px;font-size:.95rem;font-weight:700;letter-spacing:.02em;
+    }
+    .lane .price{
+      font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-deep);margin:0 0 10px;
+    }
+    .lane ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+    .lane li{
+      position:relative;padding-left:18px;font-size:.9rem;color:var(--ink-soft);
+    }
+    .lane li::before{
+      content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;border-radius:50%;
+      background:var(--teal-mid);
+    }
+    .lane.paid li::before{background:var(--teal)}
+    .msg{
+      margin:0 0 22px;padding:14px 16px;border-left:3px solid var(--teal);
+      background:var(--teal-soft);color:var(--ink-soft);font-size:.92rem;
+    }
+    .msg strong{color:var(--ink)}
+
+    .panel{
+      margin-bottom:22px;padding:18px;border:1px solid var(--line);border-radius:var(--radius-soft);
+      background:var(--paper);box-shadow:var(--shadow);
+    }
+    .panel-head{
+      display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;
+    }
+    .panel-head h2{margin:0;font-size:1.05rem}
+    .panel-head p{margin:4px 0 0;font-size:.88rem;color:var(--ink-soft);max-width:52ch}
+
+    .findings{width:100%;border-collapse:collapse;font-size:.9rem}
+    .findings th,.findings td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    .findings th{
+      font-family:var(--mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;
+    }
+    .findings tr:last-child td{border-bottom:0}
+    .findings .sev{
+      display:inline-block;font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+      padding:3px 7px;border-radius:2px;
+    }
+    .sev-critique{background:var(--accent-soft);color:var(--accent)}
+    .sev-haute{background:rgba(196,120,40,.12);color:#9a5a12}
+    .sev-moyenne{background:rgba(47,143,138,.12);color:var(--teal-deep)}
+    .sev-basse{background:var(--bg-soft);color:var(--muted)}
+    .findings .where{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft)}
+    .findings label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+    .findings input{margin-top:3px;accent-color:var(--teal)}
+    .state-chip{
+      font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+      padding:3px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted);white-space:nowrap;
+    }
+    .state-chip.pec{border-color:var(--teal-mid);color:var(--teal-deep);background:var(--teal-soft)}
+    .state-chip.done{border-color:rgba(45,122,79,.35);color:var(--ok);background:var(--ok-soft)}
+
+    .actions-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .btn{
+      appearance:none;border:1.5px solid var(--teal-deep);background:var(--teal);color:#fff;
+      padding:11px 16px;border-radius:var(--radius);font:600 .9rem var(--display);cursor:pointer;
+      transition:background .2s var(--ease),transform .2s var(--ease),border-color .2s;
+    }
+    .btn:hover{background:var(--teal-deep);transform:translateY(-1px)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn.ghost{
+      background:transparent;color:var(--ink-soft);border-color:var(--line);box-shadow:none;
+    }
+    .btn.ghost:hover{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-soft)}
+    .btn:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+    .sub-grid{display:grid;gap:16px}
+    @media (min-width:760px){.sub-grid{grid-template-columns:1.1fr .9fr}}
+    .price-box{
+      padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-soft);
+    }
+    .price-box .label{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .price-box .amount{
+      margin:6px 0 0;font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800;letter-spacing:.02em;
+    }
+    .price-box .amount s{color:var(--muted);font-weight:500;font-size:.7em;margin-right:8px}
+    .price-box .hint{margin:8px 0 0;font-size:.86rem;color:var(--ink-soft)}
+    .promo-form{display:grid;gap:10px}
+    .promo-form label{display:grid;gap:6px;font-size:.86rem;color:var(--ink-soft)}
+    .promo-form input{
+      width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:var(--radius);
+      background:#fbfefe;font:500 .95rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);
+    }
+    .promo-form input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+    .promo-note{margin:0;font-size:.84rem;color:var(--ink-soft);min-height:1.3em}
+    .promo-note.ok{color:var(--ok)}
+    .promo-note.err{color:var(--accent)}
+    .account-chip{
+      display:inline-flex;align-items:center;gap:8px;margin-top:10px;
+      font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;color:var(--ink-soft);
+    }
+    .account-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+
+    .toast{
+      position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
+      z-index:40;max-width:min(92vw,420px);padding:12px 16px;border-radius:var(--radius-soft);
+      background:var(--ink);color:#fff;font-size:.88rem;opacity:0;pointer-events:none;
+      transition:opacity .25s var(--ease),transform .25s var(--ease);
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    @media (max-width:640px){
+      .findings thead{display:none}
+      .findings,.findings tbody,.findings tr,.findings td{display:block;width:100%}
+      .findings tr{padding:12px 0;border-bottom:1px solid var(--line)}
+      .findings td{border:0;padding:4px 0}
+      .findings td[data-label]::before{
+        content:attr(data-label);display:block;font-family:var(--mono);font-size:.62rem;
+        letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      .mark .orbit{animation:none}
+      .btn:hover,.toast{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="demo-banner" role="status">
+      <div>
+        <strong>Session expérimentale · démo</strong>
+        <span> — données fictives, pas un client réel. Aucune connexion API.</span>
+      </div>
+      <a class="back" href="/">← Retour ATLAS</a>
+    </div>
+
+    <header class="top">
+      <div class="brand-row">
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 120 124" class="mark-svg" xmlns="http://www.w3.org/2000/svg">
+            <g class="vault-piece">
+              <path class="frame" d="M60 10 L110 98 H10 Z"/>
+              <path class="inner" d="M60 34 L88 86 H32 Z"/>
+            </g>
+            <g class="vault-piece">
+              <ellipse class="orbit" cx="60" cy="62" rx="28" ry="12"/>
+              <ellipse class="orbit alt" cx="60" cy="62" rx="12" ry="26"/>
+              <path class="link" d="M42 55 L60 48 L78 55"/>
+              <circle class="node" cx="60" cy="48" r="3.2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>ATLAS</h1>
+          <p>Session expérimentale — scan local gratuit, prise en charge via abonnement <strong>SECU</strong>.</p>
+        </div>
+      </div>
+      <span class="pill" id="status-pill">Démo · compte session</span>
+    </header>
+
+    <section class="org" aria-labelledby="org-title">
+      <div>
+        <p class="kicker">Organisation fictive</p>
+        <h2 id="org-title">Helix Node — campus data center</h2>
+        <p>
+          Opérateur imaginaire de salles blanches à Monaco. Périmètre de démo&nbsp;:
+          portail client, bastion admin et API de monitoring — inventé pour illustrer
+          le parcours ATLAS.
+        </p>
+      </div>
+      <dl class="org-meta">
+        <div><dt>Secteur</dt><dd>Data center</dd></div>
+        <div><dt>Cible démo</dt><dd>portal.helix-node.demo</dd></div>
+        <div><dt>Scan</dt><dd>Local (simulé)</dd></div>
+        <div><dt>Compte</dt><dd id="account-label">session-exp@helix.demo</dd></div>
+      </dl>
+    </section>
+
+    <div class="compare" aria-label="Comparaison local et SECU">
+      <article class="lane">
+        <h3>Local — gratuit</h3>
+        <p class="price">0 € · sur votre machine</p>
+        <ul>
+          <li>Scan + résultats + historique restent locaux</li>
+          <li>Vous voyez tous les problèmes détectés</li>
+          <li>Vous choisissez quoi traiter vous-même</li>
+          <li>Aucune donnée envoyée tant que vous ne demandez rien</li>
+        </ul>
+      </article>
+      <article class="lane paid">
+        <h3>Plateforme ATLAS · SECU</h3>
+        <p class="price">Abonnement · prise en charge</p>
+        <ul>
+          <li>Vous sélectionnez les problèmes à résoudre</li>
+          <li>ATLAS ne corrige <em>pas</em> tout automatiquement</li>
+          <li>SECU = équipe / process ATLAS qui traite le choix client</li>
+          <li>Évite de recruter une équipe spécialisée coûteuse</li>
+        </ul>
+      </article>
+    </div>
+
+    <p class="msg">
+      <strong>Message produit :</strong> le scan local est gratuit. Payer SECU, c’est
+      confier la <em>remédiation</em> des problèmes que <em>vous</em> avez choisis —
+      pas un forfait « on fixe tout sans vous ».
+    </p>
+
+    <section class="panel" aria-labelledby="findings-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="findings-title">Constats (exemples fictifs)</h2>
+          <p>Cochez les items à confier à ATLAS SECU. Le reste reste en local.</p>
+        </div>
+        <span class="pill" id="selection-count">0 sélectionné</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="findings" id="findings-table">
+          <thead>
+            <tr>
+              <th scope="col">Choisir</th>
+              <th scope="col">Sévérité</th>
+              <th scope="col">Constat</th>
+              <th scope="col">Où</th>
+              <th scope="col">État</th>
+            </tr>
+          </thead>
+          <tbody id="findings-body"></tbody>
+        </table>
+      </div>
+      <div class="actions-row">
+        <button type="button" class="btn" id="btn-request-pec" disabled>Demander la prise en charge</button>
+        <button type="button" class="btn ghost" id="btn-clear-sel">Tout décocher</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="sub-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="sub-title">Abonnement SECU (démo)</h2>
+          <p>
+            Tarif imaginaire pour la démo. Code promo
+            <code style="font-family:var(--mono)">EXP2026</code>
+            — si le compte démo est déjà en session, pas besoin de se reconnecter.
+          </p>
+        </div>
+      </div>
+      <div class="sub-grid">
+        <div class="price-box">
+          <div class="label">Tarif affiché (fictif)</div>
+          <div class="amount" id="price-amount"><span id="price-was" hidden><s>249 € / mois</s></span><span id="price-now">249 € / mois</span></div>
+          <p class="hint" id="price-hint">Sans promo&nbsp;: abonnement SECU facturé. Avec promo démo&nbsp;: session entièrement gratuite.</p>
+          <div class="account-chip" id="account-chip">
+            <span class="dot" aria-hidden="true"></span>
+            <span id="account-chip-text">Compte démo actif (localStorage) — pas de mot de passe</span>
+          </div>
+        </div>
+        <form class="promo-form" id="promo-form" autocomplete="off">
+          <label>
+            Code promo
+            <input id="promo-input" name="promo" type="text" maxlength="32" spellcheck="false" placeholder="EXP2026" aria-describedby="promo-note">
+          </label>
+          <div class="actions-row">
+            <button type="submit" class="btn ghost" id="btn-apply-promo">Appliquer le code</button>
+            <button type="button" class="btn" id="btn-activate" disabled>Activer l’abonnement</button>
+          </div>
+          <p class="promo-note" id="promo-note" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+(function () {
+  var STORAGE_KEY = 'atlas_exp_session_v1';
+  var PROMO = 'EXP2026';
+  var LIST_PRICE = '249 € / mois';
+
+  var FINDINGS = [
+    {
+      id: 'hx-01',
+      sev: 'critique',
+      title: 'Admin bastion exposé sans MFA',
+      where: 'bastion.helix-node.demo:8443',
+      detail: 'Portail admin joignable ; facteur unique inventé pour la démo.'
+    },
+    {
+      id: 'hx-02',
+      sev: 'haute',
+      title: 'Certificat TLS expiré sur API monitoring',
+      where: 'metrics.helix-node.demo',
+      detail: 'Chaîne fictive — alertes scrapers en échec.'
+    },
+    {
+      id: 'hx-03',
+      sev: 'haute',
+      title: 'Backup S3 avec ACL publique (simulation)',
+      where: 's3://helix-demo-cold/…',
+      detail: 'Objet de démo listable ; pas de bucket réel.'
+    },
+    {
+      id: 'hx-04',
+      sev: 'moyenne',
+      title: 'En-têtes de sécurité absents',
+      where: 'portal.helix-node.demo',
+      detail: 'CSP / HSTS manquants sur la vitrine fictive.'
+    },
+    {
+      id: 'hx-05',
+      sev: 'moyenne',
+      title: 'Compte de service trop privilégié',
+      where: 'IAM · svc-monitor',
+      detail: 'Rôle inventé avec droits write sur le vault de secrets.'
+    },
+    {
+      id: 'hx-06',
+      sev: 'basse',
+      title: 'Banner SSH trop verbeux',
+      where: 'edge-gw-01',
+      detail: 'Version OS exposée — bruit de reconnaissance.'
+    }
+  ];
+
+  function defaultState() {
+    return {
+      demoAccount: true,
+      email: 'session-exp@helix.demo',
+      promoApplied: false,
+      secuActive: false,
+      selected: {},
+      pec: {}
+    };
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      var base = defaultState();
+      return {
+        demoAccount: parsed.demoAccount !== false,
+        email: parsed.email || base.email,
+        promoApplied: !!parsed.promoApplied,
+        secuActive: !!parsed.secuActive,
+        selected: parsed.selected && typeof parsed.selected === 'object' ? parsed.selected : {},
+        pec: parsed.pec && typeof parsed.pec === 'object' ? parsed.pec : {}
+      };
+    } catch (e) {
+      return defaultState();
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { /* ignore */ }
+  }
+
+  var state = loadState();
+  if (!state.demoAccount) {
+    state.demoAccount = true;
+    saveState(state);
+  }
+
+  var els = {
+    body: document.getElementById('findings-body'),
+    count: document.getElementById('selection-count'),
+    btnPec: document.getElementById('btn-request-pec'),
+    btnClear: document.getElementById('btn-clear-sel'),
+    pill: document.getElementById('status-pill'),
+    priceWas: document.getElementById('price-was'),
+    priceNow: document.getElementById('price-now'),
+    priceHint: document.getElementById('price-hint'),
+    promoForm: document.getElementById('promo-form'),
+    promoInput: document.getElementById('promo-input'),
+    promoNote: document.getElementById('promo-note'),
+    btnActivate: document.getElementById('btn-activate'),
+    accountLabel: document.getElementById('account-label'),
+    accountChipText: document.getElementById('account-chip-text'),
+    toast: document.getElementById('toast')
+  };
+
+  var toastTimer = null;
+  function toast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      els.toast.classList.remove('show');
+    }, 2600);
+  }
+
+  function selectedIds() {
+    return FINDINGS.filter(function (f) { return !!state.selected[f.id]; }).map(function (f) { return f.id; });
+  }
+
+  function sevClass(sev) {
+    return 'sev sev-' + sev;
+  }
+
+  function rowState(id) {
+    if (state.pec[id] === 'done') return { cls: 'done', label: 'Remédié (démo)' };
+    if (state.pec[id] === 'open') return { cls: 'pec', label: 'PEC demandée' };
+    return { cls: '', label: 'Local seulement' };
+  }
+
+  function renderFindings() {
+    var html = FINDINGS.map(function (f) {
+      var st = rowState(f.id);
+      var checked = state.selected[f.id] ? ' checked' : '';
+      var disabled = state.pec[f.id] ? ' disabled' : '';
+      return (
+        '<tr>' +
+          '<td data-label="Choisir">' +
+            '<label><input type="checkbox" data-id="' + f.id + '"' + checked + disabled + '>' +
+            '<span class="where">' + f.id.toUpperCase() + '</span></label>' +
+          '</td>' +
+          '<td data-label="Sévérité"><span class="' + sevClass(f.sev) + '">' + f.sev + '</span></td>' +
+          '<td data-label="Constat"><strong>' + f.title + '</strong><div style="color:var(--ink-soft);font-size:.86rem;margin-top:2px">' + f.detail + '</div></td>' +
+          '<td data-label="Où" class="where">' + f.where + '</td>' +
+          '<td data-label="État"><span class="state-chip ' + st.cls + '">' + st.label + '</span></td>' +
+        '</tr>'
+      );
+    }).join('');
+    els.body.innerHTML = html;
+    updateSelectionUi();
+  }
+
+  function updateSelectionUi() {
+    var n = selectedIds().length;
+    els.count.textContent = n + ' sélectionné' + (n > 1 ? 's' : '');
+    els.btnPec.disabled = n === 0 || !state.secuActive;
+    if (!state.secuActive && n > 0) {
+      els.btnPec.title = 'Activez SECU (promo EXP2026) pour demander une prise en charge';
+    } else {
+      els.btnPec.title = '';
+    }
+  }
+
+  function renderSub() {
+    els.accountLabel.textContent = state.email;
+    if (state.secuActive) {
+      els.priceWas.hidden = false;
+      els.priceWas.innerHTML = '<s>' + LIST_PRICE + '</s>';
+      els.priceNow.textContent = '0 € · démo active';
+      els.priceHint.textContent = 'Abonnement SECU activé pour cette session expérimentale — entièrement gratuit (localStorage).';
+      els.pill.textContent = 'SECU actif · 0 € démo';
+      els.pill.classList.add('ok');
+      els.btnActivate.disabled = true;
+      els.promoNote.textContent = 'Abonnement déjà actif sur ce compte démo.';
+      els.promoNote.className = 'promo-note ok';
+      els.accountChipText.textContent = 'Compte démo · SECU actif — pas de reconnexion requise';
+    } else if (state.promoApplied) {
+      els.priceWas.hidden = false;
+      els.priceWas.innerHTML = '<s>' + LIST_PRICE + '</s>';
+      els.priceNow.textContent = '0 € / mois';
+      els.priceHint.textContent = 'Code EXP2026 appliqué. Cliquez « Activer l’abonnement » — sans se reconnecter.';
+      els.pill.textContent = 'Promo prête · activation';
+      els.pill.classList.remove('ok');
+      els.btnActivate.disabled = false;
+      els.promoNote.textContent = 'Code valide. Compte déjà en session — activez sans reconnexion.';
+      els.promoNote.className = 'promo-note ok';
+    } else {
+      els.priceWas.hidden = true;
+      els.priceNow.textContent = LIST_PRICE;
+      els.priceHint.textContent = 'Sans promo : abonnement SECU facturé. Avec EXP2026 : session entièrement gratuite.';
+      els.pill.textContent = 'Démo · compte session';
+      els.pill.classList.remove('ok');
+      els.btnActivate.disabled = true;
+      els.accountChipText.textContent = 'Compte démo actif (localStorage) — pas de mot de passe';
+    }
+    updateSelectionUi();
+  }
+
+  els.body.addEventListener('change', function (ev) {
+    var t = ev.target;
+    if (!t || t.type !== 'checkbox') return;
+    var id = t.getAttribute('data-id');
+    if (!id || state.pec[id]) return;
+    if (t.checked) state.selected[id] = true;
+    else delete state.selected[id];
+    saveState(state);
+    updateSelectionUi();
+  });
+
+  els.btnClear.addEventListener('click', function () {
+    state.selected = {};
+    saveState(state);
+    renderFindings();
+  });
+
+  els.btnPec.addEventListener('click', function () {
+    if (!state.secuActive) {
+      toast('Activez d’abord SECU avec EXP2026.');
+      return;
+    }
+    var ids = selectedIds();
+    if (!ids.length) return;
+    ids.forEach(function (id) {
+      state.pec[id] = 'open';
+      delete state.selected[id];
+    });
+    saveState(state);
+    renderFindings();
+    toast('Prise en charge demandée pour ' + ids.length + ' constat(s) — simulation.');
+  });
+
+  els.promoForm.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var code = (els.promoInput.value || '').replace(/\s+/g, '').toUpperCase();
+    if (!code) {
+      els.promoNote.textContent = 'Saisissez un code promo.';
+      els.promoNote.className = 'promo-note err';
+      return;
+    }
+    if (code !== PROMO) {
+      els.promoNote.textContent = 'Code inconnu. Essayez EXP2026 (sans espaces).';
+      els.promoNote.className = 'promo-note err';
+      return;
+    }
+    // Déjà « connecté » en localStorage → pas de reconnexion.
+    state.demoAccount = true;
+    state.promoApplied = true;
+    saveState(state);
+    renderSub();
+    toast('Code EXP2026 appliqué — compte démo déjà en session.');
+  });
+
+  document.getElementById('btn-activate').addEventListener('click', function () {
+    if (!state.promoApplied && !state.secuActive) {
+      els.promoNote.textContent = 'Appliquez d’abord EXP2026.';
+      els.promoNote.className = 'promo-note err';
+      return;
+    }
+    state.secuActive = true;
+    state.promoApplied = true;
+    state.demoAccount = true;
+    saveState(state);
+    renderSub();
+    toast('Abonnement SECU activé — session expérimentale gratuite.');
+  });
+
+  renderFindings();
+  renderSub();
+})();
+  </script>
+</body>
+</html>
