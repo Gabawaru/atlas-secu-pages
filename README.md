@@ -1,10 +1,11 @@
 # atlas-secu-pages
 
-Static GitHub Pages site for **Atlas SECU** (`https://atlas-secu.com`).
+Static GitHub Pages site for **ATLAS** (`https://atlas-secu.com`).
 
 | Field | Value |
 |-------|--------|
-| Product brand | Atlas SECU |
+| Landing / marque | **ATLAS** |
+| Abonnement | **SECU** |
 | Custom domain | `atlas-secu.com` (`CNAME`) |
 | Pages source | `main` / `/` |
 | Binary | `/Atlas-Setup.exe` |

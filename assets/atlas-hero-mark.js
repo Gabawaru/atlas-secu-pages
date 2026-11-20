@@ -3,7 +3,8 @@
  *   • Character = static 2D engraving PNG (suited Atlas, full-head mask + nested-△ logo)
  *   • Globe = interactive Three.js Earth (auto-rotate + drag; nodes/arcs)
  *
- * Gab 2026-11-20: 2D engraving body (not procedural 3D). No debug overlay lines.
+ * Gab 2026-11-20: 2D engraving body (not procedural 3D). Nested-△ on mask kept.
+ * Plate/camera scaled so full figure + globe fit the hero frame.
  * Character never animates. Earth texture: /assets/earth-atmos.jpg
  */
 import * as THREE from 'three';
@@ -11,9 +12,8 @@ import * as THREE from 'three';
 const TEAL = 0x2f8f8a;
 const GLOBE_R = 1.0;
 /** Matches engraved globe size on the circular plate (~half the plate). */
-const GLOBE_SCENE_SCALE = 0.95;
+const GLOBE_SCENE_SCALE = 0.46;
 const FIGURE_URL = '/assets/atlas-figure-engraving.png';
-
 function latLonToVec(latDeg, lonDeg, radius) {
   const lat = (latDeg * Math.PI) / 180;
   const lon = (lonDeg * Math.PI) / 180;
@@ -153,9 +153,10 @@ export function mountAtlasHeroMark(host) {
   const height = function () { return Math.max(1, host.clientHeight); };
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(30, width() / height(), 0.1, 40);
-  camera.position.set(0, 0.08, 5.4);
-  camera.lookAt(0, 0.08, 0);
+  /* Wider FOV + pulled back so full plate (globe + feet) fits hero frame */
+  const camera = new THREE.PerspectiveCamera(40, width() / height(), 0.1, 40);
+  camera.position.set(0, 0, 6.7);
+  camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -185,7 +186,8 @@ export function mountAtlasHeroMark(host) {
   const mark = new THREE.Group();
 
   // —— 2D engraving figure (static) ——
-  const plateSize = 3.35;
+  /* Smaller plate so globe crown + kneeling feet stay inside hero-visual */
+  const plateSize = 1.98;
   const figureMat = new THREE.MeshBasicMaterial({
     transparent: true,
     depthWrite: false,
@@ -214,10 +216,10 @@ export function mountAtlasHeroMark(host) {
   /*
    * Interactive globe covers the engraved globe on the plate.
    * Engraved sphere sits in the upper half of the circular plate.
+   * Keep z modest so perspective doesn't inflate the globe past the plate.
    */
   const globeAnchor = new THREE.Group();
-  const effR = GLOBE_R * GLOBE_SCENE_SCALE;
-  globeAnchor.position.set(0.02, plateSize * 0.18, 0.28);
+  globeAnchor.position.set(0.006, plateSize * 0.145, 0.12);
   mark.add(globeAnchor);
 
   let globe = null;
