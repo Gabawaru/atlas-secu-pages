@@ -1,8 +1,8 @@
 /**
- * ATLAS hero mark — interactive Three.js Earth only
- *   (auto-rotate + drag; teal nodes/arcs). No engraving figure / mask.
+ * ATLAS hero mark — interactive Three.js Earth
+ *   (drag + inertia; teal nodes/arcs). No engraving figure.
  *
- * Gab 2026-11-20: character removed from hero; landing marque stays ATLAS.
+ * Gab 2026-11-20: character removed; ritual v2 hooks for scale / auto-rotate / drag.
  * Earth texture: /assets/earth-atmos.jpg
  */
 import * as THREE from 'three';
@@ -11,6 +11,7 @@ const TEAL = 0x2f8f8a;
 const GLOBE_R = 1.0;
 /** Fits the circular hero orb with breathing room for drag. */
 const GLOBE_SCENE_SCALE = 1.12;
+const DEFAULT_CAM_Z = 4.35;
 
 function latLonToVec(latDeg, lonDeg, radius) {
   const lat = (latDeg * Math.PI) / 180;
@@ -44,6 +45,8 @@ function buildNetwork(globeGroup) {
     metalness: 0.2
   });
   const positions = [];
+  const nodeMeshes = [];
+  const arcMeshes = [];
 
   nodes.forEach(function (pair) {
     const p = latLonToVec(pair[0], pair[1], GLOBE_R * 1.02);
@@ -51,6 +54,7 @@ function buildNetwork(globeGroup) {
     const dot = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), nodeMat);
     dot.position.copy(p);
     globeGroup.add(dot);
+    nodeMeshes.push(dot);
   });
 
   const arcMat = new THREE.MeshBasicMaterial({
@@ -70,11 +74,15 @@ function buildNetwork(globeGroup) {
     const b = positions[pair[1]];
     if (!a || !b) return;
     const curve = makeArcCurve(a, b, GLOBE_R);
-    globeGroup.add(new THREE.Mesh(
+    const mesh = new THREE.Mesh(
       new THREE.TubeGeometry(curve, 24, 0.008, 5, false),
-      arcMat
-    ));
+      arcMat.clone()
+    );
+    globeGroup.add(mesh);
+    arcMeshes.push(mesh);
   });
+
+  return { nodeMeshes, arcMeshes, nodeMat, arcMat };
 }
 
 function buildGlobe(texture) {
@@ -100,7 +108,8 @@ function buildGlobe(texture) {
     })
   ));
 
-  buildNetwork(group);
+  const network = buildNetwork(group);
+  group.userData.network = network;
   return group;
 }
 
@@ -141,18 +150,40 @@ function proceduralEarthTexture() {
 
 /**
  * @param {HTMLElement} host
- * @returns {{ dispose: () => void }}
+ * @param {{
+ *   autoRotate?: boolean,
+ *   autoRotateSpeed?: number,
+ *   onSignificantDrag?: (deg: number) => void,
+ *   significantDragDeg?: number,
+ * }} [options]
+ * @returns {object}
  */
-export function mountAtlasHeroMark(host) {
-  if (!host) return { dispose: function () {} };
+export function mountAtlasHeroMark(host, options) {
+  if (!host) {
+    return {
+      dispose: function () {},
+      enableAutoRotate: function () {},
+      setAutoRotateSpeed: function () {},
+      setSceneScale: function () {},
+      setCameraZ: function () {},
+      getRotationY: function () { return 0; },
+      getAngularVelocity: function () { return 0; },
+      getAccumulatedYawDeg: function () { return 0; },
+      setNetworkBoost: function () {},
+      setDragEnabled: function () {},
+      injectSpin: function () {},
+      isReady: function () { return false; }
+    };
+  }
 
+  const opts = options || {};
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const width = function () { return Math.max(1, host.clientWidth); };
   const height = function () { return Math.max(1, host.clientHeight); };
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(36, width() / height(), 0.1, 40);
-  camera.position.set(0, 0.05, 4.35);
+  camera.position.set(0, 0.05, DEFAULT_CAM_Z);
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({
@@ -189,6 +220,17 @@ export function mountAtlasHeroMark(host) {
   let globe = null;
   let disposed = false;
   let raf = 0;
+  let dragEnabled = true;
+  /* Default: auto-rotate on (legacy). Ritual passes autoRotate:false until first drag. */
+  let autoRotateOn = opts.autoRotate === undefined ? !reduceMotion : (!!opts.autoRotate && !reduceMotion);
+
+  let autoSpeed = typeof opts.autoRotateSpeed === 'number' ? opts.autoRotateSpeed : 0.0032;
+  let sceneScaleMul = 1;
+  let networkBoost = 0;
+  let accumulatedYaw = 0;
+  let significantFired = false;
+  const significantDeg = typeof opts.significantDragDeg === 'number' ? opts.significantDragDeg : 10;
+  let sessionDragYaw = 0;
 
   const drag = {
     active: false,
@@ -198,10 +240,25 @@ export function mountAtlasHeroMark(host) {
     velY: 0,
     resumeAt: 0
   };
-  const AUTO = reduceMotion ? 0 : 0.0032;
 
   const texLoader = new THREE.TextureLoader();
   texLoader.setCrossOrigin('anonymous');
+
+  function applySceneScale() {
+    if (!globe) return;
+    globe.scale.setScalar(GLOBE_SCENE_SCALE * sceneScaleMul);
+  }
+
+  function applyNetworkBoost() {
+    if (!globe || !globe.userData.network) return;
+    const net = globe.userData.network;
+    const baseEmissive = 0.55;
+    const baseArc = 0.55;
+    net.nodeMat.emissiveIntensity = baseEmissive + networkBoost * 0.55;
+    net.arcMeshes.forEach(function (m) {
+      m.material.opacity = Math.min(0.95, baseArc + networkBoost * 0.35);
+    });
+  }
 
   function attachGlobe(texture) {
     if (disposed) {
@@ -211,7 +268,8 @@ export function mountAtlasHeroMark(host) {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     globe = buildGlobe(texture);
-    globe.scale.setScalar(GLOBE_SCENE_SCALE);
+    applySceneScale();
+    applyNetworkBoost();
     globeAnchor.add(globe);
   }
 
@@ -225,6 +283,7 @@ export function mountAtlasHeroMark(host) {
   );
 
   function onPointerDown(e) {
+    if (!dragEnabled) return;
     drag.active = true;
     drag.px = e.clientX;
     drag.py = e.clientY;
@@ -233,17 +292,27 @@ export function mountAtlasHeroMark(host) {
     renderer.domElement.setPointerCapture(e.pointerId);
   }
   function onPointerMove(e) {
-    if (!drag.active || !globe) return;
+    if (!drag.active || !globe || !dragEnabled) return;
     const dx = e.clientX - drag.px;
     const dy = e.clientY - drag.py;
     drag.px = e.clientX;
     drag.py = e.clientY;
     const sens = 0.0055;
-    globe.rotation.y += dx * sens;
+    const dyaw = dx * sens;
+    globe.rotation.y += dyaw;
     globe.rotation.x += dy * sens;
     globe.rotation.x = Math.max(-1.2, Math.min(1.2, globe.rotation.x));
-    drag.velX = dx * sens;
+    drag.velX = dyaw;
     drag.velY = dy * sens;
+    accumulatedYaw += Math.abs(dyaw);
+    sessionDragYaw += Math.abs(dyaw);
+    const deg = (sessionDragYaw * 180) / Math.PI;
+    if (!significantFired && deg >= significantDeg) {
+      significantFired = true;
+      if (typeof opts.onSignificantDrag === 'function') {
+        opts.onSignificantDrag(deg);
+      }
+    }
   }
   function onPointerUp(e) {
     drag.active = false;
@@ -277,10 +346,12 @@ export function mountAtlasHeroMark(host) {
           globe.rotation.y += drag.velX;
           globe.rotation.x += drag.velY;
           globe.rotation.x = Math.max(-1.2, Math.min(1.2, globe.rotation.x));
+          accumulatedYaw += Math.abs(drag.velX);
           drag.velX *= 0.94;
           drag.velY *= 0.94;
-        } else if (now >= drag.resumeAt) {
-          globe.rotation.y += AUTO;
+        } else if (autoRotateOn && now >= drag.resumeAt) {
+          globe.rotation.y += autoSpeed;
+          accumulatedYaw += Math.abs(autoSpeed);
         }
       }
     }
@@ -310,11 +381,55 @@ export function mountAtlasHeroMark(host) {
           else obj.material.dispose();
         }
       });
-    }
+    },
+    enableAutoRotate: function (on) {
+      autoRotateOn = !!on && !reduceMotion;
+    },
+    setAutoRotateSpeed: function (speed) {
+      if (typeof speed === 'number') autoSpeed = speed;
+    },
+    setSceneScale: function (mul) {
+      sceneScaleMul = Math.max(0.2, mul);
+      applySceneScale();
+    },
+    setCameraZ: function (z) {
+      camera.position.z = z;
+      camera.lookAt(0, 0, 0);
+    },
+    getCameraZ: function () { return camera.position.z; },
+    getDefaultCameraZ: function () { return DEFAULT_CAM_Z; },
+    getRotationY: function () {
+      return globe ? globe.rotation.y : 0;
+    },
+    getAngularVelocity: function () {
+      return drag.active ? 0 : drag.velX;
+    },
+    getAccumulatedYawDeg: function () {
+      return (accumulatedYaw * 180) / Math.PI;
+    },
+    setNetworkBoost: function (t) {
+      networkBoost = Math.max(0, Math.min(1, t));
+      applyNetworkBoost();
+    },
+    setDragEnabled: function (on) {
+      dragEnabled = !!on;
+      if (!dragEnabled) drag.active = false;
+      renderer.domElement.style.cursor = dragEnabled ? 'grab' : 'default';
+    },
+    injectSpin: function (velY) {
+      drag.velX = velY;
+      drag.resumeAt = performance.now() + 400;
+    },
+    isReady: function () { return !!globe; },
+    resize: onResize
   };
 }
 
 if (typeof document !== 'undefined') {
-  const host = document.getElementById('atlas-hero-mark');
-  if (host) mountAtlasHeroMark(host);
+  /* Ritual module mounts when present; otherwise idle globe with auto-rotate. */
+  const ritualHost = document.getElementById('atlas-hero-ritual');
+  if (!ritualHost) {
+    const host = document.getElementById('atlas-hero-mark');
+    if (host) mountAtlasHeroMark(host);
+  }
 }
