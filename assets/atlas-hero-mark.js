@@ -167,6 +167,7 @@ export function mountAtlasHeroMark(host, options) {
       setAutoRotateSpeed: function () {},
       setSceneScale: function () {},
       setCameraZ: function () {},
+      getCoverCameraZ: function () { return DEFAULT_CAM_Z; },
       getRotationY: function () { return 0; },
       getAngularVelocity: function () { return 0; },
       getAccumulatedYawDeg: function () { return 0; },
@@ -402,8 +403,25 @@ export function mountAtlasHeroMark(host, options) {
       camera.position.z = z;
       camera.lookAt(0, 0, 0);
     },
+    setCameraCentered: function (on) {
+      camera.position.y = on ? 0 : 0.05;
+      camera.lookAt(0, 0, 0);
+    },
     getCameraZ: function () { return camera.position.z; },
     getDefaultCameraZ: function () { return DEFAULT_CAM_Z; },
+    /**
+     * Camera Z so the globe disk covers the viewport (both axes).
+     * @param {number} [cover=1.08] >1 = slightly past edges
+     */
+    getCoverCameraZ: function (cover) {
+      const c = typeof cover === 'number' && cover > 0 ? cover : 1.08;
+      const r = GLOBE_SCENE_SCALE * sceneScaleMul;
+      const vHalf = (camera.fov * Math.PI) / 180 / 2;
+      const hHalf = Math.atan(Math.tan(vHalf) * Math.max(0.01, camera.aspect));
+      const zV = r / Math.tan(vHalf);
+      const zH = r / Math.tan(hHalf);
+      return Math.min(zV, zH) / c;
+    },
     getRotationY: function () {
       return globe ? globe.rotation.y : 0;
     },

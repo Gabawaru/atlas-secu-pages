@@ -384,47 +384,103 @@ export function mountAtlasHeroRitual(cfg) {
       globe.injectSpin(0.022);
     }
 
-    /* Beat 2 — multi-rotation scale to fullscreen (host grows with progress, no CSS snap) */
+    /* Beat 2 — pin globe at idle rect, grow to true viewport (no teleport / no card frame) */
     phase = 'expand';
+    /* Never show ATLAS wordmark/brand while growing */
+    if (els.brandOrbit) {
+      els.brandOrbit.hidden = true;
+      els.brandOrbit.style.opacity = '0';
+    }
+    if (els.wordmark) {
+      els.wordmark.hidden = true;
+      els.wordmark.classList.remove('is-building', 'is-in');
+    }
+
+    const startRect = els.visual
+      ? els.visual.getBoundingClientRect()
+      : { left: 0, top: 0, width: 300, height: 300 };
+    const startCam = globe.getDefaultCameraZ();
+    const endScale = 1.35;
+
+    if (els.visual) {
+      /* Freeze exact on-screen box before layout classes change — kills downward jump */
+      els.visual.style.position = 'fixed';
+      els.visual.style.left = startRect.left + 'px';
+      els.visual.style.top = startRect.top + 'px';
+      els.visual.style.width = startRect.width + 'px';
+      els.visual.style.height = startRect.height + 'px';
+      els.visual.style.right = 'auto';
+      els.visual.style.bottom = 'auto';
+      els.visual.style.margin = '0';
+      els.visual.style.padding = '0';
+      els.visual.style.maxWidth = 'none';
+      els.visual.style.aspectRatio = 'auto';
+      els.visual.style.zIndex = '55';
+      els.visual.style.transform = 'none';
+      els.visual.style.borderRadius = '0';
+    }
+
     document.body.classList.add('is-ritual-expanding');
     stage.classList.add('is-expanding');
+    globe.setCameraCentered(true);
+    globe.resize();
+
     const startYaw = globe.getAccumulatedYawDeg();
-    const startCam = globe.getDefaultCameraZ();
-    /* Keep camera outside globe (radius ≈ scale * 1.12); host CSS grows to fill viewport. */
-    const endCam = 2.85;
-    const endScale = 1.62;
     const scaleStart = performance.now();
-    const startHost = els.visual ? els.visual.getBoundingClientRect().width : 380;
 
     await rafUntil(function (now) {
       const elapsed = now - scaleStart;
       const timeT = clamp01(elapsed / T.scaleMs);
       const yawDeg = globe.getAccumulatedYawDeg() - startYaw;
       const turnT = clamp01(yawDeg / (T.targetTurns * 360));
-      /* Prefer time so duration stays ~8–14s; turns enrich the feel */
-      scaleProgress = easeInOutCubic(Math.max(timeT, turnT * 0.55));
-      globe.setSceneScale(lerp(1, endScale, scaleProgress));
-      globe.setCameraZ(lerp(startCam, endCam, scaleProgress));
-      globe.setNetworkBoost(lerp(0.35, 0.85, scaleProgress));
-      globe.setAutoRotateSpeed(lerp(0.018, 0.028, scaleProgress));
-      const hostPx = lerp(startHost, Math.min(window.innerWidth, window.innerHeight) * 0.92, scaleProgress);
+      /* Time-led multi-rotation scale; no layout snap */
+      scaleProgress = easeInOutCubic(Math.max(timeT, turnT * 0.45));
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const left = lerp(startRect.left, 0, scaleProgress);
+      const top = lerp(startRect.top, 0, scaleProgress);
+      const w = lerp(startRect.width, vw, scaleProgress);
+      const h = lerp(startRect.height, vh, scaleProgress);
+
       if (els.visual) {
-        els.visual.style.width = hostPx + 'px';
-        els.visual.style.height = hostPx + 'px';
-        globe.resize();
+        els.visual.style.left = left + 'px';
+        els.visual.style.top = top + 'px';
+        els.visual.style.width = w + 'px';
+        els.visual.style.height = h + 'px';
       }
-      if (scaleProgress > 0.55) {
+
+      globe.setSceneScale(lerp(1, endScale, scaleProgress));
+      const coverZ = globe.getCoverCameraZ(1.1);
+      globe.setCameraZ(lerp(startCam, coverZ, scaleProgress));
+      globe.setNetworkBoost(lerp(0.35, 0.9, scaleProgress));
+      globe.setAutoRotateSpeed(lerp(0.018, 0.026, scaleProgress));
+      globe.resize();
+
+      if (scaleProgress > 0.92) {
         document.body.classList.add('is-ritual-fullscreen');
         stage.classList.add('is-fullscreen');
       }
       return timeT >= 1;
     }, T.scaleMs + 2000);
 
+    /* Snap host to true edges once growth completes */
+    if (els.visual) {
+      els.visual.style.left = '0';
+      els.visual.style.top = '0';
+      els.visual.style.width = '100vw';
+      els.visual.style.height = '100vh';
+      els.visual.style.height = '100dvh';
+    }
+    globe.setSceneScale(endScale);
+    globe.setCameraZ(globe.getCoverCameraZ(1.12));
+    globe.resize();
+
     document.body.classList.add('is-ritual-fullscreen');
     stage.classList.add('is-fullscreen');
     document.body.classList.remove('is-ritual-expanding');
 
-    /* Hide orbit text (already cutoff when behind; force clear) */
+    /* Hide orbit litter — globe now covers the screen */
     hideOrbitText = true;
     [els.hint, els.sloganOrbit, els.brandOrbit].forEach(function (el) {
       if (!el) return;
@@ -496,10 +552,14 @@ export function mountAtlasHeroRitual(cfg) {
     globe.setAutoRotateSpeed(0.0065);
     await wait(T.earthAloneMs * 0.55);
 
-    /* Beat 5 — wordmark from left */
+    /* Beat 5 — wordmark from left (only after Earth fully covers viewport) */
     phase = 'wordmark';
     document.body.classList.add('is-ritual-wordmark');
     stage.classList.add('is-wordmark');
+    if (scaleProgress < 1) {
+      /* belt-and-suspenders: never reveal ATLAS mid-grow */
+      scaleProgress = 1;
+    }
 
     if (els.wordmark) {
       els.wordmark.hidden = false;
@@ -589,13 +649,15 @@ export function mountAtlasHeroRitual(cfg) {
     phase = 'done';
     globe.setDragEnabled(true);
     globe.setAutoRotateSpeed(0.0032);
+    const settleCam = globe.getCoverCameraZ(1.12);
     await animateValue(1, 0, T.unlockMs, easeInOutCubic, function (t) {
-      /* t goes 1→0: ease out of fullscreen camera toward settled hero */
+      /* t goes 1→0: ease out of fullscreen toward settled hero */
       const u = 1 - t;
       globe.setSceneScale(lerp(endScale, 1.08, u));
-      globe.setCameraZ(lerp(endCam, startCam, u));
+      globe.setCameraZ(lerp(settleCam, startCam, u));
     });
     globe.setNetworkBoost(0.25);
+    globe.setCameraCentered(false);
 
     document.body.classList.remove(
       'is-ritual-playing', 'is-ritual-fullscreen', 'is-ritual-wordmark', 'is-ritual-expanding'
@@ -604,8 +666,20 @@ export function mountAtlasHeroRitual(cfg) {
     stage.classList.remove('is-playing', 'is-fullscreen', 'is-expanding');
     stage.classList.add('is-end');
     if (els.visual) {
+      els.visual.style.position = '';
+      els.visual.style.left = '';
+      els.visual.style.top = '';
+      els.visual.style.right = '';
+      els.visual.style.bottom = '';
       els.visual.style.width = '';
       els.visual.style.height = '';
+      els.visual.style.margin = '';
+      els.visual.style.padding = '';
+      els.visual.style.maxWidth = '';
+      els.visual.style.aspectRatio = '';
+      els.visual.style.zIndex = '';
+      els.visual.style.transform = '';
+      els.visual.style.borderRadius = '';
     }
 
     if (els.heroCopy) els.heroCopy.classList.add('is-ritual-revealed');
