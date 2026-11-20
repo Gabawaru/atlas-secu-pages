@@ -17,7 +17,7 @@ Deploy = merge / push to `main`.
 
 ## Hero mark (ATLAS)
 
-Landing brand wordmark is **ATLAS**. The hero visual is a **2D engraving-style** kneeling Atlas (beard, curly hair, dark armor costume) as canvas art — not a 3D stick/robot body. An interactive **3D** Earth globe sits on his shoulders (auto-rotate + drag; nodes/arcs). Three.js loads from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`.
+Landing brand wordmark is **ATLAS**. The hero visual is a **2D engraving-style** kneeling Atlas in a dark cybersec suit (beard, curly hair) — not a 3D stick/robot body. An interactive **3D** Earth globe sits on his shoulders (auto-rotate + drag; nodes/arcs). Three.js loads from jsDelivr via import map; Earth map is `/assets/earth-atmos.jpg`. Figure art: `/assets/atlas-figure-engraving.png`.
 
 Legal pages are **draft product copy** (à valider conseil), linked from footer, register, PEC, and account delete surfaces.
 
