@@ -1,6 +1,6 @@
 /**
  * ATLAS hero mark — hybrid:
- *   • Character = static 2D engraving PNG (kneeling Atlas in cybersec suit)
+ *   • Character = static 2D engraving PNG (suited Atlas, full-head mask + nested-△ logo)
  *   • Globe = interactive Three.js Earth (auto-rotate + drag; nodes/arcs)
  *
  * Gab 2026-11-20: 2D engraving body (not procedural 3D). No debug overlay lines.
