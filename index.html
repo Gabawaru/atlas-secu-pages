@@ -196,6 +196,15 @@
     /* —— Hero ritual v2 —— */
     body.is-ritual-scroll-lock{
       position:fixed;left:0;right:0;width:100%;overflow:hidden;
+      overscroll-behavior:none;touch-action:none;
+    }
+    body.is-ritual-scroll-lock #atlas-hero-mark,
+    body.is-ritual-scroll-lock #atlas-hero-mark canvas{
+      touch-action:none;
+    }
+    body.is-ritual-scroll-lock .ritual-cta,
+    body.is-ritual-scroll-lock .ritual-cta .btn{
+      touch-action:manipulation;
     }
     #atlas-hero{
       position:relative;
@@ -378,15 +387,97 @@
       background:transparent;
     }
     @media (max-width:860px){
-      body.is-ritual-done .hero{grid-template-columns:1fr}
-      body.is-ritual-done #atlas-hero-ritual.is-end{
-        grid-column:1;grid-row:2;justify-self:center;align-items:center;
+      body.is-ritual-idle .hero,
+      body.is-ritual-playing .hero{
+        min-height:100svh;min-height:100dvh;
+        padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));
+        overflow:hidden;width:100%;max-width:100vw;
       }
-      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-wordmark{justify-content:center}
+      body.is-ritual-idle .hero-visual,
+      body.is-ritual-playing .hero-visual{
+        width:min(300px,78vw);
+      }
+      body.is-ritual-idle #atlas-hero-ritual{
+        width:min(300px,86vw);padding-top:10px;gap:8px;
+      }
+      body.is-ritual-idle .ritual-orbit-copy[data-ritual="slogan-orbit"]{
+        max-width:28ch;font-size:.92rem;line-height:1.35;padding:0 4px;
+      }
+      .ritual-hint{
+        font-size:.56rem;letter-spacing:.08em;white-space:normal;text-align:center;
+        max-width:88vw;line-height:1.4;padding:0 8px;
+      }
+      .ritual-letter-a{
+        font-size:clamp(3.2rem,22vw,5.5rem);
+      }
+      .ritual-wordmark{
+        font-size:clamp(1.85rem,11vw,2.6rem);letter-spacing:.12em;
+        margin:0 0 12px;max-width:100%;overflow:hidden;
+      }
+      .ritual-slogan-final{
+        margin:0 0 16px;max-width:32ch;font-size:1.02rem;padding:0 8px;
+      }
+      .ritual-cta{
+        flex-direction:column;align-items:stretch;width:min(100%,320px);
+        gap:10px;margin:0 0 16px;padding:0 8px;box-sizing:border-box;
+      }
+      .ritual-cta .btn{
+        width:100%;min-height:48px;justify-content:center;
+      }
+      .ritual-explain{
+        max-width:36ch;font-size:.92rem;line-height:1.5;padding:0 12px;
+        box-sizing:border-box;
+      }
+      body.is-ritual-expanding .hero,
+      body.is-ritual-fullscreen .hero{
+        overflow:hidden;max-width:100vw;
+      }
+      body.is-ritual-fullscreen .hero-visual{
+        width:min(92vmin,100vw - 16px);height:min(92vmin,100vw - 16px);
+      }
+      body.is-ritual-expanding #atlas-hero-ritual,
+      body.is-ritual-fullscreen #atlas-hero-ritual,
+      body.is-ritual-wordmark #atlas-hero-ritual{
+        padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(20px + env(safe-area-inset-bottom,0px));
+        overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;
+        max-width:100vw;box-sizing:border-box;
+      }
+      body.is-ritual-wordmark #atlas-hero-ritual{
+        justify-content:flex-end;gap:0;
+        background:linear-gradient(180deg,transparent 0%,rgba(247,251,252,.72) 28%,rgba(247,251,252,.94) 100%);
+      }
+      body.is-ritual-done .hero{
+        grid-template-columns:1fr;
+        padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));
+        min-height:auto;overflow:visible;max-width:100%;
+      }
+      body.is-ritual-done .hero-visual{
+        width:min(280px,74vw);order:-1;justify-self:center;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end{
+        grid-column:1;grid-row:2;justify-self:center;align-items:center;
+        width:100%;max-width:100%;padding:8px 0 0;box-sizing:border-box;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-wordmark,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-wordmark{
+        justify-content:center;
+      }
       body.is-ritual-done #atlas-hero-ritual.is-end .ritual-slogan-final,
-      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-explain{text-align:center}
-      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-cta{justify-content:center}
-      .ritual-hint{font-size:.58rem;letter-spacing:.1em;white-space:normal;text-align:center;max-width:90vw}
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-explain,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-slogan-final,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-explain{
+        text-align:center;
+      }
+      body.is-ritual-done #atlas-hero-ritual.is-end .ritual-cta,
+      body.is-ritual-done:not(.is-ritual-skipped) #atlas-hero-ritual.is-end .ritual-cta{
+        justify-content:center;width:100%;max-width:320px;
+      }
+      body.is-ritual-skipped .hero{
+        grid-template-columns:1fr;
+        padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));
+        min-height:auto;
+      }
     }
 
     .section{max-width:1120px;margin:0 auto;padding:64px 24px}
@@ -1190,7 +1281,7 @@
     }
   }
   </script>
-  <script type="module" src="/assets/atlas-hero-ritual.js?v=atlas-hero-ritual-v2-2026-11-20"></script>
+  <script type="module" src="/assets/atlas-hero-ritual.js?v=atlas-hero-ritual-mobile-once-2026-11-20"></script>
   <!-- Optional runtime config (ops). Example: config.runtime.example.js — never commit secrets. -->
   <script src="/config.runtime.js"></script>
   <script src="/auth.js"></script>
