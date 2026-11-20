@@ -12,6 +12,13 @@ const JACKET = 0x243038;
 const JACKET_SOFT = 0x354650;
 const SKIN = 0xc4a882;
 const GLOBE_R = 1.05;
+/**
+ * Scale-only fix (Gab 2026-11-20 mobile bug): globe was ~body-sized → “planet head”.
+ * Character mesh/style unchanged — body redesign waits on Gab look brief + sketch.
+ * Effective globe R ≈ GLOBE_R * GLOBE_SCENE_SCALE ≈ shoulder span.
+ */
+const CHAR_SCENE_SCALE = 1.2;
+const GLOBE_SCENE_SCALE = 0.5;
 
 function latLonToVec(latDeg, lonDeg, radius) {
   const lat = (latDeg * Math.PI) / 180;
@@ -324,12 +331,15 @@ export function mountAtlasHeroMark(host) {
 
   const mark = new THREE.Group();
   const character = buildCharacter();
-  character.position.set(0, -0.55, 0);
-  character.scale.setScalar(0.92);
+  character.position.set(0, -0.5, 0);
+  character.scale.setScalar(CHAR_SCENE_SCALE);
   mark.add(character);
 
+  // Shoulder carry: globe diameter ≈ shoulders, not a planet-head on the neck.
   const globeAnchor = new THREE.Group();
-  globeAnchor.position.set(0, 1.05, 0.08);
+  const shoulderY = -0.5 + 0.85 * CHAR_SCENE_SCALE;
+  const effR = GLOBE_R * GLOBE_SCENE_SCALE;
+  globeAnchor.position.set(0, shoulderY + effR * 0.45, 0.02);
   mark.add(globeAnchor);
 
   let globe = null;
@@ -354,7 +364,7 @@ export function mountAtlasHeroMark(host) {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     globe = buildGlobe(texture);
-    globe.scale.setScalar(0.95);
+    globe.scale.setScalar(GLOBE_SCENE_SCALE);
     globeAnchor.add(globe);
   }
 
