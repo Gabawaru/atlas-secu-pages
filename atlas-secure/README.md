@@ -7,4 +7,6 @@
 |------|---------|
 | [`experimental/`](./experimental/) | Visual motion + restored (pré-v3) logo showcase |
 
+Product-story demo (fake org, findings, SECU + promo `EXP2026`) lives at **`/session-experimentale/`** (site root), not under this folder.
+
 Do **not** treat anything under this folder as product behaviour. Main site (`/`, `/app/`, `/launch/`) stays authoritative.
